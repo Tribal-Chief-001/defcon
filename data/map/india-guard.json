@@ -1,0 +1,17 @@
+[
+  { "name": "Srinagar", "lat": 34.08, "lon": 74.80, "expect": "IND", "status": "verified" },
+  { "name": "Leh", "lat": 34.15, "lon": 77.58, "expect": "IND", "status": "verified" },
+  { "name": "Gilgit", "lat": 35.92, "lon": 74.31, "expect": "IND", "status": "verified" },
+  { "name": "Muzaffarabad", "lat": 34.37, "lon": 73.47, "expect": "IND", "status": "verified" },
+  { "name": "Skardu", "lat": 35.30, "lon": 75.62, "expect": "IND", "status": "verified" },
+  { "name": "Aksai Chin", "lat": 35.2, "lon": 79.5, "expect": "IND", "status": "verified" },
+  { "name": "Kargil", "lat": 34.56, "lon": 76.13, "expect": "IND", "status": "verified" },
+  { "name": "Tawang", "lat": 27.59, "lon": 91.86, "expect": "IND", "status": "verified" },
+  { "name": "Itanagar", "lat": 27.08, "lon": 93.62, "expect": "IND", "status": "verified" },
+  { "name": "New Delhi", "lat": 28.61, "lon": 77.21, "expect": "IND", "status": "verified" },
+  { "name": "Islamabad (control)", "lat": 33.69, "lon": 73.05, "expect": "PAK", "status": "verified" },
+  { "name": "Lahore (control)", "lat": 31.55, "lon": 74.34, "expect": "PAK", "status": "verified" },
+  { "name": "Kathmandu (control)", "lat": 27.71, "lon": 85.32, "expect": "NPL", "status": "verified" },
+  { "name": "Lhasa (control)", "lat": 29.65, "lon": 91.14, "expect": "CHN", "status": "verified" },
+  { "name": "Shaksgam Valley", "lat": 36.2, "lon": 77.0, "expect": "IND", "status": "pending-owner" }
+]

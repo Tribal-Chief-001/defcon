@@ -26,3 +26,5 @@ Built by `npm run map:build` from the pinned India-POV file into `public/data/bo
 
 Budgets (spec section 10) are measured as **gzip transfer size**: low <= 300 KB, high <= 1 MB. Sweep done 2026-10-18: high at quantization 1e5 was 942 KB gz (too close to the cap); quantization 5e4 keeps margin and is below the 1:10m source precision.
 Patches: `data/map/patches/*.json` are applied before topology building (see `scripts/map/patches.ts`). None exist yet; the Shaksgam patch is pending the owner's reference polygon (Plan 1 Task 4).
+
+Border build also: rewinds wrongly wound polygons and drops rings that quantization flipped (see `docs/MAP-POLICY.md`). After the fix: high 3.47 MB raw, low 658 KB raw; low has 229 of 248 countries (micro-states vanish at far zoom; high detail has all 248).

@@ -2,11 +2,13 @@ import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'n
 import { join } from 'node:path';
 import { read } from 'shapefile';
 import { topology } from 'topojson-server';
-import { presimplify, simplify } from 'topojson-simplify';
-import { quantize } from 'topojson-client';
+import { filter, presimplify, simplify } from 'topojson-simplify';
+import { feature, quantize } from 'topojson-client';
+import { geoArea } from 'd3-geo';
 import type { Feature, FeatureCollection, Geometry } from 'geojson';
 import type { Objects, Topology } from 'topojson-specification';
 import { applyPatches, type Patch } from './patches.ts';
+import { rewindFeature } from './rewind.ts';
 
 // Tuned by measurement (docs/DATA-SOURCES.md): gzip size high <= 1 MB, low <= 300 KB.
 export const HIGH_QUANTIZATION = 5e4;
@@ -30,8 +32,8 @@ export async function buildBorders(
   const patched = applyPatches(raw, loadPatches());
   const slim: FeatureCollection = {
     type: 'FeatureCollection',
-    features: patched.features.map(
-      (f): Feature<Geometry> => ({
+    features: patched.features.map((f) =>
+      rewindFeature<Feature<Geometry>>({
         type: 'Feature',
         properties: { id: f.properties?.ADM0_A3, name: f.properties?.NAME },
         geometry: f.geometry,
@@ -40,8 +42,19 @@ export async function buildBorders(
   };
 
   const base = topology({ countries: slim }) as unknown as Topology<Objects<{}>>;
-  const high = quantize(base, HIGH_QUANTIZATION);
-  const low = quantize(simplify(presimplify(base), LOW_MIN_WEIGHT), LOW_QUANTIZATION);
+  // Quantizing can collapse or flip tiny islands. d3-geo reads a wrongly wound ring as "the whole sphere
+  // except this ring", so drop rings whose winding no longer matches (exterior: area <= a hemisphere,
+  // hole: area > a hemisphere).
+  const dropBadRings = <T extends Topology<Objects<{}>>>(t: T): T => {
+    const keep = (ring: number[], interior: boolean) => {
+      const coords = (feature(t, { type: 'Polygon', arcs: [ring] } as never) as unknown as { geometry: { coordinates: number[][][] } }).geometry.coordinates;
+      const a = geoArea({ type: 'Polygon', coordinates: coords } as never);
+      return a > 0 && (interior ? a > 2 * Math.PI : a <= 2 * Math.PI);
+    };
+    return filter(t, keep as never) as unknown as T;
+  };
+  const high = dropBadRings(quantize(base, HIGH_QUANTIZATION));
+  const low = dropBadRings(quantize(simplify(presimplify(base), LOW_MIN_WEIGHT), LOW_QUANTIZATION));
 
   mkdirSync(outDir, { recursive: true });
   const highPath = join(outDir, 'borders.high.topo.json');
