@@ -16,6 +16,8 @@ export const LOW_MIN_WEIGHT = 2e-3;
 export const LOW_QUANTIZATION = 1e4;
 
 const PATCH_DIR = 'data/map/patches';
+// Natural Earth dbf text fields are NUL-padded.
+export const clean = (v: unknown): string => String(v ?? '').replace(/\0/g, '').trim();
 
 function loadPatches(): Patch[] {
   return readdirSync(PATCH_DIR)
@@ -35,11 +37,17 @@ export async function buildBorders(
     features: patched.features.map((f) =>
       rewindFeature<Feature<Geometry>>({
         type: 'Feature',
-        properties: { id: f.properties?.ADM0_A3, name: f.properties?.NAME },
+        properties: { id: clean(f.properties?.ADM0_A3), name: clean(f.properties?.NAME) },
         geometry: f.geometry,
       }),
     ),
   };
+
+  mkdirSync(outDir, { recursive: true });
+  writeFileSync(
+    join(outDir, 'countries.json'),
+    JSON.stringify(slim.features.map((f) => f.properties as { id: string; name: string }).sort((a, b) => a.id.localeCompare(b.id))),
+  );
 
   const base = topology({ countries: slim }) as unknown as Topology<Objects<{}>>;
   // Quantizing can collapse or flip tiny islands. d3-geo reads a wrongly wound ring as "the whole sphere

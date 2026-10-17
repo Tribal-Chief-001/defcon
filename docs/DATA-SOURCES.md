@@ -28,3 +28,7 @@ Budgets (spec section 10) are measured as **gzip transfer size**: low <= 300 KB,
 Patches: `data/map/patches/*.json` are applied before topology building (see `scripts/map/patches.ts`). None exist yet; the Shaksgam patch is pending the owner's reference polygon (Plan 1 Task 4).
 
 Border build also: rewinds wrongly wound polygons and drops rings that quantization flipped (see `docs/MAP-POLICY.md`). After the fix: high 3.47 MB raw, low 658 KB raw; low has 229 of 248 countries (micro-states vanish at far zoom; high detail has all 248).
+
+## Capitals and country list (derived)
+
+`public/data/capitals.json`: 212 capitals from `ne_10m_populated_places_simple` rows with `featurecla` `Admin-0 capital` (202) or `Admin-0 capital alt` (13), minus 3 whose country the India-POV file does not list. Fields: name, country (ADM0_A3), lat, lon (4 decimals), rank. `public/data/countries.json`: all 248 `{ id, name }` from the India-POV file.

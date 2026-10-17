@@ -28,6 +28,16 @@ describe('built border data', () => {
     const bad = fc.features.filter((f) => geoArea(f as never) > 2 * Math.PI).map((f) => f.properties.id);
     expect(bad).toEqual([]);
   });
+  it.each([HIGH, LOW])('%s has clean names (no NUL padding or stray whitespace)', (p) => {
+    const names = (load(p).objects.countries as GeometryCollection).geometries.map((g) => (g.properties as { name: string }).name);
+    expect(names.filter((n) => !n || n !== n.replace(/\0/g, '').trim())).toEqual([]);
+  });
+  it('countries.json lists all 248 India-POV countries; only micro-islets lack a high-detail polygon', () => {
+    const list = JSON.parse(readFileSync('public/data/countries.json', 'utf8')) as { id: string; name: string }[];
+    expect(list).toHaveLength(248);
+    const have = new Set(ids(load(HIGH)));
+    expect(list.filter((c) => !have.has(c.id)).map((c) => c.id).sort()).toEqual(['CSI', 'SCR', 'VAT']);
+  });
   it('low-detail file is at most 300 KB gzipped (transfer size)', () => {
     expect(gz(LOW)).toBeLessThanOrEqual(300_000);
   });

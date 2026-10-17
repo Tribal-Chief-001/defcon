@@ -17,3 +17,10 @@
 - Some Natural Earth polygons (Indonesia, Maldives, Bahamas) are wound the other way for d3-geo; the build rewinds any polygon whose spherical area exceeds a hemisphere (`scripts/map/rewind.ts`).
 - Quantization can flip tiny islets; after quantizing, rings whose winding no longer matches are dropped (`dropBadRings` in `scripts/map/build-borders.ts`). The low-detail file loses about 19 micro-states/territories this way; high detail keeps them.
 - Without these, `geoContains` returns the "whole world minus the country" for those countries and ocean clicks pick wrong countries.
+
+## India-POV file differences (found 2026-10-18)
+
+- **Not separate countries in this file:** Kosovo, Somaliland, Western Sahara. Their capitals (Pristina, Hargeisa, Bir Lehlou) are therefore dropped from `capitals.json` so capitals follow the same worldview as the borders. Owner to confirm this reading when dossiers (Plan 3) are designed.
+- **Too small for the high-detail border data (quantization 800 m):** Vatican (VAT), Coral Sea Islands (CSI), Scarborough Reef (SCR). They stay in `countries.json` and (for Vatican City) in `capitals.json`, but have no polygon.
+- **Id mismatch:** South Sudan is `SDS` in the countries file and `SSD` in the places file; the capitals build aliases it.
+- **Text fields are NUL-padded** in the dbf; the build trims them.
