@@ -1,5 +1,5 @@
 import { mesh } from 'topojson-client';
-import type { GeometryObject, Topology } from 'topojson-specification';
+import type { GeometryCollection, GeometryObject, Topology } from 'topojson-specification';
 import { latLonToVec3 } from '../lib/geo';
 
 type V3 = [number, number, number];
@@ -21,9 +21,8 @@ const slerp = (a: V3, b: V3, t: number): V3 => {
   return [k0 * a[0] + k1 * b[0], k0 * a[1] + k1 * b[1], k0 * a[2] + k1 * b[2]];
 };
 
-// Vertex pairs for THREE.LineSegments: every border once (shared borders are not doubled).
-export function buildBorderPositions(topo: Topology, radius: number, maxSegDeg = 1): Float32Array {
-  const lines = mesh(topo, topo.objects.countries as GeometryObject).coordinates;
+// Vertex pairs for THREE.LineSegments from lon/lat polylines, each cut so no piece exceeds maxSegDeg.
+function linesToSegments(lines: number[][][], radius: number, maxSegDeg: number): Float32Array {
   const unit = lines.map((line) => line.map(([lon, lat]) => latLonToVec3(lat!, lon!, 1)));
 
   let segs = 0;
@@ -48,4 +47,17 @@ export function buildBorderPositions(topo: Topology, radius: number, maxSegDeg =
     }
   }
   return out;
+}
+
+// Every border once (shared borders are not doubled).
+export function buildBorderPositions(topo: Topology, radius: number, maxSegDeg = 1): Float32Array {
+  return linesToSegments(mesh(topo, topo.objects.countries as GeometryObject).coordinates, radius, maxSegDeg);
+}
+
+// The full outline of one country (including borders it shares), or an empty array for an unknown id.
+export function buildCountryPositions(topo: Topology, id: string, radius: number, maxSegDeg = 1): Float32Array {
+  const geometries = (topo.objects.countries as GeometryCollection).geometries;
+  const g = geometries.find((x) => (x.properties as { id?: string } | undefined)?.id === id);
+  if (!g || g.type === null) return new Float32Array(0);
+  return linesToSegments(mesh(topo, g as GeometryObject, () => true).coordinates, radius, maxSegDeg);
 }

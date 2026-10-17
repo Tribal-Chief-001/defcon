@@ -5,3 +5,4 @@ data/raw/
 .env
 .env.*
 !.env.example
+.claude/

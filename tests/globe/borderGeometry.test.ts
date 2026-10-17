@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Topology } from 'topojson-specification';
-import { buildBorderPositions } from '../../src/globe/borderGeometry';
+import { buildBorderPositions, buildCountryPositions } from '../../src/globe/borderGeometry';
 import { vec3ToLatLon } from '../../src/lib/geo';
 
 const low = JSON.parse(readFileSync('public/data/borders.low.topo.json', 'utf8')) as Topology;
@@ -41,5 +41,17 @@ describe('buildBorderPositions', () => {
     expect(maxSegDeg).toBeLessThanOrEqual(1.0001);
     expect(lons.some((l) => Math.abs(l) > 179.4)).toBe(true);
     expect(lons.every((l) => Math.abs(l) > 178.9)).toBe(true); // never wanders through lon 0
+  });
+
+  describe('buildCountryPositions', () => {
+    it('returns the outline of one country as vertex pairs on the sphere', () => {
+      const p = buildCountryPositions(low, 'IND', 1.002);
+      expect(p.length).toBeGreaterThan(600);
+      expect(p.length % 6).toBe(0);
+      expect(Math.abs(Math.hypot(p[0]!, p[1]!, p[2]!) - 1.002)).toBeLessThan(1e-6);
+    });
+    it('returns an empty array for an unknown id', () => {
+      expect(buildCountryPositions(low, 'ZZZ', 1).length).toBe(0);
+    });
   });
 });
