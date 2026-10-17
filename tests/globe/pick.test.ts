@@ -43,6 +43,7 @@ describe('createPicker', () => {
     let s = 11;
     const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
     const pts = Array.from({ length: 1000 }, () => [Math.asin(2 * rnd() - 1) * (180 / Math.PI), rnd() * 360 - 180] as const);
+    for (const [lat, lon] of pts.slice(0, 300)) pick(lat, lon); // warm up the JIT so the timing is stable under parallel test workers
     const t0 = performance.now();
     for (const [lat, lon] of pts) pick(lat, lon);
     expect(performance.now() - t0).toBeLessThan(200);

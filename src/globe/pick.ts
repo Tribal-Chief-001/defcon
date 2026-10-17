@@ -53,9 +53,16 @@ export function createPicker(topo: Topology): (lat: number, lon: number) => stri
     const polys = g.type === 'Polygon' ? [g.coordinates as Ring[]] : g.type === 'MultiPolygon' ? (g.coordinates as Ring[][]) : [];
     for (const rings of polys) parts.push(buildPart(f.properties.id, rings));
   }
+  // Parts bucketed by latitude band too, so a query only looks at parts that reach its latitude.
+  const byBand: Part[][] = Array.from({ length: BANDS }, () => []);
+  for (const p of parts) {
+    const lo = Math.max(0, Math.floor((p.s + 90) / BAND_DEG));
+    const hi = Math.min(BANDS - 1, Math.floor((p.n + 90) / BAND_DEG));
+    for (let b = lo; b <= hi; b++) byBand[b]!.push(p);
+  }
   return (lat, lon) => {
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
-    for (const p of parts) {
+    for (const p of byBand[Math.min(BANDS - 1, Math.max(0, Math.floor((lat + 90) / BAND_DEG)))] ?? []) {
       if (lat < p.s || lat > p.n || lon < p.w || lon > p.e) continue;
       if (inside(p, lat, lon)) return p.id;
     }
