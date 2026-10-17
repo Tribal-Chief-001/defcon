@@ -8,9 +8,9 @@ Versions actually installed (2026-10-18, from `node_modules`). Choices D-006 (cu
 | Build | vite (with `@vitejs/plugin-react`, `@tailwindcss/vite`) | 8.3.4 |
 | Language | typescript (strict) | 7.0.2 |
 | Styling | tailwindcss | 4.3.3 |
-| Globe | three (own renderer, no map library) |  (range) |
+| Globe | three (own renderer, no map library) | 0.186.1 |
 | State | zustand (installed, used from Plan 2) | 5.0.15 |
-| Geo | d3-geo (tests, helpers) |  (range) |
+| Geo | d3-geo (tests, helpers) | 3.1.1 |
 | Map pipeline | topojson-client 3.1.0, topojson-server 3.0.1, topojson-simplify 3.0.3, shapefile 0.6.6, @turf/union + difference 7.4.0, tsx 4.23.15 | |
 | Tests | vitest 5.0.5, jsdom 30.1.3, @testing-library/react 16.3.3 | |
 | Fonts | @fontsource Syne 5.3.0, Space Grotesk, JetBrains Mono | self-hosted |
