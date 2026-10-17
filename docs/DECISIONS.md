@@ -1,0 +1,24 @@
+# Decision ledger
+
+Newest last. "Who": Owner = the project owner decided; Builder = Claude decided on delegation (owner may overrule).
+
+| ID | Date | Decision | Why | Who |
+|----|------|----------|-----|-----|
+| D-001 | 2026-10-18 | Project is a real-time world conflict/protest 3D globe monitor and a frontend design showcase. | Owner's stated goal; originality and accuracy are equal priorities. | Owner |
+| D-002 | 2026-10-18 | Maps follow India's official perspective: Natural Earth India point-of-view data; no alternative-worldview toggle; no OSM-derived border tiles. | Hard requirement from owner; default basemap data does not match India's official map. | Owner |
+| D-003 | 2026-10-18 | Visual base direction: "Hairline Sonar", plus Long Exposure's time scrubber/heat scars and a faint outline "DEFCON" word. | Owner picked it from three mockups. | Owner |
+| D-004 | 2026-10-18 | All 8 signature interactions are in v1 (Sonar Boot, Pulse Border, Grain=Data, Cursor=Radar, Alliance Arcs, Declassify, Night Watch, World Sound). | Owner: "sab krdo". | Owner |
+| D-005 | 2026-10-18 | Background is true `#000000`, not `#050507`. | Owner asked for AMOLED black; overrides earlier prompt. To be confirmed visually. | Builder |
+| D-006 | 2026-10-18 | Globe is a custom Three.js renderer; app is Vite + React + TypeScript + Zustand + Tailwind. | Custom shaders needed for grain-as-data, ripples, arcs; SPA needs no SSR. | Builder |
+| D-007 | 2026-10-18 | Tension index is Defcon's own and labelled "DEFCON-style", never the official US DEFCON level. | Avoid misleading users. | Builder |
+| D-008 | 2026-10-18 | Live data: as much as legitimately possible, phased P0 seed, P1 GDELT, P2 UCDP/ACLED, P3 optional. Telegram/Liveuamap scraping excluded. | Owner wants maximum live data; scraping carries ToS/legal risk. | Owner (scope), Builder (exclusions) |
+| D-009 | 2026-10-18 | Missing data renders as a redaction bar and says "unavailable"; every field shows source and date. | Honesty rule; owner distrusts unverified claims. | Builder |
+| D-010 | 2026-10-18 | Sound is optional and off by default. | Autoplay audio is hostile; showcase must not surprise badly. | Builder |
+| D-011 | 2026-10-18 | India map authority is the Survey of India's official political map; Natural Earth India file is patched in the build step; EEZ out of scope for v1. | Natural Earth only approximates India's official depiction. To be confirmed by owner. | Builder |
+| D-012 | 2026-10-18 | P0 seed is a frozen snapshot of real historical events (e.g. UCDP GED CSV), labelled "archive"; never invented. | Rich globe from day one, offline fallback, honest. | Builder |
+| D-013 | 2026-10-18 | v1 has no always-on backend: 15-minute scheduled ingestion to static snapshots, client re-checks about every 60 s, UI shows "data as of". SSE deferred. No simulated events. | Simplest honest "live"; GDELT cadence is 15 min. | Builder |
+| D-014 | 2026-10-18 | WebGL2 floor with adaptive quality tiers; phones get a reduced tier, not a static image. | Owner's laptop is the benchmark. | Builder |
+| D-015 | 2026-10-18 | Alliance Arcs second type is "Active disputes" (opposing sides in a named armed-conflict dataset), not "rivals". Owner confirmed: India pairs shown per dataset record, no special treatment. | Avoids editorial opinion; factual and sourced. | Owner |
+| D-017 | 2026-10-18 | Work is split into 5 plans (see ROADMAP.md); Plan 1 = foundation, India map, globe core. | One plan per independent subsystem keeps each testable and reviewable. | Builder |
+| D-018 | 2026-10-18 | Measured on the real Natural Earth 5.1.1 India-POV file (10m): Srinagar, Leh, Gilgit, Muzaffarabad, Skardu, Aksai Chin, Kargil, Tawang, Itanagar fall inside IND; **Shaksgam point (36.2N, 77.0E) falls in CHN**, so a patch is required. 50m and 110m India-POV files do not exist (HTTP 403), so the low-detail layer is derived by simplifying the 10m file. Shaksgam point coordinates still need owner review against the Survey of India map. | Verifies the spec's open item 13; shapes Plan 1 Tasks 3 and 4. | Builder (data check) |
+| D-016 | 2026-10-18 | Design spec approved as written, including all builder's calls (D-005, D-006, D-011 to D-014). | Owner: "Spec approved, plan banao." | Owner |
