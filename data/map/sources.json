@@ -1,0 +1,16 @@
+{
+  "files": [
+    {
+      "name": "ne_10m_admin_0_countries_ind",
+      "url": "https://naciscdn.org/naturalearth/10m/cultural/ne_10m_admin_0_countries_ind.zip",
+      "sha256": "36a54ee97a509325e98eb44fd91bc7e53b0c5139cf10039918042bbd64102192",
+      "neVersion": "5.1.1"
+    },
+    {
+      "name": "ne_10m_populated_places_simple",
+      "url": "https://naciscdn.org/naturalearth/10m/cultural/ne_10m_populated_places_simple.zip",
+      "sha256": "2963ee08f7743f13f37d5243acd77a2f7a510e26a36c7e04b920f1b381f2b251",
+      "neVersion": "5.1.1"
+    }
+  ]
+}

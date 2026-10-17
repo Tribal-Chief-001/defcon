@@ -7,7 +7,8 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "test": "vitest run",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "map:fetch": "tsx scripts/map/fetch.ts"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
