@@ -12,11 +12,13 @@ describe('buildBorderPositions', () => {
     expect(p.length).toBeGreaterThan(0);
     expect(p.length % 6).toBe(0);
     let maxErr = 0;
+    let nan = 0;
     for (let i = 0; i < p.length; i += 3) {
       const len = Math.hypot(p[i]!, p[i + 1]!, p[i + 2]!);
-      expect(Number.isNaN(len)).toBe(false);
-      maxErr = Math.max(maxErr, Math.abs(len - 1));
+      if (Number.isNaN(len)) nan++;
+      else maxErr = Math.max(maxErr, Math.abs(len - 1));
     }
+    expect(nan).toBe(0); // one assertion for the whole array: per-vertex expect() calls were slow enough to time out
     expect(maxErr).toBeLessThan(1e-6);
   });
 

@@ -19,6 +19,7 @@ export type GlobeOptions = {
   high?: Topology;
   reducedMotion: boolean;
   onContextLost?: () => void;
+  onFrame?: (nowMs: number) => void; // dev frame stats
 };
 
 const INK = 0xede9e9; // text bone, #EDEDE9 family
@@ -288,6 +289,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     globe.rotation.set(pitch, yaw, 0, 'XYZ');
     camera.position.z = distance * (camera.aspect < 1 ? 1 / camera.aspect : 1);
     renderer.render(scene, camera);
+    opts.onFrame?.(now);
   };
   const start = () => {
     prev = performance.now();

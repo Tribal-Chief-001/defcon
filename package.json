@@ -10,7 +10,8 @@
     "typecheck": "tsc --noEmit",
     "map:fetch": "tsx scripts/map/fetch.ts",
     "map:build": "tsx scripts/map/build.ts",
-    "map:pin-india": "tsx scripts/map/pin-india.ts"
+    "map:pin-india": "tsx scripts/map/pin-india.ts",
+    "check:budgets": "tsx scripts/check-budgets.ts"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

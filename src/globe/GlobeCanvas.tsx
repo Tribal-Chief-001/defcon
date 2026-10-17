@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Topology } from 'topojson-specification';
+import { installFrameOverlay } from '../dev/frameOverlay';
 import { prefersReducedMotion } from '../lib/motion';
 import { hasWebGL2 } from './capabilities';
 import { createGlobe, type GlobeHandle } from './engine';
@@ -16,6 +17,7 @@ export function GlobeCanvas({ onPick }: { onPick?: (id: string | null, lat: numb
     let cancelled = false;
     let handle: GlobeHandle | undefined;
     let off: (() => void) | undefined;
+    let tick: ((nowMs: number) => void) | undefined;
     (async () => {
       const low = await getJson('/data/borders.low.topo.json');
       if (cancelled || !ref.current) return;
@@ -24,6 +26,7 @@ export function GlobeCanvas({ onPick }: { onPick?: (id: string | null, lat: numb
         low,
         reducedMotion: prefersReducedMotion(),
         onContextLost: () => setSupported(false),
+        onFrame: import.meta.env.DEV ? (tick ??= installFrameOverlay()) : undefined,
       });
       if (onPick) off = handle.onPick(onPick);
       const high = await getJson('/data/borders.high.topo.json');
