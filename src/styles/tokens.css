@@ -1,0 +1,16 @@
+:root {
+  --bg: #000000;
+  --bg-soft: #0A0A0D;
+  --text: #EDEDE9;
+  --text-muted: rgba(237,237,233,.5);
+  --text-faint: rgba(237,237,233,.25);
+  --border: rgba(255,255,255,.08);
+  --border-strong: rgba(255,255,255,.15);
+  --lime: #D6FF57;
+  --orange: #FF4D00;
+  --cyan: #00FFF0;
+  --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  --font-display: 'Syne', sans-serif;
+  --font-body: 'Space Grotesk', sans-serif;
+  --font-mono: 'JetBrains Mono', monospace;
+}
