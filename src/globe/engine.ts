@@ -1,11 +1,9 @@
 import * as THREE from 'three';
 import type { Topology } from 'topojson-specification';
 import { latLonToVec3, vec3ToLatLon } from '../lib/geo';
+import { createBootControl, type BootControl, type BootState } from './boot';
 import { buildBorderPositions, buildCountryPositions } from './borderGeometry';
 import { createPicker } from './pick';
-
-// Stub until Task 9 (Sonar Boot) replaces it with the real control.
-export type BootControl = { skip(): void; readonly done: boolean };
 
 export type GlobeHandle = {
   setHighDetail(topo: Topology): void;
@@ -33,6 +31,7 @@ const MAX_SPIN = 4; // rad/s after a flick
 
 const rimMaterial = () =>
   new THREE.ShaderMaterial({
+    uniforms: { uRim: { value: 0 } },
     vertexShader: `
       varying vec3 vN; varying vec3 vV;
       void main() {
@@ -42,24 +41,29 @@ const rimMaterial = () =>
         gl_Position = projectionMatrix * mv;
       }`,
     fragmentShader: `
+      uniform float uRim;
       varying vec3 vN; varying vec3 vV;
       void main() {
         float f = pow(1.0 - max(dot(normalize(vN), normalize(vV)), 0.0), 3.0);
-        gl_FragColor = vec4(vec3(0.93, 0.93, 0.91) * f * 0.35, 1.0);
+        gl_FragColor = vec4(vec3(0.93, 0.93, 0.91) * f * 0.35 * uRim, 1.0);
       }`,
     polygonOffset: true, // keeps the black sphere just behind the border lines
     polygonOffsetFactor: 1,
     polygonOffsetUnits: 1,
   });
 
-function graticule(stepDeg: number, radius: number): Float32Array {
-  const out: number[] = [];
-  const seg = (a: [number, number, number], b: [number, number, number]) => out.push(...a, ...b);
+// Meridians, the equator and the other parallels are separate objects so the boot can draw them in turn.
+function graticuleParts(stepDeg: number, radius: number) {
+  const meridians: number[] = [];
+  const equator: number[] = [];
+  const parallels: number[] = [];
+  const seg = (out: number[], a: [number, number, number], b: [number, number, number]) => out.push(...a, ...b);
   for (let lon = -180; lon < 180; lon += stepDeg)
-    for (let lat = -90; lat < 90; lat += 3) seg(latLonToVec3(lat, lon, radius), latLonToVec3(lat + 3, lon, radius));
+    for (let lat = -90; lat < 90; lat += 3) seg(meridians, latLonToVec3(lat, lon, radius), latLonToVec3(lat + 3, lon, radius));
   for (let lat = -90 + stepDeg; lat < 90; lat += stepDeg)
-    for (let lon = -180; lon < 180; lon += 3) seg(latLonToVec3(lat, lon, radius), latLonToVec3(lat, lon + 3, radius));
-  return Float32Array.from(out);
+    for (let lon = -180; lon < 180; lon += 3)
+      seg(lat === 0 ? equator : parallels, latLonToVec3(lat, lon, radius), latLonToVec3(lat, lon + 3, radius));
+  return { meridians: Float32Array.from(meridians), equator: Float32Array.from(equator), parallels: Float32Array.from(parallels) };
 }
 
 const lines = (positions: Float32Array, color: number, opacity: number) => {
@@ -79,10 +83,62 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   const globe = new THREE.Group();
   scene.add(globe);
 
-  globe.add(new THREE.Mesh(new THREE.SphereGeometry(0.998, 64, 48), rimMaterial()));
-  globe.add(lines(graticule(30, 1.0), INK, 0.1));
+  const rim = rimMaterial();
+  globe.add(new THREE.Mesh(new THREE.SphereGeometry(0.998, 64, 48), rim));
+  const grat = graticuleParts(30, 1.0);
+  const equator = lines(grat.equator, INK, 0.3);
+  const meridians = lines(grat.meridians, INK, 0.1);
+  const parallels = lines(grat.parallels, INK, 0.1);
+  globe.add(equator, meridians, parallels);
   let borders = lines(buildBorderPositions(opts.low, 1.0), INK, 0.7);
   globe.add(borders);
+
+  // ---- Sonar Boot: a lime point and a ring in front of the globe, then the lines draw in
+  const boot = createBootControl({
+    reducedMotion,
+    now: () => performance.now(),
+    storage: (() => {
+      try {
+        return window.sessionStorage;
+      } catch {
+        return undefined;
+      }
+    })(),
+  });
+  const dotGeo = new THREE.BufferGeometry();
+  dotGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array([0, 0, 1.02]), 3));
+  const dot = new THREE.Points(dotGeo, new THREE.PointsMaterial({ color: LIME, size: 7, sizeAttenuation: false, transparent: true, opacity: 0 }));
+  const ringGeo = new THREE.BufferGeometry();
+  const ringPts: number[] = [];
+  for (let i = 0; i < 128; i++) ringPts.push(Math.cos((i / 128) * Math.PI * 2), Math.sin((i / 128) * Math.PI * 2), 1.02);
+  ringGeo.setAttribute('position', new THREE.BufferAttribute(Float32Array.from(ringPts), 3));
+  const ring = new THREE.LineLoop(ringGeo, new THREE.LineBasicMaterial({ color: LIME, transparent: true, opacity: 0 }));
+  scene.add(dot, ring);
+
+  const reveal = (obj: THREE.LineSegments, p: number) => {
+    const n = obj.geometry.getAttribute('position').count;
+    obj.geometry.setDrawRange(0, Math.floor((n / 2) * p) * 2);
+  };
+  let bordersReveal = 1;
+  let bootApplied = false;
+  const applyBoot = (b: BootState) => {
+    if (bootApplied) return;
+    dot.visible = !b.done;
+    ring.visible = !b.done;
+    (dot.material as THREE.PointsMaterial).opacity = (1 - b.ring) * b.dot;
+    ring.scale.setScalar(0.02 + 1.6 * b.ring);
+    (ring.material as THREE.LineBasicMaterial).opacity = b.ring > 0 ? (1 - b.ring) * 0.9 : 0;
+    rim.uniforms.uRim!.value = b.equator;
+    reveal(equator, b.equator);
+    reveal(meridians, b.meridians);
+    reveal(parallels, b.meridians);
+    bordersReveal = b.borders;
+    reveal(borders, b.borders);
+    if (b.done) bootApplied = true;
+  };
+  applyBoot(boot.state());
+  const skipBoot = () => boot.skip();
+  window.addEventListener('keydown', skipBoot);
   const hover = lines(new Float32Array(0), LIME, 0.5);
   const selected = lines(new Float32Array(0), LIME, 1);
   hover.visible = selected.visible = false;
@@ -145,6 +201,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   let hoverQueued = false;
 
   const onDown = (e: PointerEvent) => {
+    boot.skip();
     dragging = true;
     moved = 0;
     lastX = e.clientX;
@@ -219,8 +276,9 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   const frame = (now: number) => {
     const dt = Math.min(0.05, (now - prev) / 1000);
     prev = now;
+    applyBoot(boot.state());
     if (!dragging) {
-      const idle = now - lastInput > IDLE_BEFORE_SPIN_MS;
+      const idle = boot.done && now - lastInput > IDLE_BEFORE_SPIN_MS;
       yaw += (vYaw + (!reducedMotion && idle ? 0.06 : 0)) * dt;
       pitch = Math.max(-1.45, Math.min(1.45, pitch + vPitch * dt));
       const decay = Math.exp(-dt * 4);
@@ -248,6 +306,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
         borders.geometry.dispose();
         (borders.material as THREE.Material).dispose();
         borders = next;
+        reveal(borders, bordersReveal);
         globe.add(borders);
         later(() => (pick = createPicker(t)));
       });
@@ -259,12 +318,13 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       listeners.add(cb);
       return () => void listeners.delete(cb);
     },
-    boot: { skip() {}, get done() { return true; } },
+    boot,
     dispose() {
       disposed = true;
       timers.forEach((t) => window.clearTimeout(t));
       renderer.setAnimationLoop(null);
       document.removeEventListener('visibilitychange', onVisibility);
+      window.removeEventListener('keydown', skipBoot);
       ro.disconnect();
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointermove', onMove);

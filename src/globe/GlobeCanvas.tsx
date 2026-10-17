@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import type { Topology } from 'topojson-specification';
+import { prefersReducedMotion } from '../lib/motion';
 import { hasWebGL2 } from './capabilities';
 import { createGlobe, type GlobeHandle } from './engine';
 import { Unsupported } from './Unsupported';
@@ -21,7 +22,7 @@ export function GlobeCanvas({ onPick }: { onPick?: (id: string | null, lat: numb
       handle = createGlobe({
         canvas: ref.current,
         low,
-        reducedMotion: window.matchMedia('(prefers-reduced-motion: reduce)').matches,
+        reducedMotion: prefersReducedMotion(),
         onContextLost: () => setSupported(false),
       });
       if (onPick) off = handle.onPick(onPick);
