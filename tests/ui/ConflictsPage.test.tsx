@@ -157,6 +157,17 @@ describe('ConflictsPage', () => {
     expect(document.activeElement).toBe(focusables[0]);
   });
 
+  it('cites both UCDP publications with the DOI and the licence, also on narrow screens', async () => {
+    render(<ConflictsPage {...props()} />);
+    await screen.findByRole('button', { name: /Russia - Ukraine/ });
+    const foot = screen.getByRole('dialog').querySelector('footer')!.textContent ?? '';
+    expect(foot).toMatch(/Davies, Pettersson and Öberg \(2026\)/);
+    expect(foot).toMatch(/10\.1093\/jopres\/xjag046/);
+    expect(foot).toMatch(/Sundberg and Melander \(2013\)/);
+    expect(foot).toMatch(/Hegre.*\(2020\)/);
+    expect(foot).toMatch(/Candidate/);
+  });
+
   it('cites UCDP with its licence', async () => {
     render(<ConflictsPage {...props()} />);
     await screen.findByRole('button', { name: /Russia - Ukraine/ });
@@ -195,7 +206,9 @@ describe('ConflictsPage', () => {
       fireEvent.click(within(world).getByRole('button', { name: /Ukraine/ }));
       expect(p.onDive).toHaveBeenCalledWith('UKR');
       expect(within(world).queryByRole('button', { name: /Atlantis/ })).toBeNull();
-      expect(world.textContent).toMatch(/protest deaths are not counted/i);
+      expect(world.textContent).toMatch(/deaths in protests and riots themselves are not counted/i);
+      expect(world.textContent).toMatch(/killings of protesters .* one-sided/i);
+      expect(world.textContent).toMatch(/protest datasets such as ACLED/i);
       expect(within(world).getByRole('img', { name: /weekly deaths/i })).toBeTruthy();
     });
 
@@ -216,6 +229,34 @@ describe('ConflictsPage', () => {
       expect(sec.textContent).toMatch(/auto-coded/i);
       expect(within(sec).getAllByRole('listitem')).toHaveLength(1); // the protest is not an attack, AAA counts once
       expect(document.body.textContent).not.toMatch(/NaN|undefined/);
+    });
+
+    it('does not show human-coded events as auto-coded news reports', async () => {
+      useEvents.setState({ recent: snap([ev({ country: 'AAA', human: true, source: 'ucdp' })]), status: 'ready' } as never);
+      render(<ConflictsPage {...props({ selected: 'world' })} />);
+      const world = await screen.findByRole('region', { name: /World overview/ });
+      expect(world.textContent).toMatch(/No armed or civilian reports in the last 7 days/i);
+      expect(within(world).queryByRole('list', { name: /newest reports/i })).toBeNull();
+    });
+
+    it('says when the news data is old instead of claiming nothing happened', async () => {
+      const old = NOW - 3 * 86400;
+      const e = encodeSnapshot([ev({ country: 'AAA', timeS: old - 3600 })], { asOfS: old, generatedS: old, sources: [] });
+      useEvents.setState({ recent: decodeSnapshot(e.bin.buffer.slice(e.bin.byteOffset, e.bin.byteOffset + e.bin.byteLength) as ArrayBuffer, e.meta), status: 'ready' } as never);
+      render(<ConflictsPage {...props({ selected: 'world' })} />);
+      const world = await screen.findByRole('region', { name: /World overview/ });
+      expect(world.textContent).toMatch(/news data is from .* not live/i);
+      expect(world.textContent).not.toMatch(/No armed or civilian reports in the last 7 days/i);
+      const sec = await within(world).findByRole('list', { name: /newest reports/i });
+      await waitFor(() => expect(sec.textContent).toMatch(/Aland/));
+    });
+
+    it('shows no old-data notice for fresh news data', async () => {
+      useEvents.setState({ recent: snap([ev({ country: 'AAA' })]), status: 'ready' } as never);
+      render(<ConflictsPage {...props({ selected: 'world' })} />);
+      const world = await screen.findByRole('region', { name: /World overview/ });
+      await within(world).findByRole('list', { name: /newest reports/i });
+      expect(world.textContent).not.toMatch(/not live/i);
     });
 
     it('says so when no reports are loaded or none are attacks', async () => {

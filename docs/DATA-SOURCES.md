@@ -164,7 +164,7 @@ Cadence: the scheduled ingest runs every 3 hours (D-047), so "live" means at mos
 | Built by | `npm run data:conflicts` (`scripts/conflicts/build-conflicts.ts`) from the pinned UCDP files: GED 26.1 and the 2026 candidate releases (run `npm run data:ucdp` first) |
 | Content | UCDP events grouped by `conflict_name`; per conflict: deaths as `best` with the `low`-`high` range for 30, 90 and 365 days, event counts, a trend word, 52 weekly buckets (364 days), the 12 newest events with place, headline and source names, the countries involved |
 | Windows | End at the **data end date** (the latest UCDP event, 2026-08-31 on 2026-10-18), never at today. A conflict is listed with at least 100 deaths in 365 days or 25 in 90 days (101 conflicts). |
-| Trend | Last 30 days against the average 30 days of the 60 days before: rising (>= 1.5x and >= 10 deaths), falling (<= 0.5x and base >= 10), steady, or "low data" (under 10 deaths in the comparison) |
+| Activity trend | **Event counts** (not deaths, so one mass-casualty event cannot flip it): events in the last 30 days against the average 30 days of the 60 days before: rising (>= 1.5x and >= 5 events), falling (<= 0.5x and base >= 5), steady, or "low data" (under 5 events to compare) |
 | Provisional | Rows from candidate files are provisional (UCDP revises them); each event and each conflict carries that flag or share |
 | Unnamed | UCDP candidate files anonymise some actors as `XXX<number>`; those conflicts keep the code in their name next to the main country |
 | Licence | CC BY 4.0 (UCDP); citation text as in the UCDP section above |

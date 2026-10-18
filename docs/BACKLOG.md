@@ -133,3 +133,15 @@ The owner liked World Monitor's Country Instability Index and asked for it to be
 - A real-phone and screen-reader pass of the War tracker (checked at 1440, 1100 and 375 px in headless Chrome only).
 - Name the anonymised UCDP conflicts (`XXX475`) when UCDP publishes their actors.
 
+## Plan 8 review minors (deferred, 2026-10-18)
+
+- Show `provisionalShare` in the conflict detail header (a conflict that is 100 % provisional looks final).
+- Collapse repeated codes in unnamed names ("XXX100 - XXX100 (Colombia)") and cap `place` at about 120 characters with whitespace collapsed; add an ellipsis when a headline is cut and split joined headlines on `;`.
+- Say "no deaths in 90 d, last event <date>" for conflicts with zero 90-day deaths instead of "low data".
+- Treat an unknown `selected` id as null (the World row's `aria-pressed`); use `lg:grid-cols-3` for the cards (three cramped cards between 768 and 900 px, not verified in a browser).
+- Move focus to the detail heading or Back button when a row hides the list on narrow screens; make the World region's name match its heading; the loading text is a `role="status"` rendered at mount.
+- `useDialog` duplicates About's logic; Ctrl+K opens the palette on top of both dialogs.
+- Loader: validate the items of `latest[]`, `world.latest`, `countries[]` and real calendar dates for `dataEnd`; builder: cap `dataEnd` against one bad future date.
+- Plan deviations: list rows have no sparkline or kind chips; `conflicts.json` is not in `scripts/check-budgets.ts`.
+- Clamped ranges understate uncertainty when UCDP's `high` is below `best` (Iran 13,280 shows 13,280-13,280); candidate-month lag may make the newest weeks look low and the chart does not say so.
+

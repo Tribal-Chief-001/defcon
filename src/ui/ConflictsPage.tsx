@@ -82,7 +82,9 @@ function World({ f, onDive, onBack }: { f: ConflictsFile; onDive: (id: string) =
   useEffect(() => {
     loadIndex().then((ix) => setNames(new Map(ix.map((e) => [e.id, e.name]))), () => {});
   }, []);
-  const reports = useMemo(() => (snap ? latestEvents(snap, nowS, 8, { kinds: ['armed', 'civilian'] }) : null), [snap, nowS]);
+  // an old snapshot (the pipeline is down) must not read as "nothing happened": rank relative to its own time and say so
+  const stale = !!snap && nowS - snap.meta.asOfS > 6 * 3600;
+  const reports = useMemo(() => (snap ? latestEvents(snap, stale ? snap.meta.asOfS : nowS, 8, { kinds: ['armed', 'civilian'], human: false }) : null), [snap, nowS, stale]);
   return (
     <section role="region" aria-label="World overview" className="flex min-h-0 flex-col gap-5 overflow-y-auto p-5">
       <button type="button" onClick={onBack} className="self-start font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] hover:text-[var(--lime)] md:hidden">
@@ -127,7 +129,7 @@ function World({ f, onDive, onBack }: { f: ConflictsFile; onDive: (id: string) =
             ))}
           </tbody>
         </table>
-        <p className="mt-3 text-[13px] text-[var(--text-muted)]">Protest deaths are not counted here: UCDP covers organised violence (battles, fighting between groups, attacks on civilians). Protest datasets such as ACLED are not available to this project.</p>
+        <p className="mt-3 text-[13px] text-[var(--text-muted)]">Deaths in protests and riots themselves are not counted: UCDP covers organised violence. Killings of protesters by armed actors do appear, as one-sided violence. Protest datasets such as ACLED are not available to this project.</p>
       </div>
       <div>
         <h4 className={`${label} mb-2`}>Deaths per week, all conflicts</h4>
@@ -153,6 +155,7 @@ function World({ f, onDive, onBack }: { f: ConflictsFile; onDive: (id: string) =
       </div>
       <div>
         <h4 className={`${label} mb-2`}>Newest reports from the news, last 7 days (auto-coded)</h4>
+        {stale && snap ? <p className="mb-2 text-[13px] text-[var(--orange)]">The news data is from {new Date(snap.meta.asOfS * 1000).toISOString().slice(0, 16).replace('T', ' ')} UTC, not live.</p> : null}
         {reports === null ? (
           <p className="text-[14px] text-[var(--text-muted)]">No recent reports loaded.</p>
         ) : reports.length === 0 ? (
@@ -188,7 +191,7 @@ function Detail({ c, f, onDive, onBack }: { c: Conflict; f: ConflictsFile; onDiv
       <div>
         <h3 className="font-[var(--font-display)] text-[30px] font-extrabold leading-tight tracking-tight">{c.name}</h3>
         <p className={`${label} mt-2`}>
-          {c.kinds.map((k) => (k === 'state' ? 'State-based' : k === 'non-state' ? 'Non-state' : 'One-sided')).join(' · ')} · trend <span className={TREND[c.trend]}>{c.trend}</span> · last event {date(c.lastDate)}
+          {c.kinds.map((k) => (k === 'state' ? 'State-based' : k === 'non-state' ? 'Non-state' : 'One-sided')).join(' · ')} · activity trend <span className={TREND[c.trend]}>{c.trend}</span> · last event {date(c.lastDate)}
         </p>
       </div>
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
@@ -318,7 +321,7 @@ export function ConflictsPage({ selected, onSelect, onClose, onDive, load = load
           </div>
         )}
         <footer className="border-t border-[var(--border)] p-4 font-[var(--font-mono)] text-[11.5px] leading-relaxed text-[var(--text-muted)]">
-          Source: UCDP Georeferenced Event Dataset 26.1 and Candidate Events, CC BY 4.0, <a href="https://ucdp.uu.se/" target="_blank" rel="noopener noreferrer" className="underline decoration-[var(--border-strong)] underline-offset-2 hover:text-[var(--lime)]">ucdp.uu.se</a>. Davies, Pettersson and Öberg (2026), Journal of Peace Research. Windows end at the data end date, not today.<span className="hidden md:inline"> A conflict is listed with at least 100 deaths in 365 days or 25 in 90 days.</span>
+          Source: UCDP Georeferenced Event Dataset (GED) 26.1 and UCDP Candidate Events, CC BY 4.0, <a href="https://ucdp.uu.se/" target="_blank" rel="noopener noreferrer" className="underline decoration-[var(--border-strong)] underline-offset-2 hover:text-[var(--lime)]">ucdp.uu.se</a>. Cite: Davies, Pettersson and Öberg (2026), Organized violence 1989–2025, and violent political protests, Journal of Peace Research, doi 10.1093/jopres/xjag046; Sundberg and Melander (2013), Introducing the UCDP Georeferenced Event Dataset, Journal of Peace Research 50(4); Candidate events: Hegre, Croicu, Eck and Högbladh (2020), Research &amp; Politics. Windows end at the data end date, not today.<span className="hidden md:inline"> A conflict is listed with at least 100 deaths in 365 days or 25 in 90 days. The activity trend compares the events of the last 30 days with the average 30 days before.</span>
         </footer>
       </div>
     </div>

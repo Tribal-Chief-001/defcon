@@ -84,3 +84,12 @@ describe('latestEvents with a kind filter', () => {
     expect(latestEvents(s, NOW, 6).map((x) => x.country)).toEqual(['AAA', 'BBB']); // no filter: unchanged behaviour
   });
 });
+
+describe('latestEvents with a human-coded filter', () => {
+  it('keeps only human-coded or only auto-coded events, before taking one per country', () => {
+    const s = snap([ev({ country: 'AAA', human: true, timeS: NOW - 7200 }), ev({ country: 'AAA', human: false, timeS: NOW - 600 }), ev({ country: 'BBB', human: true })]);
+    expect(latestEvents(s, NOW, 6, { human: false }).map((x) => [x.country, x.human])).toEqual([['AAA', false]]);
+    expect(latestEvents(s, NOW, 6, { human: true }).map((x) => x.country)).toEqual(['BBB', 'AAA']);
+  });
+});
+

@@ -86,13 +86,21 @@ describe('conflictsFromRows', () => {
     ]);
   });
 
-  it('classifies the trend without ever dividing by zero', () => {
+  it('classifies the trend by event counts, never dividing by zero', () => {
+    const many = (n: number, ago: number, best = 20) => Array.from({ length: n }, (_, i) => row({ ago: ago + (i % 20), best }));
     const t = (rows: ReturnType<typeof row>[]) => one(rows)[0]!.trend;
-    expect(t([row({ ago: 5, best: 120 }), row({ ago: 40, best: 20 }), row({ ago: 70, best: 20 })])).toBe('rising'); // 120 vs 20 per 30 days
-    expect(t([row({ ago: 5, best: 10 }), row({ ago: 40, best: 200 }), row({ ago: 70, best: 200 })])).toBe('falling');
-    expect(t([row({ ago: 5, best: 100 }), row({ ago: 40, best: 100 }), row({ ago: 70, best: 100 })])).toBe('steady');
-    expect(t([row({ ago: 5, best: 100 })])).toBe('rising'); // base 0, d30 >= 10: rising, not NaN or Infinity
-    expect(t([row({ ago: 120, best: 100 }), row({ ago: 5, best: 3 })])).toBe('low data');
+    expect(t([...many(10, 2), ...many(4, 35)])).toBe('rising'); // 10 events in 30 days against 2 per 30 days before
+    expect(t([...many(2, 2), ...many(20, 35)])).toBe('falling'); // 2 against 10
+    expect(t([...many(6, 2), ...many(12, 35)])).toBe('steady'); // 6 against 6
+    expect(t(many(8, 2))).toBe('rising'); // nothing before: rising, not NaN or Infinity
+    expect(t([...many(3, 2), ...many(7, 150, 30)])).toBe('low data'); // under 5 events to compare
+  });
+
+  it('is not fooled by one huge event: a steady conflict stays steady', () => {
+    const rows = [...Array.from({ length: 8 }, (_, i) => row({ ago: 2 + i, best: 10 })), ...Array.from({ length: 16 }, (_, i) => row({ ago: 35 + i, best: 10 })), row({ ago: 50, best: 5000 })];
+    const [c] = one(rows);
+    expect(c!.deaths.d30.best).toBeLessThan(c!.deaths.d90.best / 3); // deaths alone would say "falling"
+    expect(c!.trend).toBe('steady');
   });
 
   it('builds 52 weekly buckets, oldest first, the last one ending at the data end', () => {

@@ -30,7 +30,7 @@ export type LatestEvent = { index: number; country: string; kind: Kind; severity
 
 // The newest events of the last 7 days, one per country so a busy country does not fill the list; open water, the future and bad
 // coordinates are skipped.
-export function latestEvents(s: Snapshot, nowS: number, n = 6, opts: { kinds?: readonly Kind[] } = {}): LatestEvent[] {
+export function latestEvents(s: Snapshot, nowS: number, n = 6, opts: { kinds?: readonly Kind[]; human?: boolean } = {}): LatestEvent[] {
   const best = new Map<string, LatestEvent>();
   for (let i = 0; i < s.n; i++) {
     const timeS = s.timeS[i]!;
@@ -38,7 +38,7 @@ export function latestEvents(s: Snapshot, nowS: number, n = 6, opts: { kinds?: r
     const lat = s.lat[i]!;
     const lon = s.lon[i]!;
     const kind = KINDS[s.kind[i]!];
-    if (!country || !kind || (opts.kinds && !opts.kinds.includes(kind)) || !Number.isFinite(timeS) || timeS > nowS || timeS < nowS - 7 * DAY || !Number.isFinite(lat) || !Number.isFinite(lon)) continue;
+    if (!country || !kind || (opts.kinds && !opts.kinds.includes(kind)) || (opts.human !== undefined && (s.human[i] === 1) !== opts.human) || !Number.isFinite(timeS) || timeS > nowS || timeS < nowS - 7 * DAY || !Number.isFinite(lat) || !Number.isFinite(lon)) continue;
     const cur = best.get(country);
     if (!cur || timeS > cur.timeS) best.set(country, { index: i, country, kind, severity: s.severity[i]!, human: s.human[i] === 1, timeS, lat, lon });
   }
