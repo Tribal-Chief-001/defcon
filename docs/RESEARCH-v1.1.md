@@ -85,19 +85,20 @@ ACLED = Armed Conflict Location & Event Data: hand-coded, near-real-time events 
 
 **What this means for Defcon.** Showing ACLED events as individual dots in a public, open-source world monitor (which is also a dashboard of conflict events) is very likely **outside** what the licence allows without ACLED's written agreement, and committing per-event ACLED data to the public repo is likely not allowed. What probably fits "transformative" is **aggregates that cannot be reversed into events** (for example counts of events by country or admin-1 unit per month and type, as a heat or intensity layer), with the required citation on the visual. Even that needs API-level access, which a gmail account will not get. **The right first step is to ask ACLED**, explaining the project is non-commercial, open source, shows only aggregates and credits ACLED on the visual. HDX HAPI also exposes conflict-event data (an endpoint named `coordination-context/conflict-events` exists, daily from the changelog), but its source, granularity and licence could not be read (pages returned 403); read its Terms of Use in a browser before planning on it.
 
-## 5b. Priority list (top 11)
+## 5b. Priority list (top 12 after adding the Instability Index)
 
 1. **ACLED**: phase 0 (no code, the owner): email ACLED to ask for access and written permission for an aggregates-only layer; phase 1 (only if the answer is yes): build-time fetch with secrets, monthly aggregates by country/admin-1/event type, a heat/intensity layer with the citation on the visual, no per-event ACLED data in git. If the answer is no: skip, nothing is lost.
-2. **Newer human-coded data** (UCDP candidate releases, CC BY 4.0, clearly allowed): fixes "human-coded 0 %".
-3. **Evidence trail and confidence on every event.**
-4. **Open exports and a free static API** (of our own derived data only, never ACLED event data).
-5. **Moment permalinks and share/screenshot.**
-6. **"How this number is computed" popovers and fairer Hotspots.**
-7. **Human-cost layer** (UNHCR displacement, hunger via HDX).
-8. **South Asia lens MVP** (local-language sources, regional view).
-9. **Indicators desk MVP** (keyless indicators first).
-10. **Radius and watchlist alerts** (no backend).
-11. **Story mode** (week playback with captions, GIF/video export).
+2. **Defcon Instability Index** (flagship, the owner likes World Monitor's CII): an empirical, backtested, all-countries, uncertainty-aware score with separate Risk / Momentum / Activity-now constructs; full design in `docs/INSTABILITY-INDEX.md`. First step is a data and baseline study, not UI.
+3. **Newer human-coded data** (UCDP candidate releases, CC BY 4.0, clearly allowed): fixes "human-coded 0 %" (also an input to the index).
+4. **Evidence trail and confidence on every event.**
+5. **Open exports and a free static API** (of our own derived data only, never ACLED event data).
+6. **Moment permalinks and share/screenshot.**
+7. **"How this number is computed" popovers and fairer Hotspots.**
+8. **Human-cost layer** (UNHCR displacement, hunger via HDX).
+9. **South Asia lens MVP** (local-language sources, regional view).
+10. **Indicators desk MVP** (keyless indicators first).
+11. **Radius and watchlist alerts** (no backend).
+12. **Story mode** (week playback with captions, GIF/video export).
 
 ## 6. Directions (pick one base, borrow from the others)
 
