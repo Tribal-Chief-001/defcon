@@ -12,3 +12,4 @@ The project ledger. Updated in the same change as the work it describes.
 - [Plan 2: events and live data](superpowers/plans/2026-10-18-plan-2-events-live-data.md) (implemented on branch `plan-2-events`).
 - [SEVERITY.md](SEVERITY.md), [TENSION-INDEX.md](TENSION-INDEX.md): Plan 2 scales (provisional, owner reviews).
 - [Plan 3: dossiers and navigation](superpowers/plans/2026-10-18-plan-3-dossiers-navigation.md): per-country dossiers, Country Dive, Ctrl/Cmd-K, capital labels (decisions D-037 to D-040; sources in DATA-SOURCES.md).
+- [Plan 4: signature interactions](superpowers/plans/2026-10-18-plan-4-signature-interactions.md): alliance arcs, time scrubber and Declassify, grain, terminator, radar cursor, pulse border, Night Watch, World Sound (decisions D-042 to D-046).

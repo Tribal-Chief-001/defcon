@@ -51,3 +51,14 @@ Open items found during Plan 1 that were deliberately not fixed. Each is graded 
 - 54 dossiers (for example GRL, ABW, HKG) have no capital: Natural Earth lists those capitals as "Admin-1" places. Nuuk and Oranjestad are not searchable. Palestine's type chip reads "Indeterminate".
 - World Bank area for countries touching India's disputed areas (CHN 9,562,910 km2, PAK 796,100 km2) is the national statistic, not derived from India's depicted borders, while India's own figure is the World Bank's national one too. The Area row's source says so; a note in the dossier is a Plan 6 copy decision.
 - Ids vs ISO3: `#c=` accepts both, but the dossier files and `CountryRow.id` use Natural Earth's ADM0_A3 (SDS for South Sudan, PSX for Palestine).
+
+## Plan 4 deferred (2026-10-18)
+
+- Alliances: add the US bilateral mutual defense treaties (Japan, South Korea, Philippines) and other formal pacts once an official page can be read and cited; SCO/BRICS and similar are not alliances and are excluded by rule.
+- A dispute's conflict name is UCDP's own string (one is the placeholder "XXX2"); a display name table would be nicer.
+- Cursor = Radar and the arcs have no keyboard equivalent (the palette and dossier are the accessible route); Plan 6 accessibility pass.
+- Night Watch place text falls back to the country id when the event shard has no place; the snapshot carries no country names.
+- Grain density is rebuilt on the main thread (about 4 times a second while scrubbing); move to the worker if a phone tier needs it (Plan 6).
+- Sound: arrival pings only fire when a refreshed snapshot arrives (Plan 5 makes that real); no audio test is possible in the in-app browser.
+- The terminator accuracy is about 1 degree; no twilight shading.
+- Dive distance for countries with far-flung territories (France) is large because the bbox includes them.

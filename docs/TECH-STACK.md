@@ -36,8 +36,9 @@ Versions actually installed (2026-10-18, from `node_modules`). Choices D-006 (cu
 
 ## Measured (2026-10-18)
 
-- JS gzip total **216.2 KB** (2026-10-18, after Plan 3) (budget 250 KB). Borders gzip: low **158 KB** (budget 300 KB), high **775 KB** (budget 1 MB). Capitals 15 KB. Budgets are gzip transfer size.
+- JS gzip total **224.8 KB** (2026-10-18, after Plan 4; was 216.2 KB after Plan 3) (budget 250 KB). Borders gzip: low **158 KB** (budget 300 KB), high **775 KB** (budget 1 MB). Capitals 15 KB. Budgets are gzip transfer size.
 - Globe in the in-app browser on Intel UHD (CML GT2), 465x868, DPR 1: **60.2 fps, worst frame 16.8 ms** over 3 s. Not yet measured at full-screen desktop size or on HiDPI.
 - Dev only: press the backtick key to show a frame-time overlay (`src/dev/`); it is tree-shaken from production builds.
 - Machine rule: run one vitest/vite/build process at a time (7.4 GB RAM).
 - Plan 3 sizes: dossier index 9.1 KB gzip (budget 40 KB); 248 dossiers, largest ZAF 4.2 KB raw (budget 6 KB). With 35 capital labels on screen the globe held 60 fps (same in-app browser, 474 px wide).
+- Plan 4: relations.json 1.1 KB gzip (budget 8 KB). In the in-app browser (Intel UHD, 474 px) with grain, terminator, arcs, reticle, pulse and 35 labels active: 60 fps average over 5 s, worst frame 33 ms (one drop); 60 fps with 180 synthetic pointer moves a second and during Play.

@@ -29,6 +29,16 @@ Syne 700/800 (display: tight, `line-height` about .85, outline variant for backg
 - Missing data is shown as a redaction bar and says "unavailable"; every field shows source and date.
 - `prefers-reduced-motion` disables the boot and auto-rotation; sound is off by default.
 
+## Signature features as built (Plan 4)
+
+- **Arcs:** cyan solid to formal allies, orange dashed to active disputes, lifted off the surface, drawn in over 400 ms.
+- **Reticle:** thin cyan ring and four ticks, a mono readout (`28.61N 77.21E // EVENT 12 KM`) with a dark text halo; the system cursor is hidden over the globe for fine pointers only.
+- **Pulse border:** a 1 px baseline with a travelling blip; colour lime to orange only for a comparable tension index.
+- **Grain:** bone speckle that warms to orange where events are dense; still under reduced motion.
+- **Letterbox:** two black bars (12 vh) sliding in with the house easing, cyan mono caption typed at 30 characters a second.
+- **Declassify:** 3 px muted bars under card values that shrink with age; text is always readable.
+- **Terminator:** bone 0.5 opacity great circle, no fill.
+
 ## Chosen direction
 
 "Hairline Sonar": hairline globe, sonar ripples, dashed arcs; plus the time scrubber and fading heat scars from "Long Exposure" and a faint outline "DEFCON" word from "Lightfall". The eight signature interactions are in the spec (section 5); Plan 1 delivers the Sonar Boot.
