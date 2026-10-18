@@ -1,0 +1,107 @@
+import { readFileSync, statSync } from 'node:fs';
+import { gzipSync } from 'node:zlib';
+import { describe, expect, it } from 'vitest';
+import { FEATURES } from '../../scripts/index/model';
+import type { IndicesFile } from '../../src/indices/types';
+
+const PATH = 'public/data/indices.json';
+const f = JSON.parse(readFileSync(PATH, 'utf8')) as IndicesFile;
+const by = new Map(f.countries.map((c) => [c.id, c]));
+
+describe('public/data/indices.json', () => {
+  it('has a valid header, the UCDP country universe and a small size', () => {
+    expect(f.dataEnd).toBe('2026-08-31');
+    expect(f.seriesEnd).toBe('2026-08');
+    expect(f.countries.length).toBeGreaterThanOrEqual(120);
+    expect(new Set(f.countries.map((c) => c.id)).size).toBe(f.countries.length);
+    expect(statSync(PATH).size).toBeLessThan(200_000);
+    expect(gzipSync(readFileSync(PATH)).length).toBeLessThan(60_000);
+    expect(f.world.monthly).toHaveLength(120);
+  });
+
+  it('has a consistent Fatality Index for every country', () => {
+    for (const c of f.countries) {
+      const x = c.fatality;
+      expect(c.id).toMatch(/^[A-Za-z0-9]{3}$/);
+      expect(x.scoreLow, c.id).toBeGreaterThanOrEqual(0);
+      expect(x.scoreLow, c.id).toBeLessThanOrEqual(x.score);
+      expect(x.score, c.id).toBeLessThanOrEqual(x.scoreHigh);
+      expect(x.scoreHigh, c.id).toBeLessThanOrEqual(100);
+      for (const r of [x.deaths90, x.deaths365]) expect(r.low <= r.best && r.best <= r.high && r.low >= 0, c.id).toBe(true);
+      expect(x.deaths90.best, c.id).toBeLessThanOrEqual(x.deaths365.best);
+      expect(x.band, c.id).toBe(x.deaths365.best <= 0 ? 'none' : x.deaths365.best < 25 ? 'minor' : x.deaths365.best < 1000 ? 'active' : 'severe');
+      expect(x.monthly, c.id).toHaveLength(120);
+      expect(x.monthly.every((v) => Number.isFinite(v) && v >= 0)).toBe(true);
+      expect(x.per100k === null || x.per100k >= 0).toBe(true);
+    }
+  });
+
+  it('ranks the countries with deaths in the last 90 days from 1, densely and uniquely', () => {
+    const ranked = f.countries.filter((c) => c.fatality.rank !== null);
+    expect(ranked.every((c) => c.fatality.deaths90.best > 0)).toBe(true);
+    expect(f.countries.filter((c) => c.fatality.deaths90.best > 0).every((c) => c.fatality.rank !== null)).toBe(true);
+    expect(ranked.map((c) => c.fatality.rank!).sort((a, b) => a - b)).toEqual(ranked.map((_, i) => i + 1));
+    const deaths = ranked.sort((a, b) => a.fatality.rank! - b.fatality.rank!).map((c) => c.fatality.deaths90.best);
+    expect(deaths).toEqual([...deaths].sort((a, b) => b - a));
+  });
+
+  it('has probabilities with ordered intervals, rise never above continue, a confidence with a reason and an exactly-named breakdown', () => {
+    let modelled = 0;
+    for (const c of f.countries) {
+      const r = c.risk;
+      if (!r) continue;
+      modelled++;
+      for (const p of [r.continue, r.rise]) {
+        expect(p.lo, c.id).toBeGreaterThanOrEqual(0);
+        expect(p.hi, c.id).toBeLessThanOrEqual(1);
+        expect(p.lo <= p.p + 1e-9 && p.p <= p.hi + 1e-9, `${c.id} ${JSON.stringify(p)}`).toBe(true);
+      }
+      expect(r.continue.p + 1e-9, c.id).toBeGreaterThanOrEqual(r.rise.p);
+      expect(['rising', 'steady', 'falling', 'low data']).toContain(r.momentum.direction);
+      expect(Number.isFinite(r.momentum.value)).toBe(true);
+      expect(['high', 'medium', 'low']).toContain(r.confidence);
+      expect(r.confidenceReason.length).toBeGreaterThan(10);
+      expect(r.why.map((w) => w.label).sort()).toEqual([...FEATURES].sort());
+      expect(r.why.every((w) => Number.isFinite(w.value))).toBe(true);
+      const mags = r.why.map((w) => Math.abs(w.value));
+      expect(mags).toEqual([...mags].sort((a, b) => b - a)); // biggest reason first
+    }
+    expect(modelled).toBeGreaterThan(100);
+  });
+
+  it('puts Ukraine where the data says: severe, the most deadly, very likely to continue', () => {
+    const u = by.get('UKR')!;
+    expect(u.fatality.band).toBe('severe');
+    expect(u.fatality.rank).toBe(1);
+    expect(u.fatality.score).toBeGreaterThan(95);
+    expect(u.risk!.continue.p).toBeGreaterThan(0.9);
+  });
+
+  it('does not model a country UCDP has never recorded: it is absent or has no risk numbers, never a fake "low"', () => {
+    const iceland = by.get('ISL');
+    expect(iceland === undefined || iceland.risk === null).toBe(true);
+  });
+
+  it('does not show an extreme risk the backtest cannot support: no probability of a rise above 75%', () => {
+    for (const c of f.countries) if (c.risk) expect(c.risk.rise.p, c.id).toBeLessThanOrEqual(0.75);
+  });
+
+  it('guards the backtest: the model must keep beating persistence-level discrimination and stay calibrated', () => {
+    const m = f.model;
+    expect(m.rise.auc).toBeGreaterThanOrEqual(0.75);
+    expect(m.continue.auc).toBeGreaterThanOrEqual(0.95);
+    expect(m.rise.brierSkill).toBeGreaterThan(0);
+    expect(m.continue.brierSkill).toBeGreaterThan(0);
+    expect(m.rise.auc).toBeGreaterThan(m.rise.persistenceAuc);
+    for (const t of [m.rise, m.continue]) {
+      expect(t.testRows).toBeGreaterThan(5000);
+      expect(t.bins).toHaveLength(5);
+      expect(t.bins.reduce((s, b) => s + b.n, 0)).toBe(t.testRows);
+      for (const b of t.bins) expect(Math.abs(b.predicted - b.observed), JSON.stringify(b)).toBeLessThanOrEqual(0.12);
+      if (t.tail.n >= 30) expect(Math.abs(t.tail.predicted - t.tail.observed), 'predictions of 30% or more').toBeLessThanOrEqual(0.15); // the tail is where a score can mislead
+    }
+    expect(m.features).toEqual(FEATURES);
+    expect(m.trainedThrough).toBe('2025-09');
+    expect(m.bootstrapReps).toBeGreaterThanOrEqual(100);
+  });
+});

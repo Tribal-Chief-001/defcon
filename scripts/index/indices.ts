@@ -12,7 +12,7 @@ export const dfiScore = (deaths: number): number => (Number.isFinite(deaths) && 
 export const dfiRange = (r: Range) => ({ score: dfiScore(r.best), low: dfiScore(r.low), high: dfiScore(r.high) });
 
 // UCDP's thresholds (25 deaths a year for a minor conflict, 1,000 for a war), applied here to all organised-violence deaths in 365 days
-export const bandOf = (d365: number): Band => (!(d365 > 0) ? 'none' : d365 < 25 ? 'minor' : d365 < 1000 ? 'active' : 'war');
+export const bandOf = (d365: number): Band => (!(d365 > 0) ? 'none' : d365 < 25 ? 'minor' : d365 < 1000 ? 'active' : 'severe');
 
 // the last 30 days against the average 30 days of the 60 before, as a log ratio; under 10 deaths to compare there is no reading
 export function momentumOf(d30: number, d90: number): { value: number; direction: 'rising' | 'steady' | 'falling' | 'low data' } {

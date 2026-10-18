@@ -27,7 +27,7 @@ describe('dfiScore (a log scale: 100 * log10(1 + deaths) / log10(1 + 10000))', (
 });
 
 describe('bandOf (UCDP thresholds on deaths in 365 days)', () => {
-  it.each([[0, 'none'], [1, 'minor'], [24, 'minor'], [25, 'active'], [999, 'active'], [1000, 'war'], [85000, 'war']])('%d -> %s', (d, b) => {
+  it.each([[0, 'none'], [1, 'minor'], [24, 'minor'], [25, 'active'], [999, 'active'], [1000, 'severe'], [85000, 'severe']])('%d -> %s', (d, b) => {
     expect(bandOf(d)).toBe(b);
   });
 });
