@@ -9,6 +9,8 @@ const DATA_BUDGETS: [string, number][] = [
   ['borders.low.topo.json', 300_000],
   ['borders.high.topo.json', 1_000_000],
 ];
+const EVENTS_RECENT = 500_000;
+const EVENTS_TOTAL = 2_000_000;
 const gz = (path: string) => gzipSync(readFileSync(path)).length;
 const kb = (n: number) => `${(n / 1000).toFixed(0)} KB`;
 
@@ -23,6 +25,12 @@ export function checkBudgets(distDir: string, dataDir: string): { ok: boolean; f
     const path = join(dataDir, name);
     if (existsSync(path) && gz(path) > cap) failures.push(`${name} ${kb(gz(path))} gzip exceeds ${kb(cap)}`);
   }
+  const recent = join(dataDir, 'events/recent.bin');
+  const archive = join(dataDir, 'events/archive.bin');
+  const r = existsSync(recent) ? gz(recent) : 0;
+  const a = existsSync(archive) ? gz(archive) : 0;
+  if (r > EVENTS_RECENT) failures.push(`events/recent.bin ${kb(r)} gzip exceeds ${kb(EVENTS_RECENT)}`);
+  if (r + a > EVENTS_TOTAL) failures.push(`events total (recent + archive) ${kb(r + a)} gzip exceeds ${kb(EVENTS_TOTAL)}`);
   return { ok: failures.length === 0, failures };
 }
 

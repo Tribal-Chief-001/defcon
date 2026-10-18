@@ -5,7 +5,7 @@ import { randomBytes } from 'node:crypto';
 import { describe, expect, it } from 'vitest';
 import { checkBudgets } from '../../scripts/check-budgets';
 
-const make = (jsBytes: number, lowBytes = 1000, highBytes = 1000) => {
+const make = (jsBytes: number, lowBytes = 1000, highBytes = 1000, events?: { recent: number; archive: number }) => {
   const root = mkdtempSync(join(tmpdir(), 'budget-'));
   mkdirSync(join(root, 'dist/assets'), { recursive: true });
   mkdirSync(join(root, 'data'), { recursive: true });
@@ -13,6 +13,11 @@ const make = (jsBytes: number, lowBytes = 1000, highBytes = 1000) => {
   writeFileSync(join(root, 'dist/assets/app.js'), randomBytes(jsBytes));
   writeFileSync(join(root, 'data/borders.low.topo.json'), randomBytes(lowBytes));
   writeFileSync(join(root, 'data/borders.high.topo.json'), randomBytes(highBytes));
+  if (events) {
+    mkdirSync(join(root, 'data/events'), { recursive: true });
+    writeFileSync(join(root, 'data/events/recent.bin'), randomBytes(events.recent));
+    writeFileSync(join(root, 'data/events/archive.bin'), randomBytes(events.archive));
+  }
   return [join(root, 'dist'), join(root, 'data')] as const;
 };
 
@@ -34,5 +39,21 @@ describe('checkBudgets', () => {
     const r = checkBudgets(...make(1000, 1000, 1_050_000));
     expect(r.ok).toBe(false);
     expect(r.failures.join(' ')).toMatch(/borders\.high\.topo\.json/);
+  });
+  it('passes when the events snapshots are absent', () => {
+    expect(checkBudgets(...make(1000)).ok).toBe(true);
+  });
+  it('fails when recent.bin exceeds 500 KB gzipped, naming the file', () => {
+    const r = checkBudgets(...make(1000, 1000, 1000, { recent: 600_000, archive: 1000 }));
+    expect(r.ok).toBe(false);
+    expect(r.failures.join(' ')).toMatch(/recent\.bin/);
+  });
+  it('fails when recent plus archive exceed 2 MB gzipped', () => {
+    const r = checkBudgets(...make(1000, 1000, 1000, { recent: 400_000, archive: 1_700_000 }));
+    expect(r.ok).toBe(false);
+    expect(r.failures.join(' ')).toMatch(/events total/i);
+  });
+  it('passes realistic event snapshot sizes', () => {
+    expect(checkBudgets(...make(1000, 1000, 1000, { recent: 300_000, archive: 900_000 })).ok).toBe(true);
   });
 });

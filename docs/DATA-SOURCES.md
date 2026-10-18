@@ -77,3 +77,17 @@ Border build also: rewinds wrongly wound polygons and drops rings that quantizat
 **Filters (`GDELT_FILTER` in `scripts/events/gdelt.ts`; the owner reviews):** drop ActionGeo_Type 0 (no place) and 1 (country centroid); drop empty, non-numeric, out-of-range or exactly (0, 0) coordinates; drop events dated more than 2 days before DATEADDED (about 4% of a sample file, some over a year old); keep only rows with NumSources >= 2 or NumMentions >= 3.
 
 **Known limits (state them in the UI):** auto-coded and noisy (for example code 190 "use conventional military force" is also assigned to statements and rhetoric, so `armed` is the largest GDELT group); geocoding errors are common; no time of day (events are placed at midday UTC); no fatality counts, so severity never exceeds 3; protests come only from here until ACLED is added.
+
+## Event snapshots (derived, generated, gitignored)
+
+Built by `npm run data:build` into `public/data/events/` (not committed; `npm run data:refresh` fetches the newest GDELT files then rebuilds).
+
+| File | Content |
+|------|---------|
+| `recent.bin` + `recent.meta.json` | events of the last 30 days (window ends at build time) |
+| `archive.bin` + `archive.meta.json` | the 335 days before that (older than 365 days is dropped) |
+| `detail/recent/<YYYY-MM-DD>.json`, `detail/archive/<YYYY-MM-DD>.json` | per-day arrays of `{ place, headline, actors, deaths, sources, alsoIds }`, indexed by the snapshot's `detailIdx`; the shard path includes the snapshot name because the boundary day exists in both |
+
+Binary layout: struct-of-arrays (time u32, lat f32, lon f32, detail u32, country u16, kind u8, severity u8, precision u8, human u8), each column padded to 4 bytes, offsets and SHA-256 in the meta file (`src/events/snapshot.ts`, `scripts/events/encode.ts`). `asOfS` is the newest source time (newest GDELT slot). Budgets (gzip): recent <= 500 KB, recent + archive <= 2 MB.
+
+Measured 2026-10-18 (UCDP to 2026-08-31 + 7 days of GDELT): read UCDP 18,064 and GDELT kept 28,092; after merging 24,762 events (UCDP 18,064; GDELT 6,698, a 4.2:1 reduction), by kind armed 19,244, civilian 4,330, protest 1,100, riot 88; 24,275 with a country, 487 in open water or micro-states. `recent` n=6,698, 51 KB gzip; `archive` n=18,064, 120 KB gzip; 9.5 MB on disk with detail shards (326 files); build 26 s, 579 MB peak RSS. As of the newest GDELT slot.

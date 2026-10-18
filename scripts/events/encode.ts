@@ -4,7 +4,7 @@ import { KINDS, type Detail, type Ev } from '../../src/events/types';
 
 export function encodeSnapshot(
   events: Ev[],
-  opts: { asOfS: number; generatedS: number; sources: SnapshotMeta['sources'] },
+  opts: { asOfS: number; generatedS: number; sources: SnapshotMeta['sources']; windowFromS?: number; windowToS?: number },
 ): { bin: Uint8Array; meta: SnapshotMeta; details: Map<string, Detail[]> } {
   const sorted = [...events].sort((a, b) => a.timeS - b.timeS || (a.id < b.id ? -1 : a.id > b.id ? 1 : 0));
   const n = sorted.length;
@@ -44,8 +44,8 @@ export function encodeSnapshot(
     n,
     asOfS: opts.asOfS,
     generatedS: opts.generatedS,
-    windowFromS: n ? sorted[0]!.timeS : opts.asOfS,
-    windowToS: n ? Math.max(sorted[n - 1]!.timeS, opts.asOfS) : opts.asOfS,
+    windowFromS: opts.windowFromS ?? (n ? sorted[0]!.timeS : opts.asOfS),
+    windowToS: opts.windowToS ?? (n ? Math.max(sorted[n - 1]!.timeS, opts.asOfS) : opts.asOfS),
     countries,
     offsets,
     bytes,

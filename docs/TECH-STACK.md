@@ -26,6 +26,10 @@ Versions actually installed (2026-10-18, from `node_modules`). Choices D-006 (cu
 | `npm run check:budgets` | gzip budgets (after a build) |
 | `npm run map:fetch` | download and verify pinned Natural Earth files (`-- --accept-new` re-pins) |
 | `npm run map:build` | build borders (two detail levels), country list, capitals into `public/data/` |
+| `npm run data:ucdp` | download and pin UCDP GED 26.1 + candidate CSVs (`-- --accept-new` re-pins) |
+| `npm run data:gdelt` | cache GDELT 2.0 events (`-- --days N`, default 7) |
+| `npm run data:build` | merge sources, write `public/data/events/` snapshots and detail shards |
+| `npm run data:refresh` | newest 2 days of GDELT, then build |
 | `npm run map:pin-india` | re-pin India's outline hash (owner-approved ledger entry first) |
 
 ## Measured (2026-10-18)

@@ -13,7 +13,9 @@
     "map:pin-india": "tsx scripts/map/pin-india.ts",
     "check:budgets": "tsx scripts/check-budgets.ts",
     "data:ucdp": "tsx scripts/events/fetch-ucdp.ts",
-    "data:gdelt": "tsx scripts/events/fetch-gdelt.ts"
+    "data:gdelt": "tsx scripts/events/fetch-gdelt.ts",
+    "data:build": "tsx scripts/events/build-snapshot.ts",
+    "data:refresh": "tsx scripts/events/fetch-gdelt.ts --days 2 && tsx scripts/events/build-snapshot.ts"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
