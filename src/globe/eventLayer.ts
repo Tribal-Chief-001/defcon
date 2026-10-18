@@ -4,17 +4,18 @@ import type { EventAttrs } from '../events/attributes';
 
 const VERT = `
 attribute vec3 aColor; attribute float aSize; attribute float aAge; attribute float aHollow; attribute float aPhase;
-uniform float uElapsed; uniform float uPx; uniform float uFade;
+uniform float uElapsed; uniform float uPx; uniform float uFade; uniform float uBack;
 varying vec3 vColor; varying float vHollow; varying float vAlpha; varying float vBase; varying float vRip;
 void main() {
-  float age = aAge + uElapsed;
+  float age = aAge + uElapsed - uBack;                                // age at the time-travel playhead
+  float vis = step(0.0, age);                                         // events after the playhead do not exist yet
   float young = 1.0 - smoothstep(5.0 * 3600.0, 6.0 * 3600.0, age);   // ripple only while under 6 h old
   float ph = fract(uElapsed / 2.4 + aPhase);                          // 2.4 s period
   float grow = 1.0 + young * 2.2 * ph;
   vBase = 1.0 / grow;                                                 // base disc radius as a fraction of the sprite
   vRip = young * (1.0 - ph);
   float fade = mix(1.0, 0.35, clamp(age / (30.0 * 86400.0), 0.0, 1.0));
-  vAlpha = fade * mix(1.0, 0.6, aHollow) * uFade;
+  vAlpha = fade * mix(1.0, 0.6, aHollow) * uFade * vis;
   vColor = aColor; vHollow = aHollow;
   gl_PointSize = aSize * uPx * grow;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
@@ -61,7 +62,7 @@ export function createEventLayer() {
     fragmentShader: FRAG,
     transparent: true,
     depthWrite: false,
-    uniforms: { uElapsed: { value: 0 }, uPx: { value: 1 }, uFade: { value: 0 } },
+    uniforms: { uElapsed: { value: 0 }, uPx: { value: 1 }, uFade: { value: 0 }, uBack: { value: 0 } },
   });
   const points = new THREE.Points(new THREE.BufferGeometry(), material);
   points.frustumCulled = false;
@@ -96,6 +97,9 @@ export function createEventLayer() {
       points.geometry = g;
       points.visible = list.some((a) => a.count > 0);
       builtAt = performance.now();
+    },
+    setBack(backS: number) {
+      material.uniforms.uBack!.value = Number.isFinite(backS) ? Math.max(0, backS) : 0;
     },
     setMarker(lat: number | null, lon?: number) {
       if (lat === null || lon === undefined || !Number.isFinite(lat) || !Number.isFinite(lon)) {

@@ -9,6 +9,7 @@ import { createGlobe, type GlobeHandle } from './engine';
 import type { CapitalLabel } from '../ui/CapitalLabels';
 import type { Capital } from './labels';
 import { loadCountries } from '../dossier/load';
+import { useTime } from '../time/store';
 import { loadRelations } from '../relations/load';
 import { Unsupported } from './Unsupported';
 
@@ -48,6 +49,7 @@ export function GlobeCanvas({
     let tick: ((nowMs: number) => void) | undefined;
     let unsubscribe: (() => void) | undefined;
     let offLabels: (() => void) | undefined;
+    let offTime: (() => void) | undefined;
     (async () => {
       const low = await getJson('/data/borders.low.topo.json');
       if (cancelled || !ref.current) return;
@@ -74,6 +76,8 @@ export function GlobeCanvas({
         handle?.setEvents([archive, recent].filter((x) => !!x).map((x) => buildAttributes(x!, 1.004, now)));
       };
       push();
+      handle.setTimeBack(useTime.getState().backS);
+      offTime = useTime.subscribe((st, prev) => st.backS !== prev.backS && handle?.setTimeBack(st.backS));
       unsubscribe = useEvents.subscribe((st, prev) => {
         if (st.recent !== prev.recent || st.archive !== prev.archive) push();
       });
@@ -91,6 +95,7 @@ export function GlobeCanvas({
       cancelled = true;
       off?.();
       offLabels?.();
+      offTime?.();
       unsubscribe?.();
       handleRef.current = undefined;
       handle?.dispose();

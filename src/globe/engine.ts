@@ -20,6 +20,7 @@ export type GlobeHandle = {
   setEventMarker(lat: number | null, lon?: number): void;
   dive(id: string | null, target?: { lat: number; lon: number; distance: number }): void;
   setFraming(x: number, y: number): void;
+  setTimeBack(backS: number): void;
   setCapitals(caps: Capital[]): void;
   setRelations(rel: Relations | null, points: Record<string, { lat: number; lon: number }>): void;
   onLabels(cb: (labels: { id: string; name: string; x: number; y: number }[]) => void): () => void;
@@ -525,6 +526,9 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     },
     setFraming(x, y) {
       frameTarget = { x, y };
+    },
+    setTimeBack(backS) {
+      eventLayer.setBack(backS);
     },
     setRelations(rel, points) {
       relations = rel;
