@@ -5,6 +5,19 @@ import { buildBorderPositions, buildCountryPositions } from '../../src/globe/bor
 import { vec3ToLatLon } from '../../src/lib/geo';
 
 const low = JSON.parse(readFileSync('public/data/borders.low.topo.json', 'utf8')) as Topology;
+const high = JSON.parse(readFileSync('public/data/borders.high.topo.json', 'utf8')) as Topology;
+
+// Natural Earth cuts polygons at lon +-180; those cut edges are not borders and must not be drawn.
+const seamSegments = (p: Float32Array) => {
+  let n = 0;
+  for (let i = 0; i < p.length; i += 6) {
+    const a = vec3ToLatLon(p[i]!, p[i + 1]!, p[i + 2]!);
+    const b = vec3ToLatLon(p[i + 3]!, p[i + 4]!, p[i + 5]!);
+    const onSeam = (x: { lat: number; lon: number }) => Math.abs(x.lon) > 179.999 && Math.abs(x.lat) < 89.999;
+    if (onSeam(a) && onSeam(b) && Math.sign(a.lon) === Math.sign(b.lon)) n++;
+  }
+  return n;
+};
 
 describe('buildBorderPositions', () => {
   it('on the low-detail data: pairs of vertices, no NaN, every vertex on the sphere', () => {
@@ -54,6 +67,23 @@ describe('buildBorderPositions', () => {
     });
     it('returns an empty array for an unknown id', () => {
       expect(buildCountryPositions(low, 'ZZZ', 1).length).toBe(0);
+    });
+  });
+
+  describe('antimeridian seam edges (review finding)', () => {
+    it('drops an arc that runs along lon 180', () => {
+      const seam: Topology = { type: 'Topology', arcs: [[[180, 0], [180, 5], [180, 10]]], objects: { countries: { type: 'LineString', arcs: [0] } } };
+      expect(buildBorderPositions(seam, 1).length).toBe(0);
+    });
+    it('keeps an arc that crosses lon 180', () => {
+      const cross: Topology = { type: 'Topology', arcs: [[[179, 0], [-179, 0]]], objects: { countries: { type: 'LineString', arcs: [0] } } };
+      expect(buildBorderPositions(cross, 1).length).toBeGreaterThan(0);
+    });
+    it('draws no seam segment in the high-detail borders', () => {
+      expect(seamSegments(buildBorderPositions(high, 1))).toBe(0);
+    });
+    it('draws no seam segment in a country outline that touches the antimeridian (Russia)', () => {
+      expect(seamSegments(buildCountryPositions(high, 'RUS', 1))).toBe(0);
     });
   });
 });

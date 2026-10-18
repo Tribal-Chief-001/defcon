@@ -21,9 +21,30 @@ const slerp = (a: V3, b: V3, t: number): V3 => {
   return [k0 * a[0] + k1 * b[0], k0 * a[1] + k1 * b[1], k0 * a[2] + k1 * b[2]];
 };
 
+// Natural Earth cuts polygons at lon +-180. Those cut edges lie on the antimeridian and are not borders
+// (they would be drawn across Chukotka, Fiji, Wrangel Island and Antarctica, twice), so they are removed.
+const SEAM_LON = 179.999;
+const isSeamEdge = (a: number[], b: number[]) =>
+  Math.abs(a[0]!) >= SEAM_LON && Math.abs(b[0]!) >= SEAM_LON && Math.sign(a[0]!) === Math.sign(b[0]!);
+
+function dropSeams(lines: number[][][]): number[][][] {
+  const out: number[][][] = [];
+  for (const line of lines) {
+    let run = [line[0]!];
+    for (let i = 1; i < line.length; i++) {
+      if (isSeamEdge(line[i - 1]!, line[i]!)) {
+        if (run.length > 1) out.push(run);
+        run = [line[i]!];
+      } else run.push(line[i]!);
+    }
+    if (run.length > 1) out.push(run);
+  }
+  return out;
+}
+
 // Vertex pairs for THREE.LineSegments from lon/lat polylines, each cut so no piece exceeds maxSegDeg.
 function linesToSegments(lines: number[][][], radius: number, maxSegDeg: number): Float32Array {
-  const unit = lines.map((line) => line.map(([lon, lat]) => latLonToVec3(lat!, lon!, 1)));
+  const unit = dropSeams(lines).map((line) => line.map(([lon, lat]) => latLonToVec3(lat!, lon!, 1)));
 
   let segs = 0;
   for (const line of unit) for (let i = 0; i + 1 < line.length; i++) segs += pieces(line[i]!, line[i + 1]!, maxSegDeg);

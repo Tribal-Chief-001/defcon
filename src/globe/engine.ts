@@ -3,6 +3,7 @@ import type { Topology } from 'topojson-specification';
 import { latLonToVec3, vec3ToLatLon } from '../lib/geo';
 import { createBootControl, type BootControl, type BootState } from './boot';
 import { buildBorderPositions, buildCountryPositions } from './borderGeometry';
+import { createClickClassifier } from './gesture';
 import { createPicker } from './pick';
 
 export type GlobeHandle = {
@@ -159,7 +160,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   let distance = 3.6;
   let lastInput = performance.now();
   let dragging = false;
-  let moved = 0;
+  const click = createClickClassifier();
   let lastX = 0;
   let lastY = 0;
   let lastT = 0;
@@ -204,7 +205,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   const onDown = (e: PointerEvent) => {
     boot.skip();
     dragging = true;
-    moved = 0;
+    click.down();
     lastX = e.clientX;
     lastY = e.clientY;
     lastT = e.timeStamp;
@@ -220,7 +221,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       const dy = e.clientY - lastY;
       lastX = e.clientX;
       lastY = e.clientY;
-      moved += Math.abs(dx) + Math.abs(dy);
+      click.move(dx, dy);
       const k = (0.004 * (distance - 1)) / 2.6;
       const dtS = Math.max((e.timeStamp - lastT) / 1000, 0.008); // velocity from real event spacing, clamped so a flick cannot spin for minutes
       lastT = e.timeStamp;
@@ -244,10 +245,15 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       canvas.style.cursor = id ? 'pointer' : 'grab';
     });
   };
+  const onCancel = () => {
+    dragging = false;
+    canvas.style.cursor = 'grab';
+    click.cancel();
+  };
   const onUp = (e: PointerEvent) => {
     dragging = false;
     canvas.style.cursor = 'grab';
-    if (moved < 5) {
+    if (click.up()) {
       const ll = latLonAt(e.clientX, e.clientY);
       const id = ll ? pick(ll.lat, ll.lon) : null;
       setOutline(selected, id);
@@ -264,7 +270,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   canvas.addEventListener('pointerdown', onDown);
   canvas.addEventListener('pointermove', onMove);
   canvas.addEventListener('pointerup', onUp);
-  canvas.addEventListener('pointercancel', onUp);
+  canvas.addEventListener('pointercancel', onCancel);
   canvas.addEventListener('wheel', onWheel, { passive: false });
   const onLost = (e: Event) => {
     e.preventDefault();
@@ -331,7 +337,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       canvas.removeEventListener('pointerdown', onDown);
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerup', onUp);
-      canvas.removeEventListener('pointercancel', onUp);
+      canvas.removeEventListener('pointercancel', onCancel);
       canvas.removeEventListener('wheel', onWheel);
       canvas.removeEventListener('webglcontextlost', onLost);
       scene.traverse((o) => {
