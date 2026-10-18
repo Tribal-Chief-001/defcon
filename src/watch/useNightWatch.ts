@@ -55,5 +55,6 @@ export function useNightWatch(base: string, isBlocked: () => boolean) {
     caption: current ? caption({ place, timeS: current.timeS, kind: current.kind }) : '',
     focus: watching && current ? { lat: current.lat, lon: current.lon, distance: 1.9 } : null,
     marker: watching && current ? { lat: current.lat, lon: current.lon } : null,
+    target: watching && current ? { index: current.index, severity: current.severity, lon: current.lon } : null,
   };
 }

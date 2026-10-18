@@ -58,7 +58,7 @@ export function CommandPalette({ onPick, index: given }: { onPick: (id: string) 
         type="button"
         onClick={show}
         aria-keyshortcuts="Control+K Meta+K"
-        className="absolute left-[4vw] top-[4.25rem] flex items-center gap-2 rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)] focus-visible:text-[var(--lime)]"
+        className="flex items-center gap-2 rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)] focus-visible:text-[var(--lime)]"
       >
         Search <span className="text-[var(--text-faint)]">Ctrl K</span>
       </button>

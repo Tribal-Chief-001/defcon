@@ -20,8 +20,10 @@ import { EventCard, type EventInfo } from './ui/EventCard';
 import { NightWatch } from './ui/NightWatch';
 import { Reticle } from './ui/Reticle';
 import { useTime } from './time/store';
+import { useSoundTriggers } from './sound/triggers';
 import { useNightWatch } from './watch/useNightWatch';
 import { Scrubber } from './ui/Scrubber';
+import { SoundToggle } from './ui/SoundToggle';
 
 const BASE = '/data/events';
 const PICK_RADIUS_PX = 14;
@@ -62,6 +64,8 @@ export function App() {
   });
 
   // `key` is a map id or an ISO3 code (SSD for the map's SDS); an id with no country row opens nothing and flies nowhere
+  useSoundTriggers(watch.target);
+
   const startDive = useCallback(async (key: string) => {
     const token = diveToken.current.next();
     latest.current.next(); // a new dive closes any open event card; a click's own event card is set after this
@@ -137,8 +141,10 @@ export function App() {
       <LiveCapitalLabels />
       <Reticle />
       <NightWatch active={watch.active} caption={watch.caption} />
-      <TopBar />
-      <CommandPalette onPick={(id) => void startDive(id)} />
+      <TopBar>
+        <CommandPalette onPick={(id) => void startDive(id)} />
+        <SoundToggle />
+      </TopBar>
       <Coverage />
       <Scrubber />
       {dossierId ? <DossierPanel countryId={dossierId} onClose={exitDive} /> : null}
