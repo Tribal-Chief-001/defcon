@@ -65,6 +65,9 @@ export function GlobeCanvas({
         onFrame: import.meta.env.DEV ? (tick ??= installFrameOverlay()) : undefined,
       });
       handleRef.current = handle;
+      // dev only: ?tier=low|medium|high forces a quality tier (stripped from production builds)
+      const forced = import.meta.env.DEV ? new URLSearchParams(location.search).get('tier') : null;
+      if (forced === 'low' || forced === 'medium' || forced === 'high') handle.setQuality(forced);
       handle.setFraming(framingRef.current?.x ?? 0, framingRef.current?.y ?? 0);
       if (diveRef.current) handle.dive(diveRef.current.id, diveRef.current.target); // a deep link opened before the globe existed
       if (onPick) off = handle.onPick(onPick);

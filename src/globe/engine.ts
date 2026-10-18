@@ -9,6 +9,7 @@ import { buildBorderPositions, buildCountryPositions } from './borderGeometry';
 import type { Relations } from '../relations/types';
 import { createArcLayer } from './arcLayer';
 import { easeDive } from './dive';
+import { TIERS, createQualityGovernor, type Tier } from '../perf/quality';
 import { buildDensity } from './grain';
 import { createGrainLayer } from './grainLayer';
 import { createClickClassifier } from './gesture';
@@ -23,6 +24,7 @@ export type GlobeHandle = {
   setEventMarker(lat: number | null, lon?: number): void;
   dive(id: string | null, target?: { lat: number; lon: number; distance: number }): void;
   setFraming(x: number, y: number): void;
+  setQuality(t: Tier): void;
   setTimeBack(backS: number): void;
   focus(t: { lat: number; lon: number; distance: number } | null): void;
   setSunTime(unixS: number): void;
@@ -42,6 +44,8 @@ export type GlobeOptions = {
   reducedMotion: boolean;
   onContextLost?: () => void;
   onFrame?: (nowMs: number) => void; // dev frame stats
+  startTier?: Tier; // the ceiling for the adaptive quality governor (default high)
+  onTier?: (t: Tier) => void;
 };
 
 const INK = 0xede9e9; // text bone, #EDEDE9 family
@@ -104,7 +108,8 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   const { canvas, reducedMotion } = opts;
   const renderer = new THREE.WebGLRenderer({ canvas, antialias: true, powerPreference: 'high-performance' });
   renderer.setClearColor(0x000000, 1);
-  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  let tierCfg = TIERS[opts.startTier ?? 'high'];
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, tierCfg.pixelRatio));
 
   const scene = new THREE.Scene();
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 50);
@@ -171,6 +176,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   globe.add(eventLayer.points, eventLayer.marker);
   const terminator = createTerminatorLayer();
   globe.add(terminator.object);
+  let sunSet = false;
   // Grain = Data: heat texture rebuilt at most 4 times a second, only when the events or the playhead changed
   const grain = createGrainLayer();
   globe.add(grain.object);
@@ -197,7 +203,8 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   globe.add(hover, selected);
 
   // ---- capital markers: one Points object (thin cyan crosshair), re-selected at most 15 times a second as the view changes
-  const MAX_MARKERS = 40;
+  const MAX_MARKERS = 40; // buffer size; the tier's labelCap may use fewer
+  let labelCap = TIERS[opts.startTier ?? 'high'].labelCap;
   const crosshair = (() => {
     const c = document.createElement('canvas');
     c.width = c.height = 32;
@@ -471,7 +478,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     if (sig === capSig || now - capLastT < 66) return;
     capSig = sig;
     capLastT = now;
-    const chosen = selectCapitals(allCaps, { lat: pitch / D2R, lon: -yaw / D2R, distance }, diveId, MAX_MARKERS);
+    const chosen = selectCapitals(allCaps, { lat: pitch / D2R, lon: -yaw / D2R, distance }, diveId, Math.min(MAX_MARKERS, labelCap));
     shown = chosen.map((c) => {
       v3.set(...latLonToVec3(c.lat, c.lon, 1.004)).applyMatrix4(globe.matrixWorld).project(camera);
       return { c, x: (v3.x * 0.5 + 0.5) * w, y: (-v3.y * 0.5 + 0.5) * h };
@@ -497,6 +504,23 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   // ---- render loop (paused while the tab is hidden)
   let prev = performance.now();
   let fade = 0;
+  // ---- adaptive quality: the governor lowers a tier when frames are slow and recovers after a calm spell
+  const governor = createQualityGovernor({ start: opts.startTier ?? 'high' });
+  let currentTier: Tier = opts.startTier ?? 'high';
+  let locked = false; // set by an explicit setQuality (dev override): the governor stops deciding
+  let prevFrameAt = performance.now();
+  const applyTier = (t: Tier) => {
+    currentTier = t;
+    tierCfg = TIERS[t];
+    renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, tierCfg.pixelRatio));
+    resize();
+    labelCap = tierCfg.labelCap;
+    capSig = '';
+    arcs.setSegments(tierCfg.arcSegments);
+    refreshArcs(true);
+    terminator.object.visible = tierCfg.terminator && sunSet;
+    opts.onTier?.(t);
+  };
   const render = (now: number) => {
     const dt = Math.min(0.05, (now - prev) / 1000);
     prev = now;
@@ -539,12 +563,17 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     camera.position.z = distance * (camera.aspect < 1 ? 1 / camera.aspect : 1);
     if (boot.done) fade = Math.min(1, fade + dt / 1.5); // events fade in over 1.5 s once the boot is done
     eventLayer.update(fade, renderer.getPixelRatio());
-    if (densityDirty && now - densityT > 250) {
+    if (tierCfg.densityHz > 0 && densityDirty && now - densityT > 1000 / tierCfg.densityHz) {
       densityDirty = false;
       densityT = now;
       grain.setDensity(buildDensity(eventAttrs, timeBack));
     }
-    grain.update(now / 1000, fade, reducedMotion);
+    grain.update(now / 1000, fade * tierCfg.grain, reducedMotion);
+    if (!locked) {
+      const next = governor.sample(now - prevFrameAt);
+      if (next !== currentTier) applyTier(next);
+    }
+    prevFrameAt = now;
     arcs.update(now);
     renderer.render(scene, camera);
     updateCapitals(now);
@@ -597,6 +626,12 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     },
     setSunTime(unixS) {
       terminator.update(unixS);
+      sunSet = true;
+      terminator.object.visible = tierCfg.terminator;
+    },
+    setQuality(t) {
+      locked = true;
+      applyTier(t);
     },
     setTimeBack(backS) {
       eventLayer.setBack(backS);

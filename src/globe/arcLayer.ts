@@ -24,6 +24,7 @@ export function createArcLayer(reducedMotion: boolean) {
   group.add(allies, disputes);
   let t0 = 0;
   let progress = 1;
+  let segments = 48;
 
   const fill = (line: THREE.LineSegments, positions: Float32Array) => {
     line.geometry.dispose();
@@ -54,12 +55,16 @@ export function createArcLayer(reducedMotion: boolean) {
         return;
       }
       const r = relationsFor(rel, id);
-      const arcs = (ids: string[]) => ids.flatMap((o) => (points[o] ? [arcPoints(here, points[o]!)] : []));
+      const arcs = (ids: string[]) => ids.flatMap((o) => (points[o] ? [arcPoints(here, points[o]!, segments)] : []));
       fill(allies, cat(arcs(r.allies.map((a) => a.id)).map(solidSegments)));
       fill(disputes, cat(arcs(r.disputes.map((d) => d.id)).map((p) => dashedSegments(p))));
       progress = reducedMotion ? 1 : 0;
       t0 = performance.now();
       draw();
+    },
+    // arc smoothness per quality tier; takes effect on the next show()
+    setSegments(n: number) {
+      segments = Math.max(8, Math.floor(n));
     },
     update(now: number) {
       if (progress >= 1) return;
