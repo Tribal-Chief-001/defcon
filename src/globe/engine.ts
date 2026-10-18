@@ -5,6 +5,7 @@ import type { EventAttrs } from '../events/attributes';
 import { createBootControl, type BootControl, type BootState } from './boot';
 import { createEventLayer } from './eventLayer';
 import { buildBorderPositions, buildCountryPositions } from './borderGeometry';
+import { easeDive } from './dive';
 import { createClickClassifier } from './gesture';
 import { createPicker } from './pick';
 
@@ -14,6 +15,8 @@ export type GlobeHandle = {
   onPick(cb: (id: string | null, lat: number, lon: number, kmPerPx: number) => void): () => void;
   setEvents(list: EventAttrs[]): void;
   setEventMarker(lat: number | null, lon?: number): void;
+  dive(id: string | null, target?: { lat: number; lon: number; distance: number }): void;
+  setFraming(x: number, y: number): void;
   boot: BootControl;
   dispose(): void;
 };
@@ -34,6 +37,10 @@ const MIN_DIST = 1.45;
 const MAX_DIST = 6;
 const IDLE_BEFORE_SPIN_MS = 2500;
 const MAX_SPIN = 4; // rad/s after a flick
+const HOME_DISTANCE = 3.6;
+const DIVE_MS = 1200;
+const D2R = Math.PI / 180;
+const wrapPi = (a: number) => ((((a + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) - Math.PI;
 
 const rimMaterial = () =>
   new THREE.ShaderMaterial({
@@ -171,12 +178,21 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   let lastY = 0;
   let lastT = 0;
 
+  // framing: shifts the whole picture (fractions of the canvas) so a side panel does not cover the globe; eased each frame
+  let frame = { x: 0, y: 0 };
+  let frameTarget = { x: 0, y: 0 };
+  const applyFraming = () => {
+    const w = canvas.clientWidth || 1;
+    const h = canvas.clientHeight || 1;
+    camera.setViewOffset(w, h, -frame.x * w, frame.y * h, w, h);
+    camera.updateProjectionMatrix();
+  };
   const resize = () => {
     const w = canvas.clientWidth || 1;
     const h = canvas.clientHeight || 1;
     renderer.setSize(w, h, false);
     camera.aspect = w / h;
-    camera.updateProjectionMatrix();
+    applyFraming();
   };
   const ro = new ResizeObserver(resize);
   ro.observe(canvas);
@@ -204,12 +220,37 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     return vec3ToLatLon(p.x, p.y, p.z);
   };
 
+  // ---- Country Dive: the camera flies to a country, its outline draws in, the other borders dim
+  type View = { yaw: number; pitch: number; distance: number };
+  let diveId: string | null = null;
+  let anim: { t0: number; from: View; to: View } | null = null;
+  let pendingDive: { id: string | null; target?: { lat: number; lon: number; distance: number } } | null = null;
+  let dimT = 0;
+  let outlineT = 1;
+  const flyTo = (to: View) => {
+    if (reducedMotion) {
+      ({ yaw, pitch, distance } = to);
+      anim = null;
+    } else anim = { t0: performance.now(), from: { yaw, pitch, distance }, to };
+    vYaw = vPitch = 0;
+  };
+  const doDive = (id: string | null, target?: { lat: number; lon: number; distance: number }) => {
+    diveId = id;
+    setOutline(selected, id);
+    if (id === null) return flyTo({ yaw, pitch, distance: HOME_DISTANCE });
+    outlineT = reducedMotion ? 1 : 0;
+    reveal(selected, outlineT);
+    const t = target ?? { lat: pitch / D2R, lon: -yaw / D2R, distance: 2.2 };
+    flyTo({ yaw: yaw + wrapPi(-t.lon * D2R - yaw), pitch: Math.max(-1.45, Math.min(1.45, t.lat * D2R)), distance: Math.max(MIN_DIST, Math.min(MAX_DIST, t.distance)) });
+  };
+
   const listeners = new Set<(id: string | null, lat: number, lon: number, kmPerPx: number) => void>();
   let hoverId: string | null = null;
   let hoverQueued = false;
 
   const onDown = (e: PointerEvent) => {
     boot.skip();
+    anim = null; // the user takes over from a running fly-to
     dragging = true;
     click.down();
     lastX = e.clientX;
@@ -262,7 +303,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     if (click.up()) {
       const ll = latLonAt(e.clientX, e.clientY);
       const id = ll ? pick(ll.lat, ll.lon) : null;
-      setOutline(selected, id);
+      if (!diveId) setOutline(selected, id); // during a dive the outline belongs to the dived country
       // ground distance one screen pixel covers at the front of the globe (6,371 km radius), used to size the event pick radius
       const kmPerPx = ((2 * Math.max(0.05, camera.position.z - 1) * Math.tan((camera.fov * Math.PI) / 360)) / Math.max(1, canvas.clientHeight)) * 6371;
       if (ll) listeners.forEach((cb) => cb(id, ll.lat, ll.lon, kmPerPx));
@@ -270,6 +311,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   };
   const onWheel = (e: WheelEvent) => {
     e.preventDefault();
+    anim = null;
     lastInput = performance.now();
     distance = Math.max(MIN_DIST, Math.min(MAX_DIST, distance * Math.exp(e.deltaY * 0.001)));
   };
@@ -289,12 +331,38 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   // ---- render loop (paused while the tab is hidden)
   let prev = performance.now();
   let fade = 0;
-  const frame = (now: number) => {
+  const render = (now: number) => {
     const dt = Math.min(0.05, (now - prev) / 1000);
     prev = now;
     applyBoot(boot.state());
+    const dx = frameTarget.x - frame.x;
+    const dy = frameTarget.y - frame.y;
+    if (Math.abs(dx) + Math.abs(dy) > 1e-4) {
+      const k = reducedMotion ? 1 : Math.min(1, dt * 5);
+      frame = { x: frame.x + dx * k, y: frame.y + dy * k };
+      applyFraming();
+    }
+    if (pendingDive && boot.done) {
+      const p = pendingDive;
+      pendingDive = null;
+      doDive(p.id, p.target);
+    }
+    if (anim) {
+      const t = (now - anim.t0) / DIVE_MS;
+      const e = easeDive(t);
+      yaw = anim.from.yaw + (anim.to.yaw - anim.from.yaw) * e;
+      pitch = anim.from.pitch + (anim.to.pitch - anim.from.pitch) * e;
+      distance = anim.from.distance + (anim.to.distance - anim.from.distance) * e;
+      if (t >= 1) anim = null;
+    }
+    if (diveId && outlineT < 1) {
+      outlineT = Math.min(1, outlineT + (dt * 1000) / DIVE_MS);
+      reveal(selected, easeDive(outlineT));
+    }
+    dimT += ((diveId ? 1 : 0) - dimT) * Math.min(1, dt * 4);
+    (borders.material as THREE.LineBasicMaterial).opacity = 0.7 - 0.45 * dimT;
     if (!dragging) {
-      const idle = boot.done && now - lastInput > IDLE_BEFORE_SPIN_MS;
+      const idle = boot.done && !diveId && !anim && now - lastInput > IDLE_BEFORE_SPIN_MS;
       yaw += (vYaw + (!reducedMotion && idle ? 0.06 : 0)) * dt;
       pitch = Math.max(-1.45, Math.min(1.45, pitch + vPitch * dt));
       const decay = Math.exp(-dt * 4);
@@ -310,7 +378,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   };
   const start = () => {
     prev = performance.now();
-    renderer.setAnimationLoop(frame);
+    renderer.setAnimationLoop(render);
   };
   const onVisibility = () => (document.hidden ? renderer.setAnimationLoop(null) : start());
   document.addEventListener('visibilitychange', onVisibility);
@@ -342,6 +410,12 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     },
     setEventMarker(lat, lon) {
       eventLayer.setMarker(lat, lon);
+    },
+    setFraming(x, y) {
+      frameTarget = { x, y };
+    },
+    dive(id, target) {
+      pendingDive = { id, target }; // applied in the frame loop once the Sonar Boot is done
     },
     boot,
     dispose() {

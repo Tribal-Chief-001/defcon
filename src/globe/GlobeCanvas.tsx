@@ -17,10 +17,18 @@ const getJson = async (url: string) => {
 export function GlobeCanvas({
   onPick,
   marker,
+  dive,
+  framing,
 }: {
   onPick?: (id: string | null, lat: number, lon: number, kmPerPx: number) => void;
   marker?: { lat: number; lon: number } | null;
+  dive?: { id: string; target: { lat: number; lon: number; distance: number } } | null;
+  framing?: { x: number; y: number };
 }) {
+  const diveRef = useRef(dive);
+  diveRef.current = dive;
+  const framingRef = useRef(framing);
+  framingRef.current = framing;
   const ref = useRef<HTMLCanvasElement>(null);
   const handleRef = useRef<GlobeHandle | undefined>(undefined);
   const [supported, setSupported] = useState(() => hasWebGL2());
@@ -44,6 +52,8 @@ export function GlobeCanvas({
         onFrame: import.meta.env.DEV ? (tick ??= installFrameOverlay()) : undefined,
       });
       handleRef.current = handle;
+      handle.setFraming(framingRef.current?.x ?? 0, framingRef.current?.y ?? 0);
+      if (diveRef.current) handle.dive(diveRef.current.id, diveRef.current.target); // a deep link opened before the globe existed
       if (onPick) off = handle.onPick(onPick);
       const push = () => {
         const { recent, archive } = useEvents.getState();
@@ -73,6 +83,13 @@ export function GlobeCanvas({
     if (marker) handleRef.current?.setEventMarker(marker.lat, marker.lon);
     else handleRef.current?.setEventMarker(null);
   }, [marker]);
+
+  useEffect(() => {
+    handleRef.current?.dive(dive ? dive.id : null, dive?.target);
+  }, [dive]);
+  useEffect(() => {
+    handleRef.current?.setFraming(framing?.x ?? 0, framing?.y ?? 0);
+  }, [framing?.x, framing?.y]);
 
   if (!supported) return <Unsupported />;
   if (failed) return <Unsupported reason="failed" />;

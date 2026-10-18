@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { clearDossierCache, loadDossier, loadIndex } from '../../src/dossier/load';
+import { clearDossierCache, loadCountries, loadDossier, loadIndex } from '../../src/dossier/load';
 
 const dossier = (id: string) => ({ id, name: id, capitals: [], neighbours: [], iso2: null, iso3: null, population: null, un: { value: 'member', source: 's', asOf: 'a' } });
 const reply = (body: unknown, status = 200) =>
@@ -56,5 +56,21 @@ describe('loadIndex', () => {
     expect(await loadIndex((async () => reply({}, 500)) as unknown as typeof fetch)).toEqual([]);
     clearDossierCache();
     expect(await loadIndex((async () => reply('"not an array"')) as unknown as typeof fetch)).toEqual([]);
+  });
+});
+
+describe('loadCountries', () => {
+  it('returns the country rows (with bbox and label point), caches, and [] on failure', async () => {
+    clearDossierCache();
+    let n = 0;
+    const rows = [{ id: 'IND', name: 'India', lat: 22, lon: 79, bbox: [68, 6, 97, 37], hasPolygon: true }];
+    const ok = (async () => (n++, reply(rows))) as unknown as typeof fetch;
+    expect(await loadCountries(ok)).toHaveLength(1);
+    await loadCountries(ok);
+    expect(n).toBe(1);
+    clearDossierCache();
+    expect(await loadCountries((async () => reply({}, 404)) as unknown as typeof fetch)).toEqual([]);
+    clearDossierCache();
+    expect(await loadCountries((async () => { throw new TypeError('offline'); }) as unknown as typeof fetch)).toEqual([]);
   });
 });
