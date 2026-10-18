@@ -50,10 +50,10 @@ function Card({ title, r, events, to }: { title: string; r: Range; events: numbe
 }
 
 // undefined = still loading (nothing shown), null = could not be loaded
-function Timeline({ tl, rows, showTheatre, limit }: { tl: TimelineFile | null | undefined; rows: TimelineRow[]; showTheatre?: boolean; limit?: number }) {
+function Timeline({ tl, rows, showTheatre, limit, notes }: { tl: TimelineFile | null | undefined; rows: TimelineRow[]; showTheatre?: boolean; limit?: number; notes?: string[] }) {
   if (tl === undefined) return null;
   if (tl === null) return <p className="text-[14px] text-[var(--text-muted)]">Timeline unavailable.</p>;
-  return <TimelineBlock rows={rows} checkedAt={tl.checkedAt} showTheatre={showTheatre} limit={limit} />;
+  return <TimelineBlock rows={rows} checkedAt={tl.checkedAt} showTheatre={showTheatre} limit={limit} limits={tl.limits} notes={notes} />;
 }
 
 function EventList({ events }: { events: ConflictEvent[] }) {
@@ -161,7 +161,7 @@ function World({ f, tl, onDive, onBack }: { f: ConflictsFile; tl: TimelineFile |
           ))}
         </ul>
       </div>
-      <Timeline tl={tl} rows={rows} showTheatre limit={8} />
+      <Timeline tl={tl} rows={rows} showTheatre limit={8} notes={(tl?.theatres ?? []).flatMap((t) => (t.note ? [`${t.title}: ${t.note}`] : []))} />
       <div>
         <h4 className={`${label} mb-2`}>Newest reports from the news, last 7 days (auto-coded)</h4>
         {stale && snap ? <p className="mb-2 text-[13px] text-[var(--orange)]">The news data is from {new Date(snap.meta.asOfS * 1000).toISOString().slice(0, 16).replace('T', ' ')} UTC, not live.</p> : null}
@@ -192,7 +192,8 @@ function World({ f, tl, onDive, onBack }: { f: ConflictsFile; tl: TimelineFile |
 }
 
 function Detail({ c, f, tl, onDive, onBack }: { c: Conflict; f: ConflictsFile; tl: TimelineFile | null | undefined; onDive: (id: string) => void; onBack: () => void }) {
-  const rows: TimelineRow[] = (tl?.theatres ?? []).filter((t) => t.conflicts.includes(c.id)).flatMap((t) => t.entries.map((entry) => ({ entry, theatre: t.title })));
+  const mine = (tl?.theatres ?? []).filter((t) => t.conflicts.includes(c.id));
+  const rows: TimelineRow[] = mine.flatMap((t) => t.entries.map((entry) => ({ entry, theatre: t.title })));
   return (
     <section role="region" aria-label={c.name} className="flex min-h-0 flex-col gap-5 overflow-y-auto p-5">
       <button type="button" onClick={onBack} className="self-start font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] hover:text-[var(--lime)] md:hidden">
@@ -213,7 +214,7 @@ function Detail({ c, f, tl, onDive, onBack }: { c: Conflict; f: ConflictsFile; t
         <h4 className={`${label} mb-2`}>Deaths per week</h4>
         <Weekly weekly={c.weekly} dataEnd={f.dataEnd} />
       </div>
-      {tl === null || rows.length > 0 ? <Timeline tl={tl} rows={rows} /> : null}
+      {tl === null || rows.length > 0 ? <Timeline tl={tl} rows={rows} notes={mine.flatMap((t) => (t.note ? [t.note] : []))} /> : null}
       <div>
         <h4 className={`${label} mb-2`}>Countries in the data</h4>
         <ul className="flex flex-wrap gap-2">

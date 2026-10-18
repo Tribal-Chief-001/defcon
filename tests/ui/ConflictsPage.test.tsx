@@ -276,6 +276,8 @@ describe('ConflictsPage', () => {
       const detail = await screen.findByRole('region', { name: /Russia - Ukraine/ });
       const tl = await within(detail).findByRole('region', { name: /key events/i });
       expect(tl.textContent).toMatch(/Talks stall/);
+      expect(tl.textContent).toMatch(/A note about the front line/); // the theatre's note and the file's limits are shown
+      expect(tl.textContent).toMatch(/Sources are mostly/);
       expect(tl.textContent).not.toMatch(/Strikes despite ceasefire/); // another theatre
     });
     it('shows the newest key events of all theatres, with the theatre, on the World overview', async () => {

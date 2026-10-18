@@ -30,4 +30,10 @@ describe('public/data/timeline.json', () => {
       expect(e.title).not.toMatch(/[<>]/);
     }
   });
+
+  it('keeps casualty claims out of titles in the site\'s own voice, and shows its limits', () => {
+    for (const t of file.theatres) for (const e of t.entries) expect(e.title, `${t.key} ${e.date}`).not.toMatch(/\bkills\b/i);
+    expect(file.limits).toMatch(/Reuters/);
+    for (const t of file.theatres) expect(t.note?.length ?? 0, t.key).toBeGreaterThan(20);
+  });
 });

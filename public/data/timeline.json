@@ -1,6 +1,7 @@
 {
  "generated": "2026-10-18",
  "checkedAt": "2026-10-18",
+ "limits": "Sources are mostly Al Jazeera, Times of Israel, Kyiv Independent, France 24 (AFP) and CBS News; Reuters, AP, BBC and the Guardian could not be read, and AFP-based pieces are not fully independent of other wire reports.",
  "theatres": [
   {
    "key": "iran-war",
@@ -11,7 +12,7 @@
    "entries": [
     {
      "date": "2026-01-08",
-     "title": "Iran's crackdown on protests: internet cut, thousands reported killed",
+     "title": "Iran's crackdown on protests: internet cut, thousands reported dead",
      "summary": "After protests that began in late December, France 24 reported a near-total internet blackout from 8 January. Rights groups accuse security forces of killing many protesters; Iranian state TV gave 3,117 dead and HRANA counted over 4,500. All tolls are unverified.",
      "status": "confirmed",
      "sources": [
@@ -275,8 +276,8 @@
     {
      "date": "2026-10-14",
      "title": "Attacks on Hormuz shipping rise while US-Iran talks stall",
-     "summary": "Al Jazeera, citing UKMTO, reported 15 attacks on shipping in Hormuz between 6 and 14 October and said Iran called the US response insufficient. CBS gave a different attack count and said indirect talks continued. The US blockade continues.",
-     "status": "confirmed",
+     "summary": "Al Jazeera, citing UKMTO, reported 15 attacks on shipping in Hormuz between 6 and 14 October and said Iran called the US response insufficient. CBS gave different attack counts (at least 10 vessels in a week, 23 attacks in the month) and said indirect talks continued.",
+     "status": "reported",
      "sources": [
       {
        "outlet": "Al Jazeera",
@@ -294,7 +295,8 @@
       }
      ]
     }
-   ]
+   ],
+   "note": "Includes the Houthi advance on the Red Sea coast, which is not part of the UCDP Iran conflict shown here."
   },
   {
    "key": "israel-lebanon",
@@ -393,9 +395,9 @@
     },
     {
      "date": "2026-06-01",
-     "title": "Israel threatens Beirut after seizing Beaufort; Trump announces a halt that Israel disputes",
-     "summary": "Al Jazeera reported Israeli forces took Beaufort Castle on 31 May. Netanyahu's office said Israel would strike Beirut if Hezbollah kept attacking (France 24, Times of Israel). Trump said Israel and Hezbollah had agreed to stop fighting; Israel disputed that, and fighting went on.",
-     "status": "disputed",
+     "title": "Israel threatens Beirut after seizing Beaufort; Trump announces a halt to the fighting",
+     "summary": "Al Jazeera reported Israeli forces took Beaufort Castle on 31 May. Trump said Israel and Hezbollah had agreed to stop fighting; Netanyahu's office said Israel would still strike Beirut if Hezbollah kept attacking (France 24, Times of Israel), while IDF sources said no troops were headed there (Times of Israel).",
+     "status": "reported",
      "sources": [
       {
        "outlet": "Al Jazeera",
@@ -510,7 +512,7 @@
     },
     {
      "date": "2026-09-07",
-     "title": "Israeli strikes in Kfar Rumman kill at least 11 as the ceasefire frays",
+     "title": "Israeli strikes in Kfar Rumman; Lebanese officials report at least 11 dead",
      "summary": "Times of Israel, citing Lebanon's state news agency, reported 11 killed in Kfar Rumman; France 24 reported 13 killed according to the health ministry, 12 of them in Kfar Rumman. The Israeli military said it hit Hezbollah operatives moving weapons and was looking into reports that civilians were harmed.",
      "status": "confirmed",
      "sources": [
@@ -532,7 +534,7 @@
     },
     {
      "date": "2026-10-14",
-     "title": "Israel holds a 10 km Yellow Line zone, keeps demolishing villages",
+     "title": "Al Jazeera: Israel still holds a zone in southern Lebanon, with village demolitions",
      "summary": "Al Jazeera reported Israel still occupies a zone up to about 10 km deep in southern Lebanon despite the June framework, with demolitions in around 50 frontline villages, and that Defence Minister Katz has said troops will not withdraw.",
      "status": "reported",
      "sources": [
@@ -545,7 +547,8 @@
       }
      ]
     }
-   ]
+   ],
+   "note": "Strikes on Beirut in 2026 are in the March, April and June entries; no verified Beirut strikes were found for September and October."
   },
   {
    "key": "russia-ukraine",
@@ -651,8 +654,8 @@
     },
     {
      "date": "2026-07-02",
-     "title": "Record ballistic barrage on Kyiv kills at least 30",
-     "summary": "Russia struck Kyiv with a record ballistic barrage. Al Jazeera, citing authorities, reported at least 30 dead; Kyiv Independent reported a final toll of 31 dead and 102 injured per the State Emergency Service, with an Air Force spokesman saying 28 missiles were ballistic. Mayor Klitschko declared 3 July a day of mourning.",
+     "title": "Large Russian barrage on Kyiv; authorities report at least 30 dead",
+     "summary": "Russia struck Kyiv with a large barrage. Al Jazeera, citing authorities, reported at least 30 dead; Kyiv Independent reported a final toll of 31 dead and 102 injured per the State Emergency Service, and an Air Force spokesman saying 28 missiles were ballistic, a record for the capital. Mayor Klitschko declared 3 July a day of mourning.",
      "status": "confirmed",
      "sources": [
       {
@@ -695,7 +698,7 @@
     },
     {
      "date": "2026-09-05",
-     "title": "US envoys meet Putin, then visit Kyiv; capitals spared for three days",
+     "title": "US envoys meet Putin, then visit Kyiv",
      "summary": "US envoys Witkoff and Kushner met Putin in Moscow on 5 September and reached Kyiv on 6 September. Al Jazeera: Russia and Ukraine pledged not to strike each other's capitals for three days. Kyiv Independent: the main result was agreement to resume trilateral talks, while Moscow still insisted Ukraine leave Donbas.",
      "status": "confirmed",
      "sources": [
@@ -739,7 +742,7 @@
     },
     {
      "date": "2026-09-20",
-     "title": "Huge Ukrainian drone attack on the Moscow area hits a refinery on election day",
+     "title": "Large Ukrainian drone attack on the Moscow area on election day; a refinery reported hit",
      "summary": "Ukraine launched a large drone attack on the Moscow area on Duma election day. The mayor said over 1,600 drones were shot down (unverified, Kyiv Independent); the governor reported two deaths and Al Jazeera added a third later died. Ukraine's General Staff and Zelensky said the Kapotnya refinery was hit and set ablaze (Kyiv Independent).",
      "status": "confirmed",
      "sources": [
@@ -761,7 +764,7 @@
     },
     {
      "date": "2026-10-08",
-     "title": "Glide bomb strike on minibuses in Kramatorsk kills at least 30",
+     "title": "Glide bomb strike on minibuses in Kramatorsk; officials report at least 30 dead",
      "summary": "A glide bomb struck minibuses in Kramatorsk. Ukraine's State Emergency Service reported 33 dead (Kyiv Independent); Al Jazeera, citing regional authorities, reported at least 30.",
      "status": "confirmed",
      "sources": [
@@ -833,7 +836,7 @@
      ]
     }
    ],
-   "note": "Front-line changes such as Pokrovsk, Myrnohrad, Huliaipole and Kupiansk are not listed: two readable independent sources could not be found for 2026."
+   "note": "Front-line changes such as Pokrovsk, Myrnohrad, Huliaipole and Kupiansk are not listed, so this is not the full picture of the front: two readable independent sources could not be found for 2026."
   },
   {
    "key": "israel-gaza",
@@ -888,9 +891,9 @@
     },
     {
      "date": "2026-01-31",
-     "title": "Wave of Israeli strikes kills over 30 after Rafah tunnel incident",
+     "title": "Israeli strikes across Gaza after a Rafah tunnel incident; at least 31 reported dead",
      "summary": "Strikes across Gaza killed at least 31 (Al Jazeera) to 32 (Hamas civil defence, per Times of Israel). The IDF said it targeted commanders after eight fighters emerged from a Rafah tunnel in a ceasefire breach, which Al Jazeera noted is unconfirmed; Hamas rejected Israel's claims.",
-     "status": "confirmed",
+     "status": "disputed",
      "sources": [
       {
        "outlet": "Times of Israel",
@@ -1042,7 +1045,7 @@
     },
     {
      "date": "2026-09-29",
-     "title": "Settlers torch homes in Jalud as displaced family tries to return",
+     "title": "Settler riot in Jalud blocks a displaced family's court-ordered return",
      "summary": "The Israeli military said over 100 settlers rioted in Jalud near Nablus, blocking a displaced family's court-ordered return; Al Jazeera, citing local sources, reported homes burned. Times of Israel quoted Defence Minister Katz condemning it. Al Jazeera, citing UN OCHA, reported over 1,330 settler attacks from January to late July.",
      "status": "confirmed",
      "sources": [
@@ -1064,7 +1067,7 @@
     },
     {
      "date": "2026-10-14",
-     "title": "Israel halts commercial goods into Gaza, blaming Hamas fees",
+     "title": "Israel's COGAT says commercial goods stopped entering Gaza over a fee dispute",
      "summary": "Israel's COGAT said no commercial goods entered Gaza for two days, citing merchants' reaction to a 10,000-shekel fee per truck that it attributed to Hamas. Hamas denied imposing taxes; Times of Israel reported the truckers' union head said Hamas's Economy Ministry asked merchants for the amount, which the ministry called a donation.",
      "status": "disputed",
      "sources": [
@@ -1085,7 +1088,7 @@
      ]
     }
    ],
-   "note": "The ceasefire in effect since 10 October 2025 is fragile; phase two was declared on 14 January 2026 but disarmament versus withdrawal is unresolved."
+   "note": "Covers 2026 only. The ceasefire reportedly in effect since 10 October 2025 is not an entry, and the entries show it was repeatedly violated."
   }
  ]
 }

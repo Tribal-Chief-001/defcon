@@ -7,7 +7,7 @@ const label = 'font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.18em]
 
 // Key events curated from news sources, newest first. Each entry shows its status and links its sources; the legend says what the
 // statuses mean and when the list was last checked, so it is never read as live.
-export function TimelineBlock({ rows, checkedAt, showTheatre = false, limit }: { rows: TimelineRow[]; checkedAt: string; showTheatre?: boolean; limit?: number }) {
+export function TimelineBlock({ rows, checkedAt, showTheatre = false, limit, limits, notes = [] }: { rows: TimelineRow[]; checkedAt: string; showTheatre?: boolean; limit?: number; limits?: string; notes?: string[] }) {
   if (rows.length === 0) return null;
   const sorted = rows
     .map((r, i) => ({ r, i }))
@@ -18,8 +18,14 @@ export function TimelineBlock({ rows, checkedAt, showTheatre = false, limit }: {
     <section role="region" aria-label="Key events, sourced">
       <h4 className={`${label} mb-1`}>Key events (sourced)</h4>
       <p className="mb-2 text-[13px] text-[var(--text-muted)]">
-        Checked {fmtDate(checkedAt)}. Confirmed: two independent sources agree. Reported: one source. Disputed: sources or parties differ. Curated from news reports, not from UCDP.
+        Checked {fmtDate(checkedAt)}. Confirmed: two independent outlets report the event. Reported: one source. Disputed: sources or parties differ. Figures and claims are attributed to whoever made them and are not verified. Curated from news reports, not from UCDP.
       </p>
+      {limits ? <p className="mb-2 text-[13px] text-[var(--text-muted)]">{limits}</p> : null}
+      {notes.map((n) => (
+        <p key={n} className="mb-2 text-[13px] text-[var(--text-muted)]">
+          {n}
+        </p>
+      ))}
       <ul aria-label="Key events" className="flex flex-col">
         {sorted.map(({ entry: e, theatre }) => (
           <li key={`${e.date}-${e.title}`} className="grid gap-1 border-t border-[var(--border)] py-3 text-[14px]">
@@ -34,7 +40,7 @@ export function TimelineBlock({ rows, checkedAt, showTheatre = false, limit }: {
               {e.sources.map((s, i) => (
                 <span key={s.url}>
                   {i > 0 ? ', ' : ''}
-                  <a href={s.url} target="_blank" rel="noopener noreferrer" className="underline decoration-[var(--border-strong)] underline-offset-2 hover:text-[var(--lime)]">
+                  <a href={s.url} target="_blank" rel="noopener noreferrer" aria-label={`${s.outlet}: ${s.title} (opens in a new tab)`} className="underline decoration-[var(--border-strong)] underline-offset-2 hover:text-[var(--lime)]">
                     {s.outlet}
                   </a>
                 </span>

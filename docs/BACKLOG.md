@@ -154,3 +154,11 @@ The owner liked World Monitor's Country Instability Index and asked for it to be
 - Per-theatre `note` (data limits) is stored in the file but not displayed yet.
 - A shared "independence" check beyond registrable domains (two AFP-based pieces count as two).
 
+## Plan 9 review minors (deferred, 2026-10-18)
+
+- Validator: `isDate` throws a RangeError on month 13 or 00 instead of returning false (add tests); `registrable()` lacks more two-level suffixes (com.ua, gov.il, gov.uk, ac.uk, co.jp), a trailing-dot host breaks it, and the same organisation under different domains (bbc.com / bbc.co.uk, aljazeera.com / .net, apnews.com / ap.org) is only caught by the outlet name; it does not check the 10-quoted-words rule.
+- Loader: an empty `sources`, an empty `summary` or non-string `conflicts` items pass; "Timeline unavailable." shows on every conflict when the file cannot be loaded (also those no theatre covers).
+- TimelineBlock: `role="region"` on a section is redundant; the list key `date-title` could collide across theatres in the World feed; tests missing for the "newest 8" default and the loading state.
+- Data details: the Houthi coast entry sits in the Iran theatre; "with Iran's help" in Lebanon 19 June is a US official's statement; some entries have `published` dates earlier than later updates of the page; some URLs are `/amp/` or non-canonical; Ukraine 11 October is dated by the event but its sources are from 15 October; headline asymmetry between Russian and Ukrainian strikes was reduced, not removed.
+- Replace the live-blog sources (CBS, Times of Israel) with dated articles when a human can read them.
+

@@ -22,7 +22,8 @@ describe('TimelineBlock', () => {
     render(<TimelineBlock rows={rows()} checkedAt="2026-10-18" />);
     const t = screen.getByRole('region', { name: /key events/i }).textContent ?? '';
     expect(t).toMatch(/checked 18 Oct 2026/i);
-    expect(t).toMatch(/confirmed.*two independent sources/i);
+    expect(t).toMatch(/confirmed.*two independent outlets report the event/i);
+    expect(t).toMatch(/not verified/i); // figures and claims are attributed, not verified
     expect(t).toMatch(/reported.*one source/i);
     expect(t).toMatch(/disputed/i);
   });
@@ -56,5 +57,16 @@ describe('TimelineBlock', () => {
   it('renders nothing for no rows', () => {
     const { container } = render(<TimelineBlock rows={[]} checkedAt="2026-10-18" />);
     expect(container.textContent).toBe('');
+  });
+
+  it('shows the data limits and the notes of the theatres on the page', () => {
+    render(<TimelineBlock rows={rows()} checkedAt="2026-10-18" limits="Mostly Al Jazeera and Times of Israel." notes={['Front-line changes are not listed.']} />);
+    const t = screen.getByRole('region', { name: /key events/i }).textContent ?? '';
+    expect(t).toMatch(/Mostly Al Jazeera and Times of Israel\./);
+    expect(t).toMatch(/Front-line changes are not listed\./);
+  });
+  it('gives each source link a name that says what it is and that it opens a new tab', () => {
+    render(<TimelineBlock rows={rows()} checkedAt="2026-10-18" />);
+    expect(screen.getByRole('link', { name: /Reuters: Kyiv hit .*new tab/i })).toBeTruthy();
   });
 });
