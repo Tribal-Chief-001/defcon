@@ -2,21 +2,14 @@
 // Usage: npm run data:relations      (after npm run data:ucdp)
 import { createReadStream, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
 import { parse } from 'csv-parse';
-import { normalise } from '../../src/dossier/search';
 import type { Alliance, Relations } from '../../src/relations/types';
 import { disputesFromGed } from './disputes';
+import { resolveGw } from './gw-ids';
 
-// Gleditsch-Ward numbers that never appear as a GED location, plus names that differ from Natural Earth's.
 // a single GED row is not an "active dispute": at least this many state-vs-state events in the window
 const MIN_DISPUTE_EVENTS = 3;
-const GW_EXTRA: Record<string, string> = { '2': 'USA' };
-const NAME_ALIAS: Record<string, string> = Object.fromEntries(
-  Object.entries({ 'DR Congo (Zaire)': 'COD', 'Myanmar (Burma)': 'MMR', 'Russia (Soviet Union)': 'RUS', 'Cambodia (Kampuchea)': 'KHM', 'Yemen (North Yemen)': 'YEM', 'South Sudan': 'SDS', 'United States of America': 'USA' }).map(([k, v]) => [normalise(k), v]),
-);
-
 async function main() {
   const countries = JSON.parse(readFileSync('public/data/countries.json', 'utf8')) as { id: string; name: string }[];
-  const idByName = new Map(countries.map((c) => [normalise(c.name), c.id]));
   const manifest = JSON.parse(readFileSync('data/events/sources.json', 'utf8')) as { ucdp: { csv: string }[] };
   const rows: Record<string, string>[] = [];
   const gwNames = new Map<string, string>();
@@ -29,14 +22,9 @@ async function main() {
       if (r.type_of_violence === '1' && r.gwnoa && r.gwnob) rows.push(r);
     }
   }
-  const gwToId: Record<string, string> = { ...GW_EXTRA };
-  const unresolved: string[] = [];
-  for (const [gw, name] of gwNames) {
-    const id = NAME_ALIAS[normalise(name)] ?? idByName.get(normalise(name));
-    if (id) gwToId[gw] = id;
-    else if (rows.some((r) => r.gwnoa === gw || r.gwnob === gw)) unresolved.push(`${gw} ${name}`);
-  }
-  if (unresolved.length) throw new Error(`Gleditsch-Ward numbers without a Natural Earth id: ${unresolved.join(', ')} (add to NAME_ALIAS)`);
+  const { gwToId, unmapped } = resolveGw(gwNames, countries);
+  const unresolved = unmapped.filter(({ gw }) => rows.some((r) => r.gwnoa === gw || r.gwnob === gw)).map(({ gw, name }) => `${gw} ${name}`);
+  if (unresolved.length) throw new Error(`Gleditsch-Ward numbers without a Natural Earth id: ${unresolved.join(', ')} (add to NAME_ALIAS in gw-ids.ts)`);
   const known = new Set(countries.map((c) => c.id));
   for (const id of Object.values(gwToId)) if (!known.has(id)) throw new Error(`mapped id ${id} is not in countries.json`);
 

@@ -1,0 +1,35 @@
+// The shape of public/data/conflicts.json (built by scripts/conflicts/build-conflicts.ts from UCDP). Deaths are UCDP estimates:
+// `best` with the `low`-`high` range; windows end at the data end date, not at today.
+export type Range = { best: number; low: number; high: number };
+export type Kind = 'state' | 'non-state' | 'one-sided';
+
+export type ConflictEvent = {
+  id: string;
+  date: string; // YYYY-MM-DD (UTC)
+  place: string;
+  country: string;
+  lat: number;
+  lon: number;
+  precision: number;
+  kind: Kind;
+  deaths: Range;
+  headline: string;
+  sources: string[];
+  provisional: boolean; // from a UCDP candidate file: revised later
+};
+
+export type Conflict = {
+  id: string;
+  name: string;
+  kinds: Kind[];
+  countries: { id: string | null; name: string; deaths365: number }[];
+  deaths: { d30: Range; d90: Range; d365: Range };
+  events: { d30: number; d90: number; d365: number };
+  trend: 'rising' | 'steady' | 'falling' | 'low data';
+  lastDate: string;
+  weekly: number[]; // 52 weeks of best deaths, oldest first; the last week ends at the data end
+  latest: ConflictEvent[]; // newest first, at most 12
+  provisionalShare: number; // 0..1, share of the 365-day events that are provisional
+};
+
+export type ConflictsFile = { generated: string; dataEnd: string; sources: string[]; conflicts: Conflict[] };
