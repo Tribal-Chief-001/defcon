@@ -4,10 +4,13 @@ Each plan produces working, testable software on its own. Plans live in `docs/su
 
 | Plan | Scope | Status |
 |------|-------|--------|
-| 1. Foundation, map, globe core | Scaffold and tokens; India-POV borders (two detail levels) with patch engine and guard tests; capitals; hairline Three.js globe; country picking; Sonar Boot; budgets. | Implemented on `plan-1-foundation` (10 of 10 tasks); complete on `main` (final review fixed); owner review of the guard point list and deferred minors in BACKLOG.md |
-| 2. Events and live data | Event schema; GDELT and UCDP normalisers; real historical seed (UCDP GED CSV); dedupe, confidence, severity; 15-minute snapshot publisher; Web Worker client; instanced event layer with sonar ripples; "data as of" UI. | Implemented on `plan-2-events` (9 of 9 tasks); final review done and fixed; merge pending |
-| 3. Dossiers and navigation | Per-country dossier build (World Bank, CIA Factbook, SIPRI link/licence check) with source and date per field and redaction for missing data; Country Dive; ⌘K jump; capital and label LOD. | Not written |
+| 1. Foundation, map, globe core | Scaffold and tokens; India-POV borders (two detail levels) with patch engine and guard tests; capitals; hairline Three.js globe; country picking; Sonar Boot; budgets. | Done, on `main` |
+| 2. Events and live data | Event schema; GDELT and UCDP normalisers; real historical seed (UCDP GED CSV); dedupe, confidence, severity; snapshot format; Web Worker client; instanced event layer with sonar ripples; "data as of" UI; provisional tension index. | Done, on `main` |
+| 3. Dossiers and navigation | Per-country dossier build (World Bank, CIA Factbook mirror, memberships) with source and date per field and redaction for missing data; Country Dive; Cmd/Ctrl-K jump; capital and label LOD; micro-state lookup. | In progress |
 | 4. Signature interactions | Pulse Border, Grain = Data, Cursor = Radar, Alliance Arcs (allies + active disputes), Declassify with time scrubber, Night Watch, World Sound, day/night terminator. | Not written |
-| 5. Hardening and launch | Adaptive quality tiers, phone tier, accessibility pass, About/Sources page, hosting and scheduled ingestion, launch checks. Needs owner approval before any deploy or spend. | Not written |
+| 5. Data pipeline and hosting | Scheduled ingestion (GitHub Actions), publishing the event snapshot to the deployed site, Vercel deployment flow, CI hardening. | Not written |
+| 6. Hardening and launch | Adaptive quality tiers, phone tier, accessibility pass, CSP and security headers verified against the real app, About/Sources page, error boundary and monitoring, launch checklist. | Not written |
 
-Items needing the owner: guard-point list review (Plan 1); UCDP token and ACLED account, or a decision to skip them (Plan 2); hosting and domain (Plan 5).
+Repository: private GitHub repo `Tribal-Chief-001/defcon` (CI green on a clean runner); Vercel-ready (`vercel.json`, `docs/DEPLOY.md`), deployed by the owner.
+
+Items needing the owner: guard-point list review (Plan 1); UCDP token and ACLED account, or a decision to skip them (Plan 2); Vercel project connection and domain (Plan 5); choosing a licence.
