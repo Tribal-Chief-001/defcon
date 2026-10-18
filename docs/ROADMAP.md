@@ -4,7 +4,7 @@ Each plan produces working, testable software on its own. Plans live in `docs/su
 
 | Plan | Scope | Status |
 |------|-------|--------|
-| 1. Foundation, map, globe core | Scaffold and tokens; India-POV borders (two detail levels) with patch engine and guard tests; capitals; hairline Three.js globe; country picking; Sonar Boot; budgets. | Implemented on `plan-1-foundation` (10 of 10 tasks); open: Shaksgam patch (owner gate), final review |
+| 1. Foundation, map, globe core | Scaffold and tokens; India-POV borders (two detail levels) with patch engine and guard tests; capitals; hairline Three.js globe; country picking; Sonar Boot; budgets. | Implemented on `plan-1-foundation` (10 of 10 tasks); final review done and fixed; open: Shaksgam patch (owner gate), deferred minors in BACKLOG.md |
 | 2. Events and live data | Event schema; GDELT and UCDP normalisers; real historical seed (UCDP GED CSV); dedupe, confidence, severity; 15-minute snapshot publisher; Web Worker client; instanced event layer with sonar ripples; "data as of" UI. | Not written |
 | 3. Dossiers and navigation | Per-country dossier build (World Bank, CIA Factbook, SIPRI link/licence check) with source and date per field and redaction for missing data; Country Dive; ⌘K jump; capital and label LOD. | Not written |
 | 4. Signature interactions | Pulse Border, Grain = Data, Cursor = Radar, Alliance Arcs (allies + active disputes), Declassify with time scrubber, Night Watch, World Sound, day/night terminator. | Not written |
