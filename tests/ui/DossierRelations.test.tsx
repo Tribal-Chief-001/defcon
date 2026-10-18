@@ -56,4 +56,10 @@ describe('RelationsBlock', () => {
     await screen.findByText(/<img src=x/);
     expect(container.querySelector('img')).toBeNull();
   });
+  // review finding: an alliance note (for example an undated source) must be visible, not only stored
+  it('shows an alliance note next to the alliance', async () => {
+    state.result = { ...rel, alliances: [{ ...al('csto', 'CSTO', ['RUS', 'BLR']), note: 'The source page is undated.' }] };
+    render(<RelationsBlock countryId="RUS" names={names} />);
+    expect(await screen.findByText(/The source page is undated\./)).toBeTruthy();
+  });
 });

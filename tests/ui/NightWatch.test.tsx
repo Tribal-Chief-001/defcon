@@ -10,6 +10,7 @@ afterEach(() => {
   vi.useRealTimers();
 });
 const live = (c: HTMLElement) => c.querySelector('[aria-live]') as HTMLElement;
+const typedText = (c: HTMLElement) => c.querySelector('[data-typed]') as HTMLElement;
 
 describe('NightWatch', () => {
   it('shows the whole caption at once in the live region under reduced motion', () => {
@@ -21,9 +22,18 @@ describe('NightWatch', () => {
     reduce(false);
     vi.useFakeTimers();
     const { container } = render(<NightWatch active caption="ABCDEFGHIJ" />);
-    expect(live(container).textContent!.length).toBeLessThan(10);
+    expect(typedText(container).textContent!.length).toBeLessThan(10);
     act(() => void vi.advanceTimersByTime(1000));
+    expect(typedText(container).textContent).toBe('ABCDEFGHIJ');
+  });
+  // review finding: a typewriter inside aria-live makes screen readers announce ~30 fragments a second
+  it('announces the whole caption once in the live region and hides the typed copy from assistive tech', () => {
+    reduce(false);
+    vi.useFakeTimers();
+    const { container } = render(<NightWatch active caption="ABCDEFGHIJ" />);
     expect(live(container).textContent).toBe('ABCDEFGHIJ');
+    expect(typedText(container).getAttribute('aria-hidden')).toBe('true');
+    expect(live(container).contains(typedText(container))).toBe(false);
   });
   it('shows nothing when inactive and never takes pointer events', () => {
     reduce(false);

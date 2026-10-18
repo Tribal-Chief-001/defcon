@@ -1,5 +1,6 @@
 import { pickEvent } from '../events/pickEvent';
 import type { Snapshot } from '../events/snapshot';
+import { useTime } from '../time/store';
 import { formatReadout, radarBus, snapTarget } from './radar';
 
 const SNAP_PX = 28;
@@ -20,7 +21,7 @@ export function makeRadarHandler(project: Project, snapshots: () => { recent?: S
     let target: ReturnType<typeof snapTarget> = null;
     if (!dragging) {
       const { recent, archive } = snapshots();
-      const hit = pickEvent(recent, archive, c.lat, c.lon, SNAP_PX * kmPerPx);
+      const hit = pickEvent(recent, archive, c.lat, c.lon, SNAP_PX * kmPerPx, { nowS: Date.now() / 1000, backS: useTime.getState().backS });
       if (hit) {
         const { snapshot: s, index: i } = hit;
         const p = project(s.lat[i]!, s.lon[i]!);

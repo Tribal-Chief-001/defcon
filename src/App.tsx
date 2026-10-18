@@ -114,7 +114,7 @@ export function App() {
     if (id && id !== dossierIdRef.current) void startDive(id);
     const token = latest.current.next();
     const { recent, archive } = useEvents.getState();
-    const hit = pickEvent(recent, archive, lat, lon, PICK_RADIUS_PX * kmPerPx);
+    const hit = pickEvent(recent, archive, lat, lon, PICK_RADIUS_PX * kmPerPx, { nowS: Date.now() / 1000, backS: useTime.getState().backS });
     if (!hit) {
       setSel(null);
       return;

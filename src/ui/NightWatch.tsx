@@ -3,7 +3,7 @@ import { prefersReducedMotion } from '../lib/motion';
 
 const CPS = 30; // typed characters per second
 
-// Letterbox bars and a typewriter caption for Night Watch. Decorative layer: the caption lives in an aria-live region, the bars take
+// Letterbox bars and a typewriter caption for Night Watch. Decorative layer: the whole caption is announced once from an sr-only live region and the typed copy is aria-hidden, the bars take
 // no pointer events. Under reduced motion the bars appear without sliding and the whole caption shows at once.
 export function NightWatch({ active, caption }: { active: boolean; caption: string }) {
   const reduced = prefersReducedMotion();
@@ -27,7 +27,10 @@ export function NightWatch({ active, caption }: { active: boolean; caption: stri
     <>
       <div data-letterbox className="pointer-events-none fixed inset-x-0 top-0 z-30 h-[12vh] bg-black" style={slide('letterbox-top')} />
       <div data-letterbox className="pointer-events-none fixed inset-x-0 bottom-0 z-30 flex h-[12vh] items-center justify-center bg-black px-[4vw]" style={slide('letterbox-bottom')}>
-        <p aria-live="polite" className="font-[var(--font-mono)] text-[11px] uppercase tracking-[0.2em] text-[var(--cyan)]">
+        <span className="sr-only" aria-live="polite">
+          {caption}
+        </span>
+        <p data-typed aria-hidden="true" className="font-[var(--font-mono)] text-[11px] uppercase tracking-[0.2em] text-[var(--cyan)]">
           {typed}
         </p>
       </div>

@@ -17,12 +17,14 @@ export function pickEvent(
   lat: number,
   lon: number,
   maxKm: number,
+  // time travel: with the scrubber rewound by `backS`, events after the playhead (nowS - backS) do not exist and cannot be picked
+  playhead?: { nowS: number; backS: number },
 ): { name: 'recent' | 'archive'; index: number; snapshot: Snapshot } | null {
   let best: { name: 'recent' | 'archive'; index: number; snapshot: Snapshot } | null = null;
   let bestD = Infinity;
   for (const [name, snapshot] of [['recent', recent], ['archive', archive]] as const) {
     if (!snapshot) continue;
-    const index = indexOf(snapshot).nearest(lat, lon, maxKm);
+    const index = indexOf(snapshot).nearest(lat, lon, maxKm, playhead && playhead.backS > 0 ? (i) => snapshot.timeS[i]! <= playhead.nowS - playhead.backS : undefined);
     if (index < 0) continue;
     const d = km(snapshot, index, lat, lon);
     if (d < bestD) {

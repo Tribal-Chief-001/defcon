@@ -12,7 +12,7 @@ const haversineKm = (lat1: number, lon1: number, lat2: number, lon2: number) => 
 const wrapCell = (c: number) => ((((c + 180) % 360) + 360) % 360) - 180; // cell index of longitude, wrapped at the antimeridian
 
 // A 1-degree grid over the snapshot: nearest(lat, lon, maxKm) -> snapshot index of the closest event, or -1.
-export function createEventIndex(s: Snapshot): { nearest(lat: number, lon: number, maxKm: number): number } {
+export function createEventIndex(s: Snapshot): { nearest(lat: number, lon: number, maxKm: number, accept?: (i: number) => boolean): number } {
   const cells = new Map<string, number[]>();
   for (let i = 0; i < s.n; i++) {
     const lat = s.lat[i]!;
@@ -22,7 +22,7 @@ export function createEventIndex(s: Snapshot): { nearest(lat: number, lon: numbe
     (cells.get(k) ?? cells.set(k, []).get(k)!).push(i);
   }
   return {
-    nearest(lat, lon, maxKm) {
+    nearest(lat, lon, maxKm, accept) {
       if (!Number.isFinite(lat) || !Number.isFinite(lon) || s.n === 0) return -1;
       const dLat = maxKm / KM_PER_DEG;
       const dLon = Math.min(180, maxKm / (KM_PER_DEG * Math.max(1e-6, Math.cos(lat * D2R))));
@@ -31,6 +31,7 @@ export function createEventIndex(s: Snapshot): { nearest(lat: number, lon: numbe
       for (let cy = Math.floor(lat - dLat); cy <= Math.floor(lat + dLat); cy++)
         for (let cx = Math.floor(lon - dLon); cx <= Math.floor(lon + dLon); cx++)
           for (const i of cells.get(`${cy},${wrapCell(cx)}`) ?? []) {
+            if (accept && !accept(i)) continue;
             const d = haversineKm(lat, lon, s.lat[i]!, s.lon[i]!);
             if (d <= bestD) {
               bestD = d;

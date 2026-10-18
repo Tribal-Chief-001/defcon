@@ -327,7 +327,13 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   // Cursor = Radar: while someone listens (and the pointer is a mouse), the system cursor is hidden and the reticle takes over
   const cursorListeners = new Set<(c: { x: number; y: number; lat: number; lon: number } | null, kmPerPx: number, dragging: boolean) => void>();
   const finePointer = !!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
-  const setCursor = (c: string) => void (canvas.style.cursor = cursorListeners.size > 0 && finePointer ? 'none' : c);
+  // hidden only while the reticle is actually showing (the pointer is over the globe), so the pointer never vanishes over empty space
+  let reticleShown = false;
+  let wantedCursor = 'grab';
+  const setCursor = (c: string) => {
+    wantedCursor = c;
+    canvas.style.cursor = reticleShown && cursorListeners.size > 0 && finePointer ? 'none' : c;
+  };
   // ground distance one screen pixel covers at the front of the globe (6,371 km radius)
   const kmPerPxNow = () => ((2 * Math.max(0.05, camera.position.z - 1) * Math.tan((camera.fov * Math.PI) / 360)) / Math.max(1, canvas.clientHeight)) * 6371;
   let cursorQueued = false;
@@ -340,10 +346,21 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       const r = canvas.getBoundingClientRect();
       const ll = latLonAt(clientX, clientY);
       const c = ll ? { x: clientX - r.left, y: clientY - r.top, lat: ll.lat, lon: ll.lon } : null;
+      reticleShown = c !== null;
+      setCursor(wantedCursor);
       cursorListeners.forEach((cb) => cb(c, kmPerPxNow(), dragging));
     });
   };
-  const onLeave = () => cursorListeners.forEach((cb) => cb(null, kmPerPxNow(), false));
+  const onLeave = () => {
+    reticleShown = false;
+    setCursor(wantedCursor);
+    cursorListeners.forEach((cb) => cb(null, kmPerPxNow(), false));
+    if (hoverId !== null) {
+      hoverId = null; // leaving for a panel clears the hover outline and its arcs
+      setOutline(hover, null);
+      refreshArcs();
+    }
+  };
   let hoverId: string | null = null;
   let hoverQueued = false;
 
@@ -607,6 +624,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       setCursor('grab');
       return () => {
         cursorListeners.delete(cb);
+        reticleShown = false;
         setCursor('grab');
       };
     },

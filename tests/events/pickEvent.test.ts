@@ -28,4 +28,15 @@ describe('pickEvent', () => {
     expect(pickEvent(undefined, archive, 50, 50, 10)).toMatchObject({ name: 'archive' });
     expect(pickEvent(undefined, undefined, 0, 0, 100)).toBeNull();
   });
+  // review finding: with the time scrubber rewound, events after the playhead must not be pickable
+  it('ignores events that happen after the playhead and picks a farther visible one instead', () => {
+    const s = snap([ev('near-future', 10, 10), { ...ev('older', 10.05, 10.05), timeS: T - 500 }]);
+    const nowS = T + 100;
+    const all = pickEvent(s, undefined, 10, 10, 50, { nowS, backS: 0 })!;
+    expect(all.snapshot.timeS[all.index]).toBe(T); // nothing rewound: the nearer (later) event wins
+    const hit = pickEvent(s, undefined, 10, 10, 50, { nowS, backS: 200 }); // playhead = T - 100: only the older event exists
+    expect(hit).not.toBeNull();
+    expect(hit!.snapshot.timeS[hit!.index]).toBe(T - 500);
+    expect(pickEvent(snap([ev('x', 10, 10)]), undefined, 10, 10, 50, { nowS, backS: 500 })).toBeNull();
+  });
 });

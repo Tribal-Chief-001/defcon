@@ -65,7 +65,12 @@ export function RelationsBlock({ countryId, names }: { countryId: string; names:
               {srcLink(a.url, a.name)},{' '}
             </span>
           ))}
-          {srcLink('https://ucdp.uu.se/downloads/', 'UCDP')} (state-based events between governments)
+          {srcLink('https://ucdp.uu.se/downloads/', 'UCDP')} (state-based events between governments, at least 3 in the last two years)
+          {mine.filter((a) => a.note).map((a) => (
+            <span key={a.id} className="mt-1 block normal-case tracking-normal">
+              {a.name}: {a.note}
+            </span>
+          ))}
         </p>
       ) : null}
     </div>

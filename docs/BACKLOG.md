@@ -62,3 +62,14 @@ Open items found during Plan 1 that were deliberately not fixed. Each is graded 
 - Sound: arrival pings only fire when a refreshed snapshot arrives (Plan 5 makes that real); no audio test is possible in the in-app browser.
 - The terminator accuracy is about 1 degree; no twilight shading.
 - Dive distance for countries with far-flung territories (France) is large because the bbox includes them.
+
+## Plan 4 review minors (deferred, 2026-10-18)
+
+- The audio context is never suspended or closed when Sound is turned off or the tab is hidden (no new pings fire, so it is silent); pending staggered pings are not cancelled on disable.
+- Night Watch does not refresh its idle timer when the tab becomes visible again, so it can start at once on return.
+- The grain texture is released only by the scene traversal, not by `grainLayer.dispose` (small GPU-memory leak per globe mount in dev/StrictMode).
+- `focus()` before the boot ends is dropped, not retried (unreachable in practice: Night Watch needs 20 s idle).
+- Scrubber label shows "0 days before now" for a paused sub-half-day playhead; reduced-motion preference is read once per render.
+- Night Watch re-targets with instant camera cuts every 9 s under reduced motion (a decision to record, not a bug).
+- Hovering another country during a dive swaps the dived country's arcs away (arcs follow hover first).
+- ANZUS AUS-NZL source (State Department Office of the Historian) was read by the author only; a second reading is welcome.

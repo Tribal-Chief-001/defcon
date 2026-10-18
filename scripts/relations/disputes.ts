@@ -7,9 +7,9 @@ type Row = Record<string, string | undefined>;
 
 // "Active disputes": pairs of states that appear as opposing governments in UCDP state-based events (type_of_violence 1 with a
 // Gleditsch-Ward number on both sides). One record per unordered pair; only events from `minLastYear` on count (`events` is
-// that count), so a pair with no recent event has no record.
+// that count), so a pair with no recent event has no record; pairs under `minEvents` are dropped (one row is not an active dispute).
 // A Gleditsch-Ward number with no id throws: a dispute must never be silently lost or attached to the wrong country.
-export function disputesFromGed(rows: Row[], gwToId: Record<string, string>, opts: { minLastYear: number }): Dispute[] {
+export function disputesFromGed(rows: Row[], gwToId: Record<string, string>, opts: { minLastYear: number; minEvents?: number }): Dispute[] {
   const pairs = new Map<string, Dispute>();
   for (const r of rows) {
     const year = Number(r.year);
@@ -37,5 +37,5 @@ export function disputesFromGed(rows: Row[], gwToId: Record<string, string>, opt
       }
     }
   }
-  return [...pairs.values()].sort((p, q) => p.a.localeCompare(q.a) || p.b.localeCompare(q.b));
+  return [...pairs.values()].filter((d) => d.events >= (opts.minEvents ?? 1)).sort((p, q) => p.a.localeCompare(q.a) || p.b.localeCompare(q.b));
 }

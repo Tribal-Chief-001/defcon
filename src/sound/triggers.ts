@@ -53,7 +53,7 @@ export function useSoundTriggers(watchTarget: { index: number; severity: number;
       const now = Date.now();
       const to = now / 1000 - st.backS;
       if (!st.playing) return void (head = to);
-      if (now - lastScan < 100) return;
+      if (now - lastScan < 100 || !useSound.getState().enabled) return;
       lastScan = now;
       const { recent, archive } = useEvents.getState();
       fire(eventsBetween([recent, archive], head, to));
