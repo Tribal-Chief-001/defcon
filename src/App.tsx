@@ -8,6 +8,7 @@ import type { Detail } from './events/types';
 import { KINDS } from './events/types';
 import { GlobeCanvas } from './globe/GlobeCanvas';
 import { AsOf } from './ui/AsOf';
+import { DossierPanel } from './ui/DossierPanel';
 import { Coverage } from './ui/Coverage';
 import { EventCard, type EventInfo } from './ui/EventCard';
 
@@ -20,12 +21,14 @@ type Selected = { info: EventInfo; detail: Detail | null; lat: number; lon: numb
 export function App() {
   const [r, setR] = useState<Readout | null>(null);
   const [sel, setSel] = useState<Selected | null>(null);
+  const [dossierId, setDossierId] = useState<string | null>(null);
   const latest = useRef(createLatest()); // only the newest selection may receive its detail
 
   useEffect(() => startEventService(BASE), []);
 
   const onPick = useCallback((id: string | null, lat: number, lon: number, kmPerPx: number) => {
     setR({ id, lat, lon });
+    if (id) setDossierId(id);
     const token = latest.current.next();
     const { recent, archive } = useEvents.getState();
     const hit = pickEvent(recent, archive, lat, lon, PICK_RADIUS_PX * kmPerPx);
@@ -60,6 +63,7 @@ export function App() {
         <AsOf />
       </div>
       <Coverage />
+      {dossierId ? <DossierPanel countryId={dossierId} onClose={() => setDossierId(null)} /> : null}
       {sel ? <EventCard detail={sel.detail} info={sel.info} onClose={() => {
           latest.current.next();
           setSel(null);
