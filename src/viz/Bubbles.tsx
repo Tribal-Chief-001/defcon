@@ -34,7 +34,7 @@ export function Bubbles({ items, selected, onSelect, height = 300 }: { items: Bu
             aria-label={`${it.name}: ${int(it.value)} deaths in 365 days, activity ${it.trend}`}
             title={`${it.name}: ${int(it.value)}`}
             onClick={() => onSelect(it.id)}
-            className={`absolute grid place-items-center overflow-hidden rounded-full border p-1 text-center font-[var(--font-body)] text-[12px] leading-tight transition-colors hover:bg-white/10 ${on ? 'border-[var(--lime)] bg-[rgba(214,255,87,0.1)]' : rising ? 'border-[var(--orange)] bg-[rgba(255,77,0,0.1)]' : 'border-[var(--border-strong)] bg-white/[0.04]'}`}
+            className={`absolute grid place-items-center overflow-hidden rounded-full border p-1 text-center font-[var(--font-body)] text-[12px] leading-tight hover:bg-white/10 ${on ? 'border-[var(--lime)] bg-[rgba(214,255,87,0.1)]' : rising ? 'border-[var(--orange)] bg-[rgba(255,77,0,0.1)]' : 'border-[var(--border-strong)] bg-white/[0.04]'}`}
             style={{ left: c.x - c.r, top: c.y - c.r, width: c.r * 2, height: c.r * 2 }}
           >
             {c.r >= LABEL_MIN_R ? <span className="line-clamp-3 break-words">{it.name}</span> : null}
