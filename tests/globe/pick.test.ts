@@ -1,7 +1,7 @@
 import { readFileSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 import type { Topology } from 'topojson-specification';
-import { createPicker } from '../../src/globe/pick';
+import { createOwnerLister, createPicker } from '../../src/globe/pick';
 
 const high = JSON.parse(readFileSync('public/data/borders.high.topo.json', 'utf8')) as Topology;
 const pick = createPicker(high);
@@ -55,5 +55,28 @@ describe('createPicker', () => {
     // Known gaps: micro-states too small for the high-detail data (quantization about 800 m). Plan 3 gives them
     // point-based lookup through their capital. Any other mismatch is a regression.
     expect(wrong).toEqual(['Funafuti: null not TUV', 'Vatican City: ITA not VAT']);
+  });
+});
+
+describe('createOwnerLister', () => {
+  const sq = (x0: number, x1: number): number[][] => [[x0, 0], [x0, 10], [x1, 10], [x1, 0], [x0, 0]];
+  const overlapping: Topology = {
+    type: 'Topology',
+    arcs: [sq(0, 10), sq(5, 15)],
+    objects: {
+      countries: {
+        type: 'GeometryCollection',
+        geometries: [
+          { type: 'Polygon', arcs: [[0]], properties: { id: 'A' } },
+          { type: 'Polygon', arcs: [[1]], properties: { id: 'B' } },
+        ],
+      },
+    },
+  };
+  it('lists every country containing the point', () => {
+    const owners = createOwnerLister(overlapping);
+    expect(owners(5, 7)).toEqual(['A', 'B']);
+    expect(owners(5, 2)).toEqual(['A']);
+    expect(owners(5, 40)).toEqual([]);
   });
 });

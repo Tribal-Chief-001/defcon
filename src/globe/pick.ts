@@ -43,8 +43,7 @@ function inside(p: Part, lat: number, lon: number): boolean {
 
 type Feat = { properties: { id: string }; geometry: { type: string; coordinates: unknown } };
 
-// Returns the ADM0_A3 id of the country containing (lat, lon), or null (open ocean, NaN).
-export function createPicker(topo: Topology): (lat: number, lon: number) => string | null {
+function buildIndex(topo: Topology): (lat: number) => Part[] {
   const fc = feature(topo, topo.objects.countries as never) as unknown as { features: Feat[] };
   const parts: Part[] = [];
   for (const f of fc.features) {
@@ -60,12 +59,32 @@ export function createPicker(topo: Topology): (lat: number, lon: number) => stri
     const hi = Math.min(BANDS - 1, Math.floor((p.n + 90) / BAND_DEG));
     for (let b = lo; b <= hi; b++) byBand[b]!.push(p);
   }
+  return (lat) => byBand[Math.min(BANDS - 1, Math.max(0, Math.floor((lat + 90) / BAND_DEG)))] ?? [];
+}
+
+// Returns the ADM0_A3 id of the country containing (lat, lon), or null (open ocean, NaN).
+export function createPicker(topo: Topology): (lat: number, lon: number) => string | null {
+  const candidates = buildIndex(topo);
   return (lat, lon) => {
     if (!Number.isFinite(lat) || !Number.isFinite(lon)) return null;
-    for (const p of byBand[Math.min(BANDS - 1, Math.max(0, Math.floor((lat + 90) / BAND_DEG)))] ?? []) {
+    for (const p of candidates(lat)) {
       if (lat < p.s || lat > p.n || lon < p.w || lon > p.e) continue;
       if (inside(p, lat, lon)) return p.id;
     }
     return null;
+  };
+}
+
+// Every country containing the point (sorted, unique). Used to check the map for overlapping countries.
+export function createOwnerLister(topo: Topology): (lat: number, lon: number) => string[] {
+  const candidates = buildIndex(topo);
+  return (lat, lon) => {
+    if (!Number.isFinite(lat) || !Number.isFinite(lon)) return [];
+    const ids = new Set<string>();
+    for (const p of candidates(lat)) {
+      if (lat < p.s || lat > p.n || lon < p.w || lon > p.e) continue;
+      if (inside(p, lat, lon)) ids.add(p.id);
+    }
+    return [...ids].sort();
   };
 }

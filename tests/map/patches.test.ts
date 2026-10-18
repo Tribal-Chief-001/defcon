@@ -38,4 +38,11 @@ describe('applyPatches', () => {
   it('throws when a patch names an unknown country', () => {
     expect(() => applyPatches(fc(), [{ ...patches[0]!, country: 'ZZZ' }])).toThrow(/ZZZ/);
   });
+  // Review finding: an add-to without its cut-from silently overlaps the neighbour.
+  it('throws when a patch leaves two countries overlapping', () => {
+    expect(() => applyPatches(fc(), [patches[0]!])).toThrow(/overlap/i);
+  });
+  it('names both countries in the overlap error', () => {
+    expect(() => applyPatches(fc(), [patches[0]!])).toThrow(/AAA.*BBB|BBB.*AAA/);
+  });
 });
