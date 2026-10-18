@@ -123,3 +123,13 @@ Open items found during Plan 1 that were deliberately not fixed. Each is graded 
 ## Instability Index (owner's priority, 2026-10-18)
 
 The owner liked World Monitor's Country Instability Index and asked for it to be fleshed out comprehensively: see `docs/INSTABILITY-INDEX.md` (design only, not built). First step: confirm input licences (WGI, UNHCR), build the country-month feature table, fit a prior-violence-only baseline and see whether structural features beat it; only then models, backtest report and UI.
+
+## Plan 8 deferred (War tracker data layer, 2026-10-18)
+
+- **Plan 9: the sourced key-events timeline** (US/Israel-Iran, Russia-Ukraine, Israel-Gaza/Palestine, Lebanon, the wider Middle East): every entry has a date, one line, at least two independent sources with links, a status (confirmed / reported / disputed) and a "last checked" date. Written from web research with citations, never from memory.
+- A per-conflict "since UCDP ends" feed from the live snapshot (GDELT) matched by country; the World overview already shows the newest reports worldwide.
+- Show an event from the tracker on the globe (fly to it, open its card).
+- Refactor About to use `useDialog` (the hook is used only by the War tracker so far).
+- A real-phone and screen-reader pass of the War tracker (checked at 1440, 1100 and 375 px in headless Chrome only).
+- Name the anonymised UCDP conflicts (`XXX475`) when UCDP publishes their actors.
+

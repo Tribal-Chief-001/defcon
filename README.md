@@ -11,11 +11,14 @@
 
 ![Country dossier with a dive into Ukraine](docs/images/dive.png)
 
+![War tracker](docs/images/war-tracker.png)
+
 ## Features
 
 - **Custom Three.js globe** (WebGL2, no map library) with a sonar boot, hairline borders in two detail levels, picking, and sonar ripples at events.
 - **Events from public datasets:** UCDP GED (human-coded) and GDELT (auto-coded), merged, deduplicated and severity-scored; a provisional "DEFCON-style" tension index, shown only when it is comparable (never the official US DEFCON level).
 - **Country dossiers** for 248 countries with the source and date of every field and redaction bars for missing data; **Country Dive**, **Ctrl/Cmd-K** search, capital labels, shareable links (`#c=IND`).
+- **War tracker** (`#war`): every current conflict in the UCDP data with deaths (best estimate and range), trend, weekly timeline and the latest events, plus a world fatalities overview; human-coded data only, windows end at the data end date, 2026 rows labelled provisional.
 - **Alliance arcs** (formal treaty members, cyan) and **active disputes** (UCDP state-vs-state events, orange dashed), both sourced.
 - **Time travel** scrubber with Play and a cosmetic Declassify effect, a shader **heat grain**, a live **day/night terminator**, a **radar cursor**, a **pulse border**, an idle **Night Watch** showcase and optional **World Sound** (off by default).
 - **Production-minded:** adaptive quality tiers and a phone tier, keyboard control and screen-reader announcements, WCAG AA text colours, a strict Content-Security-Policy, an error boundary, a scheduled data pipeline with a validation gate, and a freshness monitor.

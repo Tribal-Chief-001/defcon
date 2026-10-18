@@ -119,3 +119,5 @@ No endpoint, licence or rate limit in section 3 was tested; they come from readi
 3. **Metrics:** conflict intensity (deaths per 30 days with range, trend against the previous 90 days), and the VRI once the study supports it. No metric without its definition and uncertainty.
 
 **Risks:** staleness (a hand-curated timeline ages; show "last checked"), the casualty-count politics of Gaza and Iran (show UCDP ranges and say who counts), single-source claims, and not presenting as live.
+
+**Status 2026-10-18:** the data layer and the World overview are built (Plan 8, `docs/superpowers/plans/2026-10-18-plan-8-war-tracker-data.md`, D-055). Next: the sourced key-events timeline (Plan 9), then the VRI study 2.

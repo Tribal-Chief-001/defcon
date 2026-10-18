@@ -39,6 +39,10 @@ Owner feedback on the live site: the default scrollbar clashed, the type and top
 - **Rails** (1100 px and wider): Hotspots (left, hidden while a dossier is open) and Latest (right, hidden while an event card is open; with a dossier open only from 1500 px). Real data only, a footnote says coverage is uneven, "live view only" during time travel. Rows are buttons.
 - **HUD frame:** four hairline corner ticks and the long-promised faint outline DEFCON word behind the interface; hidden on phones.
 
+## War tracker (Plan 8)
+
+A modal page like About, wider (up to 1120 px): a filterable list of conflicts on the left (name, 90-day deaths with the range, a trend word: rising in orange, the others in bone shades) and the detail on the right. Detail: Syne 30 px title, three window cards (30, 90, 365 days: a 26 px numeral, the `low-high` range and the event count in mono), a hairline weekly bar chart (the newest week in lime), country buttons that dive, the latest events with a plain "provisional" tag in orange. The first list row is the **World overview** (the "fatalities monitor"), shown by default. Honesty is part of the design: the page header says human-coded, to which date, provisional, estimates; protest deaths are named as not counted; news reports are tagged "auto-coded, not verified". On a phone the list and detail alternate and the header and footer shrink.
+
 ## Text colours (Plan 6)
 
 `--text` #EDEDE9, `--text-muted` 68 % and `--text-faint` 55 % of it on true black: all reach WCAG AA (4.5:1), checked by `tests/a11y/contrast.test.ts`. The earlier 50 % / 25 % values did not (faint was 1.9:1) and carried real field labels.
