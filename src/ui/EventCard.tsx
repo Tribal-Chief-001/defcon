@@ -25,7 +25,7 @@ export function EventCard({ detail, info, nowS = Math.floor(Date.now() / 1000), 
   // rewinding the scrubber declassifies: the effective age grows with how far back the playhead is
   const progress = redactionFor(nowS - info.timeS + backS);
   return (
-    <aside className="pointer-events-auto absolute right-[4vw] top-24 w-[min(340px,calc(100vw-8vw))] rounded-[24px] border border-[var(--border)] bg-white/[0.06] p-6 backdrop-blur-xl">
+    <aside className="pointer-events-auto absolute right-[4vw] top-[4.5rem] w-[min(340px,calc(100vw-8vw))] rounded-[24px] border border-[var(--border)] bg-white/[0.06] p-6 backdrop-blur-xl">
       <div className="flex items-start justify-between gap-3 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
         <span>{KIND_LABEL[info.kind]}</span>
         <button type="button" onClick={onClose} aria-label="Close" className="rounded-full border border-[var(--border-strong)] px-2 py-0.5 hover:text-[var(--lime)]">

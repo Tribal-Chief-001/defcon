@@ -11,7 +11,7 @@ import { useEvents } from './events/store';
 import type { Detail } from './events/types';
 import { KINDS } from './events/types';
 import { GlobeCanvas } from './globe/GlobeCanvas';
-import { AsOf } from './ui/AsOf';
+import { TopBar } from './ui/TopBar';
 import { CommandPalette } from './ui/CommandPalette';
 import { DossierPanel } from './ui/DossierPanel';
 import { LiveCapitalLabels, setLabels } from './ui/CapitalLabels';
@@ -125,13 +125,7 @@ export function App() {
       <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : null} dive={dive} framing={framing} onLabels={setLabels} />
       <LiveCapitalLabels />
       <Reticle />
-      <p className="pointer-events-none absolute left-[4vw] top-6 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
-        <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-[var(--lime)]" />
-        Defcon // globe core
-      </p>
-      <div className="absolute right-[4vw] top-6">
-        <AsOf />
-      </div>
+      <TopBar />
       <CommandPalette onPick={(id) => void startDive(id)} />
       <Coverage />
       <Scrubber />
