@@ -9,6 +9,7 @@ import type { Dossier } from '../../src/dossier/types';
 import type { Relations } from '../../src/relations/types';
 import { useTime } from '../../src/time/store';
 import { encodeSnapshot } from '../../scripts/events/encode';
+import { AboutPage } from '../../src/ui/AboutPage';
 import { CommandPalette } from '../../src/ui/CommandPalette';
 import { DossierPanel } from '../../src/ui/DossierPanel';
 import { EventCard } from '../../src/ui/EventCard';
@@ -89,6 +90,14 @@ describe('axe (rules jsdom supports)', () => {
     expect(await check(a.container)).toEqual([]);
     a.unmount();
     const b = render(<EventCard detail={null} info={info} onClose={() => {}} />);
+    expect(await check(b.container)).toEqual([]);
+  });
+  it('the About page with and without a snapshot', async () => {
+    const a = render(<AboutPage onClose={() => {}} />);
+    expect(await check(a.container)).toEqual([]);
+    a.unmount();
+    useEvents.setState({ recent: undefined, archive: undefined });
+    const b = render(<AboutPage onClose={() => {}} />);
     expect(await check(b.container)).toEqual([]);
   });
   it('the scrubber', async () => {

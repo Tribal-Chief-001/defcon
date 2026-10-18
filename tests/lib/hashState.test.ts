@@ -17,4 +17,15 @@ describe('hash state (deep links)', () => {
   it('round-trips', () => {
     for (const id of ['IND', 'USA', 'FJI']) expect(parseHash(formatHash(id)).country).toBe(id);
   });
+  it('parses #about and keeps it apart from country links', () => {
+    expect(parseHash('#about')).toEqual({ country: null, about: true });
+    expect(parseHash('#ABOUT')).toEqual({ country: null });
+    expect(parseHash('#about=1')).toEqual({ country: null });
+    expect(parseHash('#c=IND')).toEqual({ country: 'IND' });
+  });
+  it('formats the about overlay ahead of a country link', () => {
+    expect(formatHash(null, true)).toBe('#about');
+    expect(formatHash('IND', true)).toBe('#about');
+    expect(formatHash('IND', false)).toBe('#c=IND');
+  });
 });

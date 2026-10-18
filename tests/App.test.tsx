@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CountryRow } from '../src/dossier/types';
 
@@ -106,5 +106,26 @@ describe('App deep links and dive state', () => {
     const status = await screen.findByRole('status', undefined, { timeout: 4000 });
     await waitFor(() => expect(status.textContent).toMatch(/Showing Country IND|Showing IND/), { timeout: 4000 });
     expect(status.getAttribute('aria-live')).toBe('polite');
+  });
+
+  it('opens About from #about on load without diving, and Esc closes it and restores the hash', async () => {
+    history.replaceState(null, '', '/#about');
+    render(<App />);
+    const dialog = await screen.findByRole('dialog', undefined, { timeout: 4000 });
+    expect(dialog).toBeTruthy();
+    expect(screen.getByTestId('globe').getAttribute('data-dive')).toBe('');
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull(), { timeout: 4000 });
+    await waitFor(() => expect(location.hash).toBe(''), { timeout: 4000 });
+  });
+  it('the top-bar About button opens it, and closing it brings the dossier link back', async () => {
+    history.replaceState(null, '', '/#c=IND');
+    render(<App />);
+    await screen.findByRole('heading', { name: 'Country IND' }, { timeout: 4000 });
+    fireEvent.click(screen.getByRole('button', { name: /^about$/i }));
+    const dialog = await screen.findByRole('dialog', undefined, { timeout: 4000 });
+    await waitFor(() => expect(location.hash).toBe('#about'), { timeout: 4000 });
+    fireEvent.click(within(dialog).getByRole('button', { name: /close/i }));
+    await waitFor(() => expect(location.hash).toBe('#c=IND'), { timeout: 4000 });
   });
 });

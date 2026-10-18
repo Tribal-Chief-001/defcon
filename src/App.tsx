@@ -24,11 +24,13 @@ import { useTime } from './time/store';
 import { useSoundTriggers } from './sound/triggers';
 import { useNightWatch } from './watch/useNightWatch';
 import { Scrubber } from './ui/Scrubber';
+import { lazy, Suspense } from 'react';
 import { SkipLink } from './ui/SkipLink';
 import { SoundToggle } from './ui/SoundToggle';
 import { StatusRegion, announce } from './ui/status';
 
 const BASE = eventsBase(import.meta.env.VITE_EVENTS_BASE);
+const AboutPage = lazy(() => import('./ui/AboutPage').then((m) => ({ default: m.AboutPage })));
 const PICK_RADIUS_PX = 14;
 
 type Readout = { id: string | null; lat: number; lon: number };
@@ -39,6 +41,7 @@ export function App() {
   const [r, setR] = useState<Readout | null>(null);
   const [sel, setSel] = useState<Selected | null>(null);
   // initialised from the URL so the hash-mirroring effect below does not erase a shared #c=IND link before it is applied
+  const [about, setAbout] = useState(() => parseHash(location.hash).about === true);
   const [dossierId, setDossierId] = useState<string | null>(() => parseHash(location.hash).country);
   const [dive, setDive] = useState<Dive | null>(null);
   const diveIdRef = useRef<string | null>(null);
@@ -115,12 +118,14 @@ export function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, [exitDive]);
   useEffect(() => {
-    const want = formatHash(dossierId);
+    const want = formatHash(dossierId, about);
     if (location.hash !== want) history.replaceState(null, '', want || location.pathname + location.search);
-  }, [dossierId]);
+  }, [dossierId, about]);
   useEffect(() => {
     const apply = () => {
-      const { country } = parseHash(location.hash);
+      const { country, about: wantAbout } = parseHash(location.hash);
+      setAbout(wantAbout === true);
+      if (wantAbout) return; // the overlay sits on top of whatever is open
       if (country && country !== diveIdRef.current) void startDive(country);
       else if (!country && dossierIdRef.current) exitDive();
     };
@@ -166,7 +171,15 @@ export function App() {
       <TopBar>
         <CommandPalette onPick={(id) => void startDive(id)} />
         <SoundToggle />
+        <button type="button" onClick={() => setAbout(true)} className="rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)]">
+          About
+        </button>
       </TopBar>
+      {about ? (
+        <Suspense fallback={null}>
+          <AboutPage onClose={() => setAbout(false)} />
+        </Suspense>
+      ) : null}
       <Coverage />
       <Scrubber />
       {dossierId ? <DossierPanel countryId={dossierId} onClose={exitDive} /> : null}
