@@ -58,7 +58,7 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
       n.d365++;
       if (e.ageD < 90) (add(d90, e.deaths), n.d90++);
       if (e.ageD < 30) (add(d30, e.deaths), n.d30++);
-      weekly[51 - Math.floor(e.ageD / 7)]! += e.deaths.best;
+      if (e.ageD < 364) weekly[51 - Math.floor(e.ageD / 7)]! += e.deaths.best; // 52 whole weeks; day 365 only counts in d365
       if (e.provisional) provisional++;
       const key = e.row.country_id ?? e.row.country ?? '';
       const c = countries.get(key) ?? { id: opts.gwToId[e.row.country_id ?? ''] ?? null, name: e.row.country ?? 'Unknown', deaths365: 0 };
@@ -68,7 +68,9 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
     if (d365.best < LIST_D365 && d90.best < LIST_D90) continue;
 
     const countryList = [...countries.values()].sort((a, b) => b.deaths365 - a.deaths365 || a.name.localeCompare(b.name));
-    const name = rawName === '' || /^XXX\d+/.test(rawName) ? `Unnamed conflict (${countryList[0]?.name ?? 'unknown'})` : rawName;
+    const main = countryList[0]?.name ?? 'unknown';
+    // UCDP candidate files anonymise some actors as XXX<number>: keep the code visible, it is all the data says
+    const name = rawName === '' ? `Unnamed conflict (${main})` : /^XXX\d+/.test(rawName) ? `${rawName} (${main})` : rawName;
     let id = slug(name);
     for (let i = 2; used.has(id); i++) id = `${slug(name)}-${i}`;
     used.add(id);

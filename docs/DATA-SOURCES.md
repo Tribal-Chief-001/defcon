@@ -155,3 +155,17 @@ Built by `npm run data:relations` into `public/data/relations.json` (about 2 KB 
 `npm run data:validate` (`scripts/events/validate-snapshot.ts`) runs before anything is published. It fails (exit 1, problems listed) on: a missing `recent`/`archive` file, a hash that does not match the bytes, a snapshot that cannot be decoded, fewer than 500 recent events, a non-finite as-of time, data older than 12 h (so a GDELT outage turns the run red instead of re-publishing old data) or more than 1 h in the future, GDELT covering fewer than 5 days, a non-finite or out-of-range coordinate, a kind/severity/country index out of range, a detail shard that is missing, not valid JSON or too short for the events pointing into it, or overlapping recent and archive windows. It has no comparison with the previous snapshot. A failed ingest therefore leaves the live site on the previous data.
 
 Cadence: the scheduled ingest runs every 3 hours (D-047), so "live" means at most about 3 hours old plus the GDELT delay; the pill says exactly how old the data is.
+
+## Conflicts (War tracker data, derived, committed)
+
+| Item | Value |
+|------|-------|
+| File | `public/data/conflicts.json` (about 530 KB, 119 KB gzipped; loaded only when the War tracker opens) |
+| Built by | `npm run data:conflicts` (`scripts/conflicts/build-conflicts.ts`) from the pinned UCDP files: GED 26.1 and the 2026 candidate releases (run `npm run data:ucdp` first) |
+| Content | UCDP events grouped by `conflict_name`; per conflict: deaths as `best` with the `low`-`high` range for 30, 90 and 365 days, event counts, a trend word, 52 weekly buckets (364 days), the 12 newest events with place, headline and source names, the countries involved |
+| Windows | End at the **data end date** (the latest UCDP event, 2026-08-31 on 2026-10-18), never at today. A conflict is listed with at least 100 deaths in 365 days or 25 in 90 days (101 conflicts). |
+| Trend | Last 30 days against the average 30 days of the 60 days before: rising (>= 1.5x and >= 10 deaths), falling (<= 0.5x and base >= 10), steady, or "low data" (under 10 deaths in the comparison) |
+| Provisional | Rows from candidate files are provisional (UCDP revises them); each event and each conflict carries that flag or share |
+| Unnamed | UCDP candidate files anonymise some actors as `XXX<number>`; those conflicts keep the code in their name next to the main country |
+| Licence | CC BY 4.0 (UCDP); citation text as in the UCDP section above |
+| Not included | Anything after the data end, GDELT events (auto-coded), any claim not in UCDP |

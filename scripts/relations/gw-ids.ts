@@ -3,7 +3,7 @@ import { normalise } from '../../src/dossier/search';
 // Gleditsch-Ward numbers that never appear as a GED location, plus UCDP names that differ from Natural Earth's.
 export const GW_EXTRA: Record<string, string> = { '2': 'USA' };
 export const NAME_ALIAS: Record<string, string> = Object.fromEntries(
-  Object.entries({ 'DR Congo (Zaire)': 'COD', 'Myanmar (Burma)': 'MMR', 'Russia (Soviet Union)': 'RUS', 'Cambodia (Kampuchea)': 'KHM', 'Yemen (North Yemen)': 'YEM', 'South Sudan': 'SDS', 'United States of America': 'USA' }).map(([k, v]) => [normalise(k), v]),
+  Object.entries({ 'DR Congo (Zaire)': 'COD', 'Myanmar (Burma)': 'MMR', 'Russia (Soviet Union)': 'RUS', 'Cambodia (Kampuchea)': 'KHM', 'Yemen (North Yemen)': 'YEM', 'South Sudan': 'SDS', 'United States of America': 'USA', 'Central African Republic': 'CAF', 'Kingdom of eSwatini (Swaziland)': 'SWZ', 'Dominican Republic': 'DOM', 'Ivory Coast': 'CIV' }).map(([k, v]) => [normalise(k), v]),
 );
 
 // Maps Gleditsch-Ward numbers (UCDP `country_id`) to Natural Earth country ids; names it cannot resolve are returned, never guessed.

@@ -24,6 +24,7 @@
     "data:memberships": "tsx scripts/dossiers/build-memberships.ts",
     "data:dossiers": "tsx scripts/dossiers/build-dossiers.ts",
     "data:relations": "tsx scripts/relations/build-relations.ts",
+    "data:conflicts": "tsx scripts/conflicts/build-conflicts.ts",
     "index:study": "tsx scripts/index/study.ts"
   },
   "devDependencies": {

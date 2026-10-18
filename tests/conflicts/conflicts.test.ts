@@ -70,7 +70,8 @@ describe('conflictsFromRows', () => {
 
   it('names unnamed UCDP conflicts after their main country and keeps slugs unique', () => {
     const cs = one([row({ ago: 3, best: 300, conflict_name: 'XXX475', country: 'Nigeria', country_id: '475' }), row({ ago: 3, best: 200, conflict_name: 'Russia - Ukraine' }), row({ ago: 3, best: 150, conflict_name: 'Russia: Ukraine' })]);
-    expect(cs.map((c) => c.name)).toContain('Unnamed conflict (Nigeria)');
+    expect(cs.map((c) => c.name)).toContain('XXX475 (Nigeria)'); // UCDP's placeholder code stays visible: it is all the data says
+    expect(one([row({ ago: 3, best: 300, conflict_name: '', country: 'Chad', country_id: '483' })])[0]!.name).toBe('Unnamed conflict (Chad)');
     const ids = cs.map((c) => c.id);
     expect(new Set(ids).size).toBe(ids.length);
     expect(ids.every((i) => /^[a-z0-9-]{1,60}$/.test(i))).toBe(true);
@@ -100,6 +101,14 @@ describe('conflictsFromRows', () => {
     expect(c!.weekly[51]).toBe(10); // days 0..6 before the end
     expect(c!.weekly[50]).toBe(100);
     expect(c!.weekly[0]).toBe(11);
+  });
+
+  it('counts an event 364 days old in the 365-day window but not in the 52 weekly buckets', () => {
+    const [c] = one([row({ ago: 364, best: 100 }), row({ ago: 363, best: 7 })]);
+    expect(c!.deaths.d365.best).toBe(107);
+    expect(c!.weekly).toHaveLength(52);
+    expect(c!.weekly.reduce((s, v) => s + v, 0)).toBe(7);
+    expect(Object.keys(c!.weekly)).toHaveLength(52); // no stray negative index
   });
 
   it('returns the 12 newest events, trimmed headline, unique sources, place joined, provisional flag and share', () => {
