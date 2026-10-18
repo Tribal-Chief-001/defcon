@@ -10,6 +10,35 @@ const model = indicesFixture().model;
 const card = (o: Partial<React.ComponentProps<typeof IndexCard>> = {}) => render(<IndexCard index={ukraine()} model={model} dataEnd="2026-08-31" rankedTotal={63} onMethod={() => {}} {...o} />);
 const text = () => screen.getByRole('region', { name: /indices/i }).textContent ?? '';
 
+describe('IndexCard: findings of the review', () => {
+  it('shows "<0.01" for a tiny rate instead of 0.00, and builds the baseline AUC with two decimals', () => {
+    const u = ukraine();
+    u.fatality.per100k = 0.0004;
+    card({ index: u, model: { ...model, rise: { ...model.rise, persistenceAuc: 0.05 } } });
+    expect(text()).toMatch(/<0\.01 per 100,000/);
+    expect(text()).not.toMatch(/0\.00 per 100,000/);
+    expect(text()).toMatch(/0\.05 for recent deaths alone/);
+  });
+  it('says the breakdown is in log-odds, and that a sharp rise is capped at the chance of continuing when it is', () => {
+    const u = ukraine();
+    u.risk!.rise = { ...u.risk!.continue };
+    card({ index: u });
+    expect(text()).toMatch(/log-odds/i);
+    expect(text()).toMatch(/capped at the chance that violence continues/i);
+    cleanup();
+    card({ index: ukraine() });
+    expect(text()).not.toMatch(/capped at/i);
+  });
+});
+
+describe('IndexCard: Palestine (finding: UCDP files Gaza and the West Bank under Israel)', () => {
+  it('says where the events are counted instead of "no violence recorded"', () => {
+    card({ index: undefined, countryId: 'PSX' });
+    expect(text()).toMatch(/UCDP files Gaza and West Bank events under Israel/);
+    expect(text()).not.toMatch(/no organised violence here/);
+  });
+});
+
 describe('IndexCard: Fatality Index', () => {
   it('shows the score as a gauge with its range, the band in words, deaths with ranges, per 100,000, trend and rank', () => {
     card();

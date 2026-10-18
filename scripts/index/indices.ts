@@ -35,6 +35,7 @@ export type Stats = {
   monthly: number[];
   locatedShare365: number;
   provisionalShare90: number;
+  firstOfMonthShare90: number; // share of the 90-day deaths dated the 1st of a month: candidate rows can carry only a month, which makes windows lumpy
 };
 
 const num = (s: string | undefined): number | null => {
@@ -52,7 +53,7 @@ export function countryStats(input: { row: GedRow; provisional: boolean }[], opt
   for (const x of input) if (x.row.id) byId.set(x.row.id, x);
   const end = new Date(opts.dataEndS * 1000);
   const endIndex = end.getUTCFullYear() * 12 + end.getUTCMonth();
-  const countries = new Map<string, Stats & { _located: number; _prov90: number }>();
+  const countries = new Map<string, Stats & { _located: number; _prov90: number; _first90: number }>();
   const unmapped = new Set<string>();
   const world = new Array<number>(MONTHS).fill(0);
   for (const { row, provisional } of byId.values()) {
@@ -72,7 +73,7 @@ export function countryStats(input: { row: GedRow; provisional: boolean }[], opt
       unmapped.add(row.country_id ?? '');
       continue;
     }
-    const c = countries.get(id) ?? { deaths30: zero(), deaths90: zero(), deaths365: zero(), events30: 0, events90: 0, events365: 0, monthly: new Array<number>(MONTHS).fill(0), locatedShare365: 1, provisionalShare90: 0, _located: 0, _prov90: 0 };
+    const c = countries.get(id) ?? { deaths30: zero(), deaths90: zero(), deaths365: zero(), events30: 0, events90: 0, events365: 0, monthly: new Array<number>(MONTHS).fill(0), locatedShare365: 1, provisionalShare90: 0, firstOfMonthShare90: 0, _located: 0, _prov90: 0, _first90: 0 };
     countries.set(id, c);
     if (slot >= 0 && slot < MONTHS) c.monthly[slot]! += b;
     if (ageD < 365) {
@@ -84,6 +85,7 @@ export function countryStats(input: { row: GedRow; provisional: boolean }[], opt
       add(c.deaths90, r);
       c.events90++;
       if (provisional) c._prov90++;
+      if (m[3] === '01') c._first90 += b;
     }
     if (ageD < 30) {
       add(c.deaths30, r);
@@ -92,8 +94,8 @@ export function countryStats(input: { row: GedRow; provisional: boolean }[], opt
   }
   const out = new Map<string, Stats>();
   for (const [id, c] of countries) {
-    const { _located, _prov90, ...s } = c;
-    out.set(id, { ...s, locatedShare365: c.deaths365.best > 0 ? _located / c.deaths365.best : 1, provisionalShare90: c.events90 > 0 ? _prov90 / c.events90 : 0 });
+    const { _located, _prov90, _first90, ...s } = c;
+    out.set(id, { ...s, locatedShare365: c.deaths365.best > 0 ? _located / c.deaths365.best : 1, provisionalShare90: c.events90 > 0 ? _prov90 / c.events90 : 0, firstOfMonthShare90: c.deaths90.best > 0 ? _first90 / c.deaths90.best : 0 });
   }
   return { countries: out, unmapped: [...unmapped].filter(Boolean), world };
 }

@@ -186,6 +186,7 @@ The owner liked World Monitor's Country Instability Index and asked for it to be
 - A globe choropleth of the two indices (colour the countries by band or risk); a country-list sort by index in the search palette.
 - Refresh in CI: `indices.json`, `conflicts.json` and the UCDP candidate files are rebuilt by hand (`npm run data:ucdp`, `data:conflicts`, `data:indices`); auto-discovering newer UCDP monthly files and rebuilding in the workflow is not done.
 - The 90% intervals cover training uncertainty only; a conformal or walk-forward interval would cover model error too. One time split only: a rolling-origin backtest would show stability.
-- The interval of a near-certain probability reads "100.0 to 100.0%" next to ">99.9%": word it as "above 99.9%".
+- `deaths90` is lumpy for countries whose 2026 candidate events are dated the 1st of a month (Ukraine's last 90 days are below its calendar quarter): momentum now shows "low data", but the headline window and `conflicts.json` still use 30/90/365-day windows; calendar-month windows are a separate change.
+- Reviewer minors not done: the calibration guard checks absolute bin errors only (0.05), not a relative error for the small bins; "Why this score" is the unclamped log-odds (the card says so when the rise is capped at "continue"); Iran-type cases (very deadly year, quiet quarter) can show a high rise estimate with momentum "falling" (stated in the limits).
 - No independent review of the model by a person who does conflict forecasting; protests (ACLED) are not available, so unrest is not in the index.
 

@@ -133,3 +133,17 @@ describe('AboutPage: the method of the indices', () => {
     expect(screen.getByRole('heading', { name: /fatality and instability indices/i })).toBeTruthy();
   });
 });
+
+describe('AboutPage: opening at the method (finding: "How computed" landed at the top)', () => {
+  it('scrolls the method section into view when asked, and not otherwise', () => {
+    const scrolled: Element[] = [];
+    Element.prototype.scrollIntoView = function (this: Element) { scrolled.push(this); };
+    const { unmount } = render(<AboutPage onClose={() => {}} toMethod />);
+    expect(scrolled).toHaveLength(1);
+    expect(scrolled[0]!.hasAttribute('data-method')).toBe(true);
+    unmount();
+    scrolled.length = 0;
+    render(<AboutPage onClose={() => {}} />);
+    expect(scrolled).toHaveLength(0);
+  });
+});

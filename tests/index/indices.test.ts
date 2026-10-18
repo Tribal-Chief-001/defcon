@@ -95,6 +95,14 @@ describe('countryStats', () => {
     expect(u.locatedShare365).toBeCloseTo(130 / 200);
     expect(u.provisionalShare90).toBe(1);
   });
+  it('reports the share of the 90-day deaths that are dated the 1st of a month (finding: candidate rows put a month on its first day)', () => {
+    const first = (n: number) => { const d = new Date((END - n * 86400) * 1000); return d.getUTCDate() === 1; };
+    const ago1st = [...Array(80).keys()].find(first)!; // a recent day that is the 1st of a month
+    const other = [...Array(80).keys()].find((n) => !first(n))!;
+    const { countries } = countryStats([row({ ago: ago1st, best: 60 }), row({ ago: other, best: 40 }), row({ ago: 200, best: 999 })], opts);
+    expect(countries.get('UKR')!.firstOfMonthShare90).toBeCloseTo(0.6);
+    expect(countryStats([row({ ago: other, best: 5 })], opts).countries.get('UKR')!.firstOfMonthShare90).toBe(0);
+  });
   it('skips and reports countries without an id, and builds a world monthly series from every valid event', () => {
     const r = countryStats([row({ ago: 1, best: 10 }), row({ ago: 1, best: 40, gw: '999' }), row({ ago: 1, best: 5, gw: '365' })], opts);
     expect([...r.countries.keys()].sort()).toEqual(['RUS', 'UKR']);

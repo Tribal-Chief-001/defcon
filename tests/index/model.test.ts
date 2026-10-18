@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { backtest, bootstrapInterval, confidenceOf, contributions, featureVector, FEATURES, fitTwo, predictOne, type TrainRow } from '../../scripts/index/model';
+import { backtest, bootstrapInterval, bootstrapPair, confidenceOf, contributions, featureVector, FEATURES, fitTwo, predictOne, type TrainRow } from '../../scripts/index/model';
 import { ym } from '../../scripts/index/panel';
 
 // a deterministic synthetic panel: 60 countries x months; deaths drive the labels, governance adds a little
@@ -93,6 +93,21 @@ describe('bootstrapInterval', () => {
       expect(a[i]!.hi).toBeGreaterThanOrEqual(predictOne(m.rise, x) - 0.05);
     });
   }, 30_000); // two 12-replicate bootstraps: slow when the whole suite runs in parallel on this laptop
+});
+
+describe('bootstrapPair (finding: the rise interval must never exceed the continue interval)', () => {
+  const data = rows();
+  const xs = [featureVector(100, 350, 1000, [0, 0, 0, 0, 0]), featureVector(5, 20, 60, [0, 0, 0, 0, 0]), featureVector(0, 0, 0, [0, 0, 0, 0, 0])];
+  it('clamps each replicate so rise <= continue in both bounds, is ordered and reproducible', () => {
+    const a = bootstrapPair(data, xs, 10, 7);
+    expect(bootstrapPair(data, xs, 10, 7)).toEqual(a);
+    xs.forEach((_, i) => {
+      expect(a.rise[i]!.lo).toBeLessThanOrEqual(a.continue[i]!.lo + 1e-12);
+      expect(a.rise[i]!.hi).toBeLessThanOrEqual(a.continue[i]!.hi + 1e-12);
+      expect(a.rise[i]!.lo).toBeLessThanOrEqual(a.rise[i]!.hi);
+      expect(a.continue[i]!.lo).toBeLessThanOrEqual(a.continue[i]!.hi);
+    });
+  }, 60_000);
 });
 
 describe('confidenceOf (a heuristic: the lowest of three checks)', () => {

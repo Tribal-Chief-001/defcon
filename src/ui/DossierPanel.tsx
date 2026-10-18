@@ -94,7 +94,7 @@ export function DossierPanel({ countryId, onClose, nowS: fixedNowS, onMethod }: 
         {d.continent ? <span className="rounded-full border border-[var(--border-strong)] px-2.5 py-1">{d.continent}</span> : null}
       </div>
 
-      {indices ? <IndexCard index={indexFor(indices, d.id)} model={indices.model} dataEnd={indices.dataEnd} rankedTotal={indices.countries.filter((c) => c.fatality.rank !== null).length} onMethod={onMethod ?? (() => {})} /> : null}
+      {indices ? <IndexCard index={indexFor(indices, d.id)} countryId={d.id} model={indices.model} dataEnd={indices.dataEnd} rankedTotal={indices.countries.filter((c) => c.fatality.rank !== null).length} onMethod={onMethod ?? (() => {})} /> : null}
 
       <div className="mt-4 border-t border-[var(--border)]">
         <div className="grid grid-cols-[92px_1fr] gap-3 border-b border-[var(--border)] py-2 text-[13px]">

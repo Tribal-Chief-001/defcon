@@ -67,7 +67,10 @@ function valid(f: unknown): f is IndicesFile {
     target(x.model.rise) &&
     target(x.model.continue) &&
     Array.isArray(x.model.features) &&
+    x.model.features.every((t) => typeof t === 'string') &&
     typeof x.model.trainedThrough === 'string' &&
+    typeof x.model.testPeriod === 'string' &&
+    num(x.model.bootstrapReps) &&
     !!x.world &&
     months(x.world.monthly, 120) &&
     Array.isArray(x.countries) &&

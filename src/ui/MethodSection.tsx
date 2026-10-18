@@ -142,9 +142,12 @@ function Body({ f }: { f: IndicesFile }) {
         <ul aria-label="Limits" className="list-disc space-y-1 pl-5">
           <li>The indices cover the {f.countries.length} countries with a UCDP GED record. Any other country is "not modelled", which is not a low-risk rating.</li>
           <li>Deaths are estimates with ranges, from reports; where UCDP could not locate deaths precisely, the confidence is lower.</li>
-          <li>Governance scores are perceptions of experts and surveys, published once a year, and used from the latest year before the estimate.</li>
+          <li>Governance scores are perceptions of experts and surveys, published once a year about a year after the period they describe; only values that were already published at the time of an estimate are used.</li>
+          <li>The recent-deaths terms can extrapolate: a country with a very deadly last year but a quiet last 90 days can still show a high sharp-rise estimate. Read it together with the momentum, the confidence and the "why this score" list.</li>
           <li>The backtest is one time split, not many; the intervals cover training uncertainty only, not model error or a change in the world.</li>
           <li>The model does not forecast the onset of violence in peaceful places (tested: it is not forecastable from these inputs).</li>
+          <li>UCDP files the events of Gaza and the West Bank under Israel, so Palestine has no separate figure and Israel's indices include them.</li>
+          <li>Some 2026 candidate events carry only a month and are dated the 1st, so a 30 or 90-day window can miss or double a month (Ukraine's last 90 days are lower than its calendar quarter). Momentum then shows "low data".</li>
           <li>Rows of 2026 are provisional (candidate events) and can be revised. The estimate is not a forecast, not advice for travel and not the official US DEFCON level.</li>
         </ul>
       </section>

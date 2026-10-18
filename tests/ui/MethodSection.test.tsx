@@ -57,7 +57,7 @@ describe('MethodSection', () => {
   it('states the limits, including the ones that are specific to this model', async () => {
     await shown();
     const t = screen.getByRole('list', { name: /limits/i }).textContent ?? '';
-    for (const re of [new RegExp(`${indicesFixture().countries.length} countries`), /estimates/, /perceptions/, /one time split/, /training/i, /onset/i, /provisional/i, /not modelled/i, /not the official US DEFCON level/i]) expect(t).toMatch(re);
+    for (const re of [new RegExp(`${indicesFixture().countries.length} countries`), /estimates/, /perceptions/, /one time split/, /training/i, /onset/i, /provisional/i, /not modelled/i, /dated the 1st/i, /extrapolat/i, /a year after/i, /Gaza and the West Bank/i, /not the official US DEFCON level/i]) expect(t).toMatch(re);
   });
 
   it('cites UCDP and the World Bank with their licences, as links', async () => {

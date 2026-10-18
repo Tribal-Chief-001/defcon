@@ -1,5 +1,14 @@
 import { describe, expect, it } from 'vitest';
-import { latestBefore, neighbourSignals, parseWbHist } from '../../scripts/index/structural';
+import { latestBefore, latestPublished, neighbourSignals, parseWbHist } from '../../scripts/index/structural';
+
+describe('latestPublished (finding: a WGI value for year Y-1 appears around September of Y)', () => {
+  const s = new Map([[2023, 1], [2024, 2], [2025, 3]]);
+  it('uses values two or more years before the prediction year', () => {
+    expect(latestPublished(s, 2026)).toBe(2); // 2025 is not yet published in August 2026
+    expect(latestPublished(s, 2025)).toBe(1);
+    expect(latestPublished(new Map([[2025, 9]]), 2026)).toBeNull();
+  });
+});
 
 describe('latestBefore', () => {
   const s = new Map([[1996, 1], [1998, 2], [2000, 3]]);

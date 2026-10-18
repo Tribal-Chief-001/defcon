@@ -36,13 +36,22 @@ describe('public/data/indices.json', () => {
     }
   });
 
-  it('ranks the countries with deaths in the last 90 days from 1, densely and uniquely', () => {
+  it('ranks the countries with deaths in the last 90 days from 1; countries with equal deaths share a rank (finding: arbitrary tie order)', () => {
     const ranked = f.countries.filter((c) => c.fatality.rank !== null);
     expect(ranked.every((c) => c.fatality.deaths90.best > 0)).toBe(true);
     expect(f.countries.filter((c) => c.fatality.deaths90.best > 0).every((c) => c.fatality.rank !== null)).toBe(true);
-    expect(ranked.map((c) => c.fatality.rank!).sort((a, b) => a - b)).toEqual(ranked.map((_, i) => i + 1));
-    const deaths = ranked.sort((a, b) => a.fatality.rank! - b.fatality.rank!).map((c) => c.fatality.deaths90.best);
-    expect(deaths).toEqual([...deaths].sort((a, b) => b - a));
+    for (const c of ranked) expect(c.fatality.rank, c.id).toBe(1 + ranked.filter((o) => o.fatality.deaths90.best > c.fatality.deaths90.best).length);
+    expect(ranked.some((c) => ranked.some((o) => o !== c && o.fatality.rank === c.fatality.rank))).toBe(true); // the real data has ties
+  });
+
+  it('invents no range: where low, best and high deaths are equal the score has no range, and a tiny rate is not rounded to zero', () => {
+    for (const c of f.countries) {
+      const d = c.fatality.deaths90;
+      if (d.low === d.best && d.best === d.high) expect(c.fatality.scoreHigh - c.fatality.scoreLow, c.id).toBeLessThanOrEqual(0.1); // only the rounding of one decimal
+      if (c.fatality.deaths365.best > 0 && c.fatality.per100k !== null) expect(c.fatality.per100k, c.id).toBeGreaterThan(0);
+    }
+    const zero = f.countries.find((c) => c.fatality.deaths365.best === 0);
+    if (zero) expect(zero.fatality.scoreHigh).toBe(0);
   });
 
   it('has probabilities with ordered intervals, rise never above continue, a confidence with a reason and an exactly-named breakdown', () => {
@@ -77,6 +86,16 @@ describe('public/data/indices.json', () => {
     expect(u.risk!.continue.p).toBeGreaterThan(0.9);
   });
 
+  it('keeps the rise interval inside the continue interval for every country (a sharp rise implies continuing violence)', () => {
+    for (const c of f.countries) if (c.risk) {
+      expect(c.risk.rise.lo, c.id).toBeLessThanOrEqual(c.risk.continue.lo + 1e-9);
+      expect(c.risk.rise.hi, c.id).toBeLessThanOrEqual(c.risk.continue.hi + 1e-9);
+    }
+  });
+  it('gives no momentum reading to a country whose recent deaths are mostly dated the 1st of a month (Ukraine in the 2026 candidate files)', () => {
+    expect(by.get('UKR')!.risk!.momentum.direction).toBe('low data');
+  });
+
   it('does not model a country UCDP has never recorded: it is absent or has no risk numbers, never a fake "low"', () => {
     const iceland = by.get('ISL');
     expect(iceland === undefined || iceland.risk === null).toBe(true);
@@ -97,9 +116,12 @@ describe('public/data/indices.json', () => {
       expect(t.testRows).toBeGreaterThan(5000);
       expect(t.bins).toHaveLength(5);
       expect(t.bins.reduce((s, b) => s + b.n, 0)).toBe(t.testRows);
-      for (const b of t.bins) expect(Math.abs(b.predicted - b.observed), JSON.stringify(b)).toBeLessThanOrEqual(0.12);
+      for (const b of t.bins) expect(Math.abs(b.predicted - b.observed), JSON.stringify(b)).toBeLessThanOrEqual(0.05);
       if (t.tail.n >= 30) expect(Math.abs(t.tail.predicted - t.tail.observed), 'predictions of 30% or more').toBeLessThanOrEqual(0.15); // the tail is where a score can mislead
     }
+    // the published document carries the numbers of the data file (the document is generated, so a stale one means a forgotten rebuild)
+    const doc = readFileSync('docs/INDEX-BACKTEST.md', 'utf8');
+    for (const v of [m.rise.auc, m.continue.auc, m.rise.persistenceAuc]) expect(doc, String(v)).toContain(v.toFixed(4));
     expect(m.features).toEqual(FEATURES);
     expect(m.trainedThrough).toBe('2025-09');
     expect(m.bootstrapReps).toBeGreaterThanOrEqual(100);

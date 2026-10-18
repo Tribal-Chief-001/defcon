@@ -57,6 +57,11 @@ export function App() {
   const [sel, setSel] = useState<Selected | null>(null);
   // initialised from the URL so the hash-mirroring effect below does not erase a shared #c=IND link before it is applied
   const [about, setAbout] = useState(() => parseHash(location.hash).about === true);
+  const [aboutToMethod, setAboutToMethod] = useState(false); // opened from a "How computed" link: scroll to the indices method
+  const openAbout = (toMethod: boolean) => {
+    setAboutToMethod(toMethod);
+    setAbout(true);
+  };
   // null = closed, '' = the conflict list, otherwise one conflict id (`#war`, `#war=<id>`)
   const [war, setWar] = useState<string | null>(() => parseHash(location.hash).war ?? null);
   const [dossierId, setDossierId] = useState<string | null>(() => parseHash(location.hash).country);
@@ -272,14 +277,14 @@ export function App() {
         <button type="button" aria-pressed={warOpen} onClick={() => setWar((w) => (w === null ? '' : null))} className="rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)]">
           War room
         </button>
-        <button type="button" onClick={() => setAbout(true)} className="rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)]">
+        <button type="button" onClick={() => openAbout(false)} className="rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)]">
           About
         </button>
       </TopBar>
       {about ? (
         <Suspense fallback={null}>
           <ErrorBoundary where="about" onReset={() => setAbout(false)}>
-            <AboutPage onClose={() => setAbout(false)} />
+            <AboutPage onClose={() => setAbout(false)} toMethod={aboutToMethod} />
           </ErrorBoundary>
         </Suspense>
       ) : null}
@@ -298,7 +303,7 @@ export function App() {
                 }}
                 onFocusPlace={(at) => setPlaceFocus(at ? { lat: at.lat, lon: at.lon, distance: 1.7 } : null)}
                 onHoverPin={setWarHover}
-                onMethod={() => setAbout(true)}
+                onMethod={() => openAbout(true)}
               />
             </ErrorBoundary>
           </Suspense>
@@ -315,7 +320,7 @@ export function App() {
       )}
       {dossierId ? (
         <ErrorBoundary key={dossierId} where="dossier" onReset={exitDive}>
-          <DossierPanel countryId={dossierId} onClose={exitDive} onMethod={() => setAbout(true)} />
+          <DossierPanel countryId={dossierId} onClose={exitDive} onMethod={() => openAbout(true)} />
         </ErrorBoundary>
       ) : null}
       {sel ? (

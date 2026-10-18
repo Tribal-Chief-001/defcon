@@ -35,14 +35,16 @@ function ProbBar({ name, short, p }: { name: string; short: string; p: Prob }) {
 
 // The two indices of a country. The Fatality Index is observed (deaths); the Instability Index is a model estimate (the chance that
 // violence continues or rises in the next 3 months). Every score has its range or interval and a confidence, and says what it is not.
-export function IndexCard({ index, model, dataEnd, rankedTotal, onMethod }: { index: CountryIndex | undefined; model: ModelMeta; dataEnd: string; rankedTotal: number; onMethod: () => void }) {
+export function IndexCard({ index, countryId, model, dataEnd, rankedTotal, onMethod }: { index: CountryIndex | undefined; countryId?: string; model: ModelMeta; dataEnd: string; rankedTotal: number; onMethod: () => void }) {
   const f = index?.fatality;
   const r = index?.risk ?? null;
   return (
     <section role="region" aria-label="Indices" className="mt-5 border-t border-[var(--border)] pt-4">
       <h3 className={label}>Fatality Index</h3>
       {!f ? (
-        <p className="mt-2 text-[13px] text-[var(--text-muted)]">UCDP has recorded no organised violence here: Fatality Index 0.</p>
+        <p className="mt-2 text-[13px] text-[var(--text-muted)]">
+          {countryId === 'PSX' ? 'UCDP files Gaza and West Bank events under Israel, so they are counted in the indices of Israel; there is no separate figure for Palestine.' : 'UCDP has recorded no organised violence here: Fatality Index 0.'}
+        </p>
       ) : (
         <>
           <div className="mt-2 flex items-center gap-4">
@@ -75,7 +77,7 @@ export function IndexCard({ index, model, dataEnd, rankedTotal, onMethod }: { in
               {f.per100k !== null ? (
                 <div className="flex gap-3">
                   <dt className="w-[110px] text-[var(--text-muted)]">Per capita</dt>
-                  <dd>{f.per100k.toFixed(f.per100k < 10 ? 2 : 1)} per 100,000 people (365 days)</dd>
+                  <dd>{f.per100k > 0 && f.per100k < 0.01 ? '<0.01' : f.per100k.toFixed(f.per100k < 10 ? 2 : 1)} per 100,000 people (365 days)</dd>
                 </div>
               ) : null}
             </dl>
@@ -102,6 +104,9 @@ export function IndexCard({ index, model, dataEnd, rankedTotal, onMethod }: { in
             <span className="font-[var(--font-mono)] text-[12px]">Confidence {r.confidence}</span> <span className="text-[var(--text-muted)]">because {r.confidenceReason}</span>
           </p>
           <h4 className={`${label} mt-4`}>Why this score (a sharp rise)</h4>
+          <p className="text-[12px] text-[var(--text-muted)]">
+            Contributions in log-odds (positive raises the risk).{r.rise.p >= r.continue.p ? ' The sharp-rise estimate is capped at the chance that violence continues, so the sum can exceed the shown figure.' : ''}
+          </p>
           <ol aria-label="Why this score" className="mt-1 grid gap-0.5 text-[13px]">
             {r.why.slice(0, 5).map((w) => (
               <li key={w.label} className="flex justify-between gap-3">
@@ -117,7 +122,7 @@ export function IndexCard({ index, model, dataEnd, rankedTotal, onMethod }: { in
       )}
 
       <p className="mt-4 text-[12px] leading-relaxed text-[var(--text-muted)]">
-        A risk estimate from the history of deaths and governance, to {fmtDate(dataEnd)}; 2026 rows are provisional. Backtest 2021{'–'}2025: AUC {model.rise.auc.toFixed(2)} for a sharp rise (0.{Math.round(model.rise.persistenceAuc * 100)} for recent deaths alone), {model.continue.auc.toFixed(2)} for continuing; it does not forecast outbreaks in peaceful countries. Not the official US DEFCON level.
+        A risk estimate from the history of deaths and governance, to {fmtDate(dataEnd)}; 2026 rows are provisional. Backtest 2021{'–'}2025: AUC {model.rise.auc.toFixed(2)} for a sharp rise ({model.rise.persistenceAuc.toFixed(2)} for recent deaths alone), {model.continue.auc.toFixed(2)} for continuing; it does not forecast outbreaks in peaceful countries. Not the official US DEFCON level.
       </p>
       <button type="button" onClick={onMethod} className="mt-1 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--lime)] underline decoration-[var(--border-strong)] underline-offset-4 hover:decoration-[var(--lime)]">
         How computed

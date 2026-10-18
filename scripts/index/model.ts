@@ -85,6 +85,25 @@ export function bootstrapInterval(rows: TrainRow[], target: Target, xs: number[]
   return xs.map((_, j) => ({ lo: percentile(runs.map((r) => r[j]!), 0.05), hi: percentile(runs.map((r) => r[j]!), 0.95) }));
 }
 
+// Both targets in one bootstrap, so each replicate can be clamped: a sharp rise implies continuing violence, so its probability in a
+// replicate never exceeds "continue" (the point estimates are clamped the same way). Without this the "rise" interval could sit above
+// the "continue" interval.
+export function bootstrapPair(rows: TrainRow[], xs: number[][], reps: number, seed: number): { continue: { lo: number; hi: number }[]; rise: { lo: number; hi: number }[] } {
+  const ids = new Map<string, number>();
+  const groups = rows.map((r) => ids.get(r.id) ?? (ids.set(r.id, ids.size), ids.size - 1));
+  const runs = clusterBootstrap(groups, reps, seed, (idx) => {
+    const sub = idx.map((i) => rows[i]!);
+    const mc = fitLogistic(sub.map((r) => r.x), sub.map((r) => r.yContinue), 1e-3);
+    const mr = fitLogistic(sub.map((r) => r.x), sub.map((r) => r.yRise), 1e-3);
+    return xs.flatMap((x) => {
+      const c = predictOne(mc, x);
+      return [c, Math.min(predictOne(mr, x), c)];
+    });
+  });
+  const band = (k: number) => xs.map((_, j) => ({ lo: percentile(runs.map((r) => r[2 * j + k]!), 0.05), hi: percentile(runs.map((r) => r[2 * j + k]!), 0.95) }));
+  return { continue: band(0), rise: band(1) };
+}
+
 // The confidence label is a heuristic, not a statistical coverage claim: the lowest of three checks, with the reason of the weakest.
 export function confidenceOf(a: { locatedShare365: number; intervalWidth: number; provisionalShare90: number; deaths365: number }): { level: Confidence; reason: string } {
   const placed = a.deaths365 > 0 ? (a.locatedShare365 >= 0.6 ? 2 : a.locatedShare365 >= 0.3 ? 1 : 0) : 2;

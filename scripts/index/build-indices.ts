@@ -8,9 +8,9 @@ import type { GedRow } from '../conflicts/conflicts';
 import { resolveGw } from '../relations/gw-ids';
 import type { CountryIndex, IndicesFile, Risk } from '../../src/indices/types';
 import { bandOf, countryStats, dfiRange, momentumOf, per100k, type Stats } from './indices';
-import { backtest, bootstrapInterval, confidenceOf, contributions, FEATURES, featureVector, fitTwo, predictOne, type TrainRow } from './model';
+import { backtest, bootstrapPair, confidenceOf, contributions, FEATURES, featureVector, fitTwo, predictOne, type TrainRow } from './model';
 import { aggregate, buildPanel, type GedEv, ym } from './panel';
-import { latestBefore, parseWbHist } from './structural';
+import { latestBefore, latestPublished, parseWbHist } from './structural';
 
 const START = ym(1989, 1);
 const REPS = 100;
@@ -51,7 +51,7 @@ async function main() {
   const wgiSeries = WGI.map(series);
   const pop = series('SP.POP.TOTL');
   const wgiAt = (id: string, year: number) => {
-    const vals = wgiSeries.map((m) => latestBefore(m.get(iso3.get(id) ?? ''), year, 3));
+    const vals = wgiSeries.map((m) => latestPublished(m.get(iso3.get(id) ?? ''), year, 3));
     return vals.every((v) => v !== null) ? (vals as number[]) : null;
   };
 
@@ -78,7 +78,7 @@ async function main() {
 
   // ---- observed statistics and predictions at the data end
   const stats = countryStats(rows, { dataEndS, gwToId });
-  const empty = (): Stats => ({ deaths30: { best: 0, low: 0, high: 0 }, deaths90: { best: 0, low: 0, high: 0 }, deaths365: { best: 0, low: 0, high: 0 }, events30: 0, events90: 0, events365: 0, monthly: new Array<number>(120).fill(0), locatedShare365: 1, provisionalShare90: 0 });
+  const empty = (): Stats => ({ deaths30: { best: 0, low: 0, high: 0 }, deaths90: { best: 0, low: 0, high: 0 }, deaths365: { best: 0, low: 0, high: 0 }, events30: 0, events90: 0, events365: 0, monthly: new Array<number>(120).fill(0), locatedShare365: 1, provisionalShare90: 0, firstOfMonthShare90: 0 });
   const ids = [...new Set([...now.keys(), ...stats.countries.keys()])].sort();
   const modelled = ids.filter((id) => now.has(id) && wgiAt(id, Math.floor(END / 12)));
   const xs = modelled.map((id) => {
@@ -86,7 +86,7 @@ async function main() {
     return featureVector(n.f3, n.f12, n.f36, wgiAt(id, Math.floor(END / 12))!);
   });
   console.log(`bootstrap: ${REPS} refits x 2 for ${modelled.length} countries ...`);
-  const ci = { continue: bootstrapInterval(train, 'continue', xs, REPS, 101), rise: bootstrapInterval(train, 'rise', xs, REPS, 102) };
+  const ci = bootstrapPair(train, xs, REPS, 101);
 
   const list: CountryIndex[] = ids.map((id) => {
     const s = stats.countries.get(id) ?? empty();
@@ -97,10 +97,10 @@ async function main() {
       fatality: {
         score: r1(fr.score),
         scoreLow: r1(fr.low),
-        scoreHigh: r1(Math.min(100, fr.high + 0.05)),
+        scoreHigh: r1(Math.min(100, fr.high)),
         deaths90: { best: s.deaths90.best, low: s.deaths90.low, high: s.deaths90.high },
         deaths365: { best: s.deaths365.best, low: s.deaths365.low, high: s.deaths365.high },
-        per100k: ((v) => (v === null ? null : Math.round(v * 100) / 100))(per100k(s.deaths365.best, population)),
+        per100k: ((v) => (v === null ? null : v >= 0.01 ? Math.round(v * 100) / 100 : Number(v.toPrecision(2))))(per100k(s.deaths365.best, population)), // tiny rates keep two significant digits instead of rounding to 0
         band: bandOf(s.deaths365.best),
         trend: activityTrend(s.events30, s.events90),
         rank: null,
@@ -123,7 +123,8 @@ async function main() {
       const risk: Risk = {
         continue: { p: r4(cont.p), lo: r4(cont.lo), hi: r4(cont.hi) },
         rise: { p: r4(rise.p), lo: r4(rise.lo), hi: r4(rise.hi) },
-        momentum: ((m) => ({ value: r3(m.value), direction: m.direction }))(momentumOf(s.deaths30.best, s.deaths90.best)),
+        // a month dated on its 1st (candidate rows) makes the 30 and 90-day windows lumpy: no reading rather than a wrong one
+        momentum: ((m) => ({ value: r3(m.value), direction: s.firstOfMonthShare90 > 0.5 ? ('low data' as const) : m.direction }))(momentumOf(s.deaths30.best, s.deaths90.best)),
         confidence: conf.level,
         confidenceReason: conf.reason,
         why,
@@ -135,7 +136,8 @@ async function main() {
     return c;
   });
   const ranked = list.filter((c) => c.fatality.deaths90.best > 0).sort((a, b) => b.fatality.deaths90.best - a.fatality.deaths90.best || a.id.localeCompare(b.id));
-  ranked.forEach((c, i) => (c.fatality.rank = i + 1));
+  // competition ranking (1, 2, 2, 4): countries with equal deaths share a rank instead of an arbitrary order by id
+  ranked.forEach((c) => (c.fatality.rank = 1 + ranked.filter((o) => o.fatality.deaths90.best > c.fatality.deaths90.best).length));
 
   const m4 = (t: typeof bt.rise) => ({ ...t, auc: r4(t.auc), ap: r4(t.ap), brierSkill: r4(t.brierSkill), baseRate: r4(t.baseRate), persistenceAuc: r4(t.persistenceAuc), bins: t.bins.map((b) => ({ predicted: r4(b.predicted), observed: r4(b.observed), n: b.n })), tail: { predicted: r4(t.tail.predicted), observed: r4(t.tail.observed), n: t.tail.n } });
   const out: IndicesFile = {

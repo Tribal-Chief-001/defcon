@@ -12,6 +12,10 @@ export function latestBefore(s: Series | undefined, year: number, maxAge = 3): n
   return null;
 }
 
+// The newest value published by the time of the prediction year: a World Bank governance value for year Y-1 appears around September of
+// Y, so for any month of year Y only values up to Y-2 are safe (no look-ahead in training, and the same rule for the live prediction).
+export const latestPublished = (s: Series | undefined, year: number, maxAge = 3): number | null => latestBefore(s, year - 1, maxAge);
+
 // World Bank API JSON ([meta, rows]) -> iso3 -> year -> value. Aggregates have no iso3 code and null values are skipped.
 export function parseWbHist(text: string): Map<string, Series> {
   const json = JSON.parse(text) as [{ message?: unknown }, { countryiso3code?: string; date?: string; value?: number | null }[]?];

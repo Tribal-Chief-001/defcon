@@ -18,7 +18,7 @@ const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1
 
 // About and Sources: what this is, the map policy, every data source with licence and age, what the data does not cover, privacy.
 // A modal dialog: focus moves in, Tab stays inside, Esc closes and focus returns to the opener.
-export function AboutPage({ onClose }: { onClose: () => void }) {
+export function AboutPage({ onClose, toMethod = false }: { onClose: () => void; toMethod?: boolean }) {
   const { recent, archive } = useEvents();
   const sources = (recent ?? archive)?.meta.sources ?? [];
   const box = useRef<HTMLDivElement>(null);
@@ -32,7 +32,8 @@ export function AboutPage({ onClose }: { onClose: () => void }) {
   onCloseRef.current = onClose;
   useEffect(() => {
     opener.current = document.activeElement;
-    box.current?.querySelector<HTMLElement>('button')?.focus();
+    box.current?.querySelector<HTMLElement>('button')?.focus({ preventScroll: toMethod });
+    if (toMethod) box.current?.querySelector('[data-method]')?.scrollIntoView?.({ block: 'start' }); // "How computed" opens the page at its method
     const onKey = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
         e.stopPropagation();
