@@ -1,0 +1,60 @@
+// @vitest-environment jsdom
+import { cleanup, render, screen, within } from '@testing-library/react';
+import { afterEach, describe, expect, it } from 'vitest';
+import { TimelineBlock, type TimelineRow } from '../../src/ui/TimelineBlock';
+import { timelineFixture } from '../timeline/fixture';
+
+afterEach(cleanup);
+const rows = (): TimelineRow[] => timelineFixture().theatres.flatMap((t) => t.entries.map((entry) => ({ entry, theatre: t.title })));
+
+describe('TimelineBlock', () => {
+  it('lists entries newest first with date, title, status word and summary', () => {
+    render(<TimelineBlock rows={rows()} checkedAt="2026-10-18" />);
+    const items = within(screen.getByRole('list', { name: /key events/i })).getAllByRole('listitem');
+    expect(items.map((i) => /(\d{1,2} \w{3} 2026)/.exec(i.textContent ?? '')![1])).toEqual(['1 Sep 2026', '10 Jul 2026', '1 Mar 2026']);
+    expect(items[0]!.textContent).toMatch(/reported/i);
+    expect(items[1]!.textContent).toMatch(/disputed/i);
+    expect(items[2]!.textContent).toMatch(/confirmed/i);
+    expect(items[1]!.textContent).toMatch(/Both sides gave different accounts/);
+  });
+
+  it('says it was checked on a date and explains the statuses', () => {
+    render(<TimelineBlock rows={rows()} checkedAt="2026-10-18" />);
+    const t = screen.getByRole('region', { name: /key events/i }).textContent ?? '';
+    expect(t).toMatch(/checked 18 Oct 2026/i);
+    expect(t).toMatch(/confirmed.*two independent sources/i);
+    expect(t).toMatch(/reported.*one source/i);
+    expect(t).toMatch(/disputed/i);
+  });
+
+  it('links every source over https with rel=noopener noreferrer and opens it in a new tab', () => {
+    render(<TimelineBlock rows={rows()} checkedAt="2026-10-18" />);
+    const links = screen.getAllByRole('link');
+    expect(links.map((l) => l.textContent)).toEqual(expect.arrayContaining(['Reuters', 'BBC', 'AP', 'Guardian', 'Al Jazeera']));
+    for (const l of links) {
+      expect(l.getAttribute('href')).toMatch(/^https:\/\//);
+      expect(l.getAttribute('rel')).toBe('noopener noreferrer');
+      expect(l.getAttribute('target')).toBe('_blank');
+    }
+  });
+
+  it('renders data text as text, never as markup', () => {
+    const { container } = render(<TimelineBlock rows={rows()} checkedAt="2026-10-18" />);
+    expect(container.querySelector('b')).toBeNull();
+    expect(container.textContent).toContain('A big strike hits <b>Kyiv</b>');
+  });
+
+  it('shows the theatre tag only when asked, and honours a limit', () => {
+    const { rerender } = render(<TimelineBlock rows={rows()} checkedAt="2026-10-18" />);
+    expect(screen.getByRole('region', { name: /key events/i }).textContent).not.toMatch(/Israel - Gaza/);
+    rerender(<TimelineBlock rows={rows()} checkedAt="2026-10-18" showTheatre limit={2} />);
+    const items = screen.getAllByRole('listitem');
+    expect(items).toHaveLength(2);
+    expect(items[0]!.textContent).toMatch(/Israel - Gaza/);
+  });
+
+  it('renders nothing for no rows', () => {
+    const { container } = render(<TimelineBlock rows={[]} checkedAt="2026-10-18" />);
+    expect(container.textContent).toBe('');
+  });
+});

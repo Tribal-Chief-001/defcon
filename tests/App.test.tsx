@@ -16,6 +16,7 @@ vi.mock('../src/globe/GlobeCanvas', () => ({
   },
 }));
 vi.mock('../src/events/service', () => ({ startEventService: () => () => {} }));
+vi.mock('../src/timeline/load', () => ({ loadTimeline: async () => null, resetTimelineCache: () => {} }));
 vi.mock('../src/conflicts/load', () => {
   const r = { best: 5, low: 4, high: 9 };
   const c = (id: string, name: string, cid: string | null) => ({ id, name, kinds: ['state'], countries: [{ id: cid, name: 'Indialand', deaths365: 50 }], deaths: { d30: r, d90: r, d365: r }, events: { d30: 1, d90: 1, d365: 1 }, trend: 'steady', lastDate: '2026-08-30', weekly: new Array(52).fill(0), latest: [], provisionalShare: 0 });

@@ -8,6 +8,7 @@ import { useEvents } from '../../src/events/store';
 import type { Ev } from '../../src/events/types';
 import { encodeSnapshot } from '../../scripts/events/encode';
 import { worldFixture } from '../conflicts/fixture';
+import { timelineFixture } from '../timeline/fixture';
 
 vi.mock('../../src/dossier/load', () => ({ loadIndex: async () => [{ id: 'AAA', name: 'Aland', iso2: null, iso3: 'AAA', capitals: [], continent: null, lat: 0, lon: 0, hasPolygon: true }] }));
 
@@ -36,7 +37,7 @@ const file: ConflictsFile = {
   world: worldFixture(),
   conflicts: [conflict({ id: 'russia-ukraine', name: 'Russia - Ukraine' }), conflict({ id: 'israel-palestine', name: 'Israel: Palestine', trend: 'rising', countries: [{ id: 'ISR', name: 'Israel', deaths365: 400 }] })],
 };
-const props = (o: Partial<React.ComponentProps<typeof ConflictsPage>> = {}) => ({ selected: null, onSelect: vi.fn(), onClose: vi.fn(), onDive: vi.fn(), load: async () => file, ...o });
+const props = (o: Partial<React.ComponentProps<typeof ConflictsPage>> = {}) => ({ selected: null, onSelect: vi.fn(), onClose: vi.fn(), onDive: vi.fn(), load: async () => file, loadTimeline: async () => timelineFixture(), ...o });
 
 const NOW = Math.floor(Date.now() / 1000);
 let n = 0;
@@ -266,6 +267,40 @@ describe('ConflictsPage', () => {
       useEvents.setState({ recent: snap([ev({ kind: 'protest' })]), status: 'ready' } as never);
       render(<ConflictsPage {...props({ selected: 'world' })} />);
       expect((await screen.findByRole('region', { name: /World overview/ })).textContent).toMatch(/No armed or civilian reports in the last 7 days/i);
+    });
+  });
+
+  describe('sourced timeline', () => {
+    it("shows the matching theatre's key events in a conflict's detail", async () => {
+      render(<ConflictsPage {...props({ selected: 'russia-ukraine' })} />);
+      const detail = await screen.findByRole('region', { name: /Russia - Ukraine/ });
+      const tl = await within(detail).findByRole('region', { name: /key events/i });
+      expect(tl.textContent).toMatch(/Talks stall/);
+      expect(tl.textContent).not.toMatch(/Strikes despite ceasefire/); // another theatre
+    });
+    it('shows the newest key events of all theatres, with the theatre, on the World overview', async () => {
+      render(<ConflictsPage {...props({ selected: 'world' })} />);
+      const world = await screen.findByRole('region', { name: /World overview/ });
+      const tl = await within(world).findByRole('region', { name: /key events/i });
+      expect(tl.textContent).toMatch(/Strikes despite ceasefire/);
+      expect(tl.textContent).toMatch(/Israel - Gaza/);
+    });
+    it('says the timeline is unavailable when it cannot be loaded, and the page still works', async () => {
+      render(<ConflictsPage {...props({ selected: 'russia-ukraine', loadTimeline: async () => null })} />);
+      const detail = await screen.findByRole('region', { name: /Russia - Ukraine/ });
+      await waitFor(() => expect(detail.textContent).toMatch(/Timeline unavailable/));
+      expect(detail.textContent).toMatch(/Last 90 days/);
+    });
+    it('shows no timeline block for a conflict that no theatre covers', async () => {
+      render(<ConflictsPage {...props({ selected: 'israel-palestine' })} />);
+      await screen.findByRole('region', { name: /Israel: Palestine/ });
+      // israel-palestine is covered by the "gaza" theatre in the fixture; use the conflict without a theatre
+      cleanup();
+      render(<ConflictsPage {...props({ selected: 'nope-conflict', load: async () => ({ ...file, conflicts: [conflict({ id: 'nope-conflict', name: 'Nowhere war' })] }) })} />);
+      const detail = await screen.findByRole('region', { name: /Nowhere war/ });
+      await waitFor(() => expect(detail.textContent).toMatch(/Last 90 days/));
+      expect(within(detail).queryByRole('region', { name: /key events/i })).toBeNull();
+      expect(detail.textContent).not.toMatch(/Timeline unavailable/);
     });
   });
 });

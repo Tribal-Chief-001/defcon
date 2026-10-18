@@ -5,15 +5,15 @@ import { loadIndex } from '../dossier/load';
 import { latestEvents } from '../events/rails';
 import { useEvents } from '../events/store';
 import { ago } from '../lib/ago';
+import { fmtDate } from '../lib/fmtDate';
+import { loadTimeline } from '../timeline/load';
+import type { TimelineFile } from '../timeline/types';
+import { TimelineBlock, type TimelineRow } from './TimelineBlock';
 import { useNow } from '../lib/useNow';
 import { useDialog } from './useDialog';
 
-const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
 const int = (n: number) => n.toLocaleString('en-US');
-const date = (iso: string) => {
-  const [y, m, d] = iso.split('-').map(Number);
-  return Number.isFinite(y) && m && d ? `${d} ${MON[m - 1]} ${y}` : iso;
-};
+const date = fmtDate;
 const addDays = (iso: string, n: number) => new Date(Date.parse(`${iso}T00:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
 const span = (r: Range) => `${int(r.low)}–${int(r.high)}`;
 const label = 'font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.18em] text-[var(--text-muted)]';
@@ -49,6 +49,13 @@ function Card({ title, r, events, to }: { title: string; r: Range; events: numbe
   );
 }
 
+// undefined = still loading (nothing shown), null = could not be loaded
+function Timeline({ tl, rows, showTheatre, limit }: { tl: TimelineFile | null | undefined; rows: TimelineRow[]; showTheatre?: boolean; limit?: number }) {
+  if (tl === undefined) return null;
+  if (tl === null) return <p className="text-[14px] text-[var(--text-muted)]">Timeline unavailable.</p>;
+  return <TimelineBlock rows={rows} checkedAt={tl.checkedAt} showTheatre={showTheatre} limit={limit} />;
+}
+
 function EventList({ events }: { events: ConflictEvent[] }) {
   if (events.length === 0) return <p className="text-[14px] text-[var(--text-muted)]">No events with a usable location.</p>;
   return (
@@ -74,8 +81,9 @@ const KIND_ROW: Record<Kind, { name: string; note: string }> = {
 };
 const REPORT_KIND: Record<string, string> = { armed: 'Armed', civilian: 'Civilians' };
 
-function World({ f, onDive, onBack }: { f: ConflictsFile; onDive: (id: string) => void; onBack: () => void }) {
+function World({ f, tl, onDive, onBack }: { f: ConflictsFile; tl: TimelineFile | null | undefined; onDive: (id: string) => void; onBack: () => void }) {
   const w = f.world;
+  const rows: TimelineRow[] = (tl?.theatres ?? []).flatMap((t) => t.entries.map((entry) => ({ entry, theatre: t.title })));
   const snap = useEvents((s) => s.recent);
   const nowS = useNow();
   const [names, setNames] = useState<Map<string, string>>(new Map());
@@ -153,6 +161,7 @@ function World({ f, onDive, onBack }: { f: ConflictsFile; onDive: (id: string) =
           ))}
         </ul>
       </div>
+      <Timeline tl={tl} rows={rows} showTheatre limit={8} />
       <div>
         <h4 className={`${label} mb-2`}>Newest reports from the news, last 7 days (auto-coded)</h4>
         {stale && snap ? <p className="mb-2 text-[13px] text-[var(--orange)]">The news data is from {new Date(snap.meta.asOfS * 1000).toISOString().slice(0, 16).replace('T', ' ')} UTC, not live.</p> : null}
@@ -182,7 +191,8 @@ function World({ f, onDive, onBack }: { f: ConflictsFile; onDive: (id: string) =
   );
 }
 
-function Detail({ c, f, onDive, onBack }: { c: Conflict; f: ConflictsFile; onDive: (id: string) => void; onBack: () => void }) {
+function Detail({ c, f, tl, onDive, onBack }: { c: Conflict; f: ConflictsFile; tl: TimelineFile | null | undefined; onDive: (id: string) => void; onBack: () => void }) {
+  const rows: TimelineRow[] = (tl?.theatres ?? []).filter((t) => t.conflicts.includes(c.id)).flatMap((t) => t.entries.map((entry) => ({ entry, theatre: t.title })));
   return (
     <section role="region" aria-label={c.name} className="flex min-h-0 flex-col gap-5 overflow-y-auto p-5">
       <button type="button" onClick={onBack} className="self-start font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] hover:text-[var(--lime)] md:hidden">
@@ -203,6 +213,7 @@ function Detail({ c, f, onDive, onBack }: { c: Conflict; f: ConflictsFile; onDiv
         <h4 className={`${label} mb-2`}>Deaths per week</h4>
         <Weekly weekly={c.weekly} dataEnd={f.dataEnd} />
       </div>
+      {tl === null || rows.length > 0 ? <Timeline tl={tl} rows={rows} /> : null}
       <div>
         <h4 className={`${label} mb-2`}>Countries in the data</h4>
         <ul className="flex flex-wrap gap-2">
@@ -231,9 +242,10 @@ function Detail({ c, f, onDive, onBack }: { c: Conflict; f: ConflictsFile; onDiv
 
 // The War tracker: every current conflict in the UCDP data with deaths (best estimate and range), trend, a weekly timeline and the latest
 // events. Human-coded data only, windows end at the data end date, 2026 rows are provisional. A modal dialog like About.
-export function ConflictsPage({ selected, onSelect, onClose, onDive, load = loadConflicts }: { selected: string | null; onSelect: (id: string | null) => void; onClose: () => void; onDive: (countryId: string) => void; load?: () => Promise<ConflictsFile> }) {
+export function ConflictsPage({ selected, onSelect, onClose, onDive, load = loadConflicts, loadTimeline: loadTl = loadTimeline }: { selected: string | null; onSelect: (id: string | null) => void; onClose: () => void; onDive: (countryId: string) => void; load?: () => Promise<ConflictsFile>; loadTimeline?: () => Promise<TimelineFile | null> }) {
   const [file, setFile] = useState<ConflictsFile | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [tl, setTl] = useState<TimelineFile | null | undefined>(undefined);
   const [q, setQ] = useState('');
   const box = useRef<HTMLDivElement>(null);
   useDialog(box, onClose);
@@ -247,6 +259,17 @@ export function ConflictsPage({ selected, onSelect, onClose, onDive, load = load
       live = false;
     };
   }, [load]);
+
+  useEffect(() => {
+    let live = true;
+    loadTl().then(
+      (t) => live && setTl(t),
+      () => live && setTl(null),
+    );
+    return () => {
+      live = false;
+    };
+  }, [loadTl]);
 
   const shown = useMemo(() => {
     const n = q.trim().toLowerCase();
@@ -316,7 +339,7 @@ export function ConflictsPage({ selected, onSelect, onClose, onDive, load = load
               )}
             </nav>
             <div className={`min-h-0 flex-col md:flex ${current || world ? 'flex' : 'hidden'}`}>
-              {current ? <Detail c={current} f={file} onDive={onDive} onBack={() => onSelect(null)} /> : <World f={file} onDive={onDive} onBack={() => onSelect(null)} />}
+              {current ? <Detail c={current} f={file} tl={tl} onDive={onDive} onBack={() => onSelect(null)} /> : <World f={file} tl={tl} onDive={onDive} onBack={() => onSelect(null)} />}
             </div>
           </div>
         )}

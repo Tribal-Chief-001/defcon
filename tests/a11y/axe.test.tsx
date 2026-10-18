@@ -11,6 +11,8 @@ import { useTime } from '../../src/time/store';
 import { encodeSnapshot } from '../../scripts/events/encode';
 import { AboutPage } from '../../src/ui/AboutPage';
 import { worldFixture } from '../conflicts/fixture';
+import { TimelineBlock } from '../../src/ui/TimelineBlock';
+import { timelineFixture } from '../timeline/fixture';
 import { ConflictsPage } from '../../src/ui/ConflictsPage';
 import { CommandPalette } from '../../src/ui/CommandPalette';
 import { DossierPanel } from '../../src/ui/DossierPanel';
@@ -123,6 +125,11 @@ describe('axe (rules jsdom supports)', () => {
     const d = render(<ConflictsPage selected={null} onSelect={() => {}} onClose={() => {}} onDive={() => {}} load={async () => Promise.reject(new Error('Could not load the conflicts data'))} />);
     await screen.findByRole('alert');
     expect(await check(d.container)).toEqual([]);
+  });
+  it('the sourced timeline block', async () => {
+    const rows = timelineFixture().theatres.flatMap((t) => t.entries.map((entry) => ({ entry, theatre: t.title })));
+    const { container } = render(<TimelineBlock rows={rows} checkedAt="2026-10-18" showTheatre />);
+    expect(await check(container)).toEqual([]);
   });
   it('the Hotspots and Latest rails', async () => {
     const { container } = render(<Rails dossierOpen={false} cardOpen={false} onDive={() => {}} onOpenEvent={() => {}} />);
