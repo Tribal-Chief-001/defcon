@@ -4,7 +4,7 @@ import type { EventAttrs } from '../events/attributes';
 
 const VERT = `
 attribute vec3 aColor; attribute float aSize; attribute float aAge; attribute float aHollow; attribute float aPhase;
-uniform float uElapsed; uniform float uPx; uniform float uFade; uniform float uBack;
+uniform float uElapsed; uniform float uPx; uniform float uFade; uniform float uBack; uniform float uDim;
 varying vec3 vColor; varying float vHollow; varying float vAlpha; varying float vBase; varying float vRip;
 void main() {
   float age = aAge + uElapsed - uBack;                                // age at the time-travel playhead
@@ -15,7 +15,7 @@ void main() {
   vBase = 1.0 / grow;                                                 // base disc radius as a fraction of the sprite
   vRip = young * (1.0 - ph);
   float fade = mix(1.0, 0.35, clamp(age / (30.0 * 86400.0), 0.0, 1.0));
-  vAlpha = fade * mix(1.0, 0.6, aHollow) * uFade * vis;
+  vAlpha = fade * mix(1.0, 0.6, aHollow) * uFade * vis * uDim;
   vColor = aColor; vHollow = aHollow;
   gl_PointSize = aSize * uPx * grow;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
@@ -62,7 +62,7 @@ export function createEventLayer() {
     fragmentShader: FRAG,
     transparent: true,
     depthWrite: false,
-    uniforms: { uElapsed: { value: 0 }, uPx: { value: 1 }, uFade: { value: 0 }, uBack: { value: 0 } },
+    uniforms: { uElapsed: { value: 0 }, uPx: { value: 1 }, uFade: { value: 0 }, uBack: { value: 0 }, uDim: { value: 1 } },
   });
   const points = new THREE.Points(new THREE.BufferGeometry(), material);
   points.frustumCulled = false;
@@ -97,6 +97,10 @@ export function createEventLayer() {
       points.geometry = g;
       points.visible = list.some((a) => a.count > 0);
       builtAt = performance.now();
+    },
+    // the War room dims the ordinary event dots so its halos and hotspots read first
+    setDim(v: number) {
+      material.uniforms.uDim!.value = Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : 1;
     },
     setBack(backS: number) {
       material.uniforms.uBack!.value = Number.isFinite(backS) ? Math.max(0, backS) : 0;

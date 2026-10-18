@@ -8,6 +8,8 @@ import { createTerminatorLayer } from './terminatorLayer';
 import { buildBorderPositions, buildCountryPositions } from './borderGeometry';
 import type { Relations } from '../relations/types';
 import { createArcLayer } from './arcLayer';
+import { createWarLayer } from './warLayer';
+import type { WarState } from './warGeometry';
 import { easeDive } from './dive';
 import { TIERS, createQualityGovernor, type Tier } from '../perf/quality';
 import { buildDensity } from './grain';
@@ -22,6 +24,7 @@ export type GlobeHandle = {
   setHighlight(id: string | null): void;
   onPick(cb: (id: string | null, lat: number, lon: number, kmPerPx: number) => void): () => void;
   setEvents(list: EventAttrs[]): void;
+  setWar(state: WarState): void;
   setEventMarker(lat: number | null, lon?: number): void;
   dive(id: string | null, target?: { lat: number; lon: number; distance: number }): void;
   setFraming(x: number, y: number): void;
@@ -190,6 +193,8 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   let densityT = 0;
   const arcs = createArcLayer(reducedMotion);
   globe.add(arcs.object);
+  const war = createWarLayer(reducedMotion);
+  globe.add(war.object);
   let relations: Relations | null = null;
   let relPoints: Record<string, { lat: number; lon: number }> = {};
   let arcFocus: string | null | undefined;
@@ -312,6 +317,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   type View = { yaw: number; pitch: number; distance: number };
   let diveId: string | null = null;
   let anim: { t0: number; from: View; to: View } | null = null;
+  let pendingFocus: { lat: number; lon: number; distance: number } | null = null;
   let pendingDive: { id: string | null; target?: { lat: number; lon: number; distance: number } } | null = null;
   let dimT = 0;
   let outlineT = 1;
@@ -322,6 +328,8 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     } else anim = { t0: performance.now(), from: { yaw, pitch, distance }, to };
     vYaw = vPitch = 0;
   };
+  const flyToView = (t: { lat: number; lon: number; distance: number }) =>
+    flyTo({ yaw: yaw + wrapPi(-t.lon * D2R - yaw), pitch: Math.max(-1.45, Math.min(1.45, t.lat * D2R)), distance: Math.max(MIN_DIST, Math.min(MAX_DIST, t.distance)) });
   const doDive = (id: string | null, target?: { lat: number; lon: number; distance: number }) => {
     diveId = id;
     refreshArcs();
@@ -547,6 +555,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     labelCap = tierCfg.labelCap;
     capSig = '';
     arcs.setSegments(tierCfg.arcSegments);
+    war.setLowTier(t === 'low');
     refreshArcs(true);
     terminator.object.visible = tierCfg.terminator && sunSet;
     grain.object.visible = tierCfg.grain > 0; // at the lowest tier the grain sphere is not drawn at all (not just invisible)
@@ -562,6 +571,11 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       const k = reducedMotion ? 1 : Math.min(1, dt * 5);
       frame = { x: frame.x + dx * k, y: frame.y + dy * k };
       applyFraming();
+    }
+    if (pendingFocus && boot.done) {
+      const p = pendingFocus;
+      pendingFocus = null;
+      flyToView(p);
     }
     if (pendingDive && boot.done) {
       const p = pendingDive;
@@ -606,6 +620,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     }
     prevFrameAt = now;
     arcs.update(now);
+    war.update(now, renderer.getPixelRatio(), fade);
     renderer.render(scene, camera);
     updateCapitals(now);
     opts.onFrame?.(now);
@@ -644,6 +659,10 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       densityDirty = true;
       eventLayer.setData(list);
     },
+    setWar(state) {
+      war.set(state);
+      eventLayer.setDim(state.active ? 0.45 : 1);
+    },
     setEventMarker(lat, lon) {
       eventLayer.setMarker(lat, lon);
     },
@@ -652,8 +671,11 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     },
     focus(t) {
       holdSpin = t !== null;
-      if (t && boot.done && Number.isFinite(t.lat) && Number.isFinite(t.lon))
-        flyTo({ yaw: yaw + wrapPi(-t.lon * D2R - yaw), pitch: Math.max(-1.45, Math.min(1.45, t.lat * D2R)), distance: Math.max(MIN_DIST, Math.min(MAX_DIST, t.distance)) });
+      if (t && Number.isFinite(t.lat) && Number.isFinite(t.lon)) {
+        // before the sonar boot is done the flight waits (a #war deep link asks for it on load) and is not cancelled by a later focus(null)
+        if (boot.done) flyToView(t);
+        else pendingFocus = t;
+      }
     },
     setSunTime(unixS) {
       terminator.update(unixS);
@@ -741,6 +763,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       });
       crosshair.dispose();
       eventLayer.dispose();
+      war.dispose();
       renderer.dispose();
     },
   };

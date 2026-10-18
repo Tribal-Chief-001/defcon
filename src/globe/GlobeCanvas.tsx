@@ -8,6 +8,7 @@ import { hasWebGL2 } from './capabilities';
 import { createGlobe, type GlobeHandle } from './engine';
 import type { CapitalLabel } from '../ui/CapitalLabels';
 import type { Capital } from './labels';
+import type { WarState } from './warGeometry';
 import { loadCountries } from '../dossier/load';
 import { playheadS, useTime } from '../time/store';
 import { loadRelations } from '../relations/load';
@@ -22,6 +23,8 @@ const getJson = async (url: string) => {
   return (await res.json()) as Topology;
 };
 
+const INACTIVE_WAR: WarState = { active: false, conflicts: [], selected: null, pins: [], hoverPin: null };
+
 export function GlobeCanvas({
   onPick,
   marker,
@@ -29,6 +32,7 @@ export function GlobeCanvas({
   framing,
   onLabels,
   focus,
+  war,
 }: {
   onPick?: (id: string | null, lat: number, lon: number, kmPerPx: number) => void;
   marker?: { lat: number; lon: number } | null;
@@ -36,11 +40,14 @@ export function GlobeCanvas({
   framing?: { x: number; y: number };
   onLabels?: (labels: CapitalLabel[]) => void;
   focus?: { lat: number; lon: number; distance: number } | null;
+  war?: WarState; // the War room's layer: halos, the selected conflict's zone and hotspots, timeline pins
 }) {
   const diveRef = useRef(dive);
   diveRef.current = dive;
   const framingRef = useRef(framing);
   framingRef.current = framing;
+  const warRef = useRef(war);
+  warRef.current = war;
   const ref = useRef<HTMLCanvasElement>(null);
   const handleRef = useRef<GlobeHandle | undefined>(undefined);
   const [supported, setSupported] = useState(() => hasWebGL2());
@@ -72,6 +79,7 @@ export function GlobeCanvas({
       const forced = import.meta.env.DEV ? new URLSearchParams(location.search).get('tier') : null;
       if (forced === 'low' || forced === 'medium' || forced === 'high') handle.setQuality(forced);
       handle.setFraming(framingRef.current?.x ?? 0, framingRef.current?.y ?? 0);
+      if (warRef.current) handle.setWar(warRef.current); // a deep link to #war opened before the globe existed
       if (diveRef.current) handle.dive(diveRef.current.id, diveRef.current.target); // a deep link opened before the globe existed
       if (onPick) off = handle.onPick(onPick);
       if (onLabels) offLabels = handle.onLabels(onLabels);
@@ -137,6 +145,9 @@ export function GlobeCanvas({
   useEffect(() => {
     handleRef.current?.setFraming(framing?.x ?? 0, framing?.y ?? 0);
   }, [framing?.x, framing?.y]);
+  useEffect(() => {
+    handleRef.current?.setWar(war ?? INACTIVE_WAR);
+  }, [war]);
 
   if (!supported) return <Unsupported />;
   if (failed) return <Unsupported reason="failed" />;

@@ -2,6 +2,11 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadCountries } from './dossier/load';
 import { diveTarget } from './globe/dive';
 import { framingFor } from './globe/framing';
+import { focusDistance, toWarConflicts, type WarPin, type WarState } from './globe/warGeometry';
+import { loadConflicts } from './conflicts/load';
+import type { ConflictsFile } from './conflicts/types';
+import { loadTimeline } from './timeline/load';
+import type { TimelineFile } from './timeline/types';
 import { formatHash, parseHash } from './lib/hashState';
 import { eventsBase } from './events/config';
 import { fetchDetail } from './events/detail';
@@ -65,7 +70,39 @@ export function App() {
     mq.addEventListener('change', on);
     return () => mq.removeEventListener('change', on);
   }, []);
-  const framing = useMemo(() => framingFor(dossierId !== null, narrow), [dossierId, narrow]);
+  const warOpen = war !== null && !about;
+  const framing = useMemo(() => framingFor(dossierId !== null, narrow, warOpen), [dossierId, narrow, warOpen]);
+
+  // The War room's presence on the globe: halos for the active conflicts, and for the selected one its zone, hotspots and timeline pins.
+  // The data comes from the same cached loaders as the War room itself; a failed load leaves the globe without the layer.
+  const [warData, setWarData] = useState<{ file: ConflictsFile | null; timeline: TimelineFile | null }>({ file: null, timeline: null });
+  const [warHover] = useState<number | null>(null); // the War room sets it from a timeline card (Task 4)
+  useEffect(() => {
+    if (war === null) return;
+    let live = true;
+    void loadConflicts().then((file) => live && setWarData((d) => ({ ...d, file })), () => undefined);
+    void loadTimeline().then((timeline) => live && setWarData((d) => ({ ...d, timeline })), () => undefined);
+    return () => {
+      live = false;
+    };
+  }, [war === null]); // eslint-disable-line react-hooks/exhaustive-deps
+  const warConflicts = useMemo(() => (warData.file ? toWarConflicts(warData.file.conflicts) : []), [warData.file]);
+  const warSelected = war && war !== 'world' && warConflicts.some((c) => c.id === war) ? war : null;
+  const warPins = useMemo<WarPin[]>(
+    () =>
+      warSelected && warData.timeline
+        ? warData.timeline.theatres.filter((t) => t.conflicts.includes(warSelected)).flatMap((t) => t.entries.flatMap((e) => (e.at ? [{ lat: e.at.lat, lon: e.at.lon, status: e.status, label: e.title }] : [])))
+        : [],
+    [warSelected, warData.timeline],
+  );
+  const warState = useMemo<WarState>(() => ({ active: warOpen, conflicts: warConflicts, selected: warSelected, pins: warPins, hoverPin: warHover }), [warOpen, warConflicts, warSelected, warPins, warHover]);
+  // the camera flies to a conflict when it is selected and stays there until another is chosen or the War room closes
+  const [warFocus, setWarFocus] = useState<{ lat: number; lon: number; distance: number } | null>(null);
+  useEffect(() => {
+    const c = warOpen && warSelected ? warConflicts.find((x) => x.id === warSelected) : undefined;
+    if (!c) return setWarFocus(null);
+    setWarFocus({ lat: c.lat, lon: c.lon, distance: focusDistance(c.spreadKm) }); // held while it is selected: the globe stays on it instead of spinning away
+  }, [warOpen, warSelected, warConflicts]);
   const latest = useRef(createLatest()); // only the newest selection may receive its detail
 
   useEffect(() => startEventService(BASE), []);
@@ -195,7 +232,7 @@ export function App() {
       <SkipLink />
       <StatusRegion />
       <ErrorBoundary where="globe" fallback={<Unsupported reason="failed" />}>
-        <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : watch.marker} focus={watch.focus ?? railFocus} dive={dive} framing={framing} onLabels={setLabels} />
+        <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : watch.marker} focus={watch.focus ?? warFocus ?? railFocus} dive={dive} framing={framing} onLabels={setLabels} war={warState} />
       </ErrorBoundary>
       <HudFrame />
       <LiveCapitalLabels />

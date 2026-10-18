@@ -12,4 +12,10 @@ describe('framingFor', () => {
     expect(framingFor(true, false)).toEqual({ x: 0.17, y: 0 });
     expect(framingFor(true, true)).toEqual({ x: 0, y: 0.2 });
   });
+  it('shifts left on desktop (the War room is docked on the right) and up on a narrow screen (a bottom sheet) while the war room is open', () => {
+    expect(framingFor(false, false, true)).toEqual({ x: -0.2, y: 0 });
+    expect(framingFor(false, true, true)).toEqual({ x: 0, y: 0.22 });
+    expect(framingFor(true, false, true)).toEqual({ x: -0.2, y: 0 }); // the war room wins over a dossier
+  });
 });
+
