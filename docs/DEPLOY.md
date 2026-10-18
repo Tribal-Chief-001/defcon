@@ -67,6 +67,6 @@ If Vercel's own Git integration is also connected, every push to `main` makes a 
 
 ## Not yet verified
 
-- The Vercel steps of the workflow and the `vercel.json` headers on Vercel's infrastructure have not run (no Vercel account access from this machine). The workflow has **not run on GitHub yet** at the time of writing: its first run happens after it is pushed to `main`; check `gh run list` for the result.
+- The Vercel steps of the workflow and the `vercel.json` headers on Vercel's infrastructure have not run (no Vercel account access from this machine). The ingest, validate, build and artifact steps ran successfully on GitHub on 2026-10-18 (first run, cold cache: 2 min 18 s total, GDELT download 72 s, snapshot build 21 s, validation passed, a 2.9 MB `events-snapshot` artifact; the three Vercel steps were skipped because no secrets exist). The Vercel steps themselves have never run.
 - `deploymentEnabled` and the CLI flags are as documented by Vercel at the time of writing and were not run here.
 - The security headers include no Content-Security-Policy yet; Plan 6 adds and tests it against the real app.

@@ -84,7 +84,7 @@ Open items found during Plan 1 that were deliberately not fixed. Each is graded 
 
 ## Plan 5 review minors (deferred, 2026-10-18)
 
-- The workflow builds the site twice when deploying (`npm run build`, then `vercel build`) and runs `npm ci` twice inside the job; the per-run duration (the plan assumed about 3 minutes, a reviewer estimated 5-8) is unmeasured until the first run on GitHub: recompute the monthly minutes then.
+- The workflow builds the site twice when deploying (`npm run build`, then `vercel build`) and runs `npm ci` twice inside the job; the first run took 2 min 18 s with a cold cache (plan assumed about 3 minutes); re-measure with a warm cache.
 - GDELT slots that returned 404 are marked missing permanently, so a transient outage leaves a gap.
 - The validator has no comparison with the previous published snapshot (for example "event count dropped by more than half").
 - `npm audit --audit-level=high` can fail an unrelated pull request when a new advisory appears.
