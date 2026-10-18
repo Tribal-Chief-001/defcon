@@ -1,3 +1,4 @@
+import { activityTrend } from './trend';
 import type { Conflict, ConflictEvent, ConflictsFile, Geo, Kind, Range, World } from '../../src/conflicts/types';
 
 export type GedRow = Record<string, string | undefined>;
@@ -182,9 +183,7 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
     for (let i = 2; used.has(id); i++) id = `${slug(name)}-${i}`;
     used.add(id);
 
-    // activity trend from event counts, not deaths: one mass-casualty event must not make a steady conflict look like it is falling or rising
-    const base = (n.d90 - n.d30) / 2; // events per 30 days in the 60 days before the last 30
-    const trend: Conflict['trend'] = n.d30 + base < 5 ? 'low data' : n.d30 >= 5 && n.d30 >= 1.5 * base ? 'rising' : base >= 5 && n.d30 <= 0.5 * base ? 'falling' : 'steady';
+    const trend: Conflict['trend'] = activityTrend(n.d30, n.d90);
 
     const latest = evs.map(toEvent).filter((e): e is ConflictEvent => e !== null).sort(newestFirst).slice(0, 12);
 
