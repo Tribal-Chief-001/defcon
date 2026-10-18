@@ -44,4 +44,25 @@ describe('EventCard', () => {
     render(<EventCard detail={null} info={info} nowS={NOW} onClose={() => {}} />);
     expect(screen.getByText(/loading detail/i)).toBeTruthy();
   });
+  // Declassify is cosmetic: every detail stays readable at every age, only the bars change
+  it('always shows the real detail text; the bars shrink for older events and when the scrubber is rewound', async () => {
+    const { useTime } = await import('../../src/time/store');
+    const barWidth = (c: HTMLElement) => parseFloat((c.querySelector('[data-bar]') as HTMLElement).style.width);
+    const fresh = render(<EventCard detail={{ ...detail, deaths: 7 }} info={{ ...info, timeS: NOW - 3600 }} nowS={NOW} onClose={() => {}} />);
+    expect(screen.getByText('A - B')).toBeTruthy();
+    expect(screen.getByText('7')).toBeTruthy();
+    const wFresh = barWidth(fresh.container);
+    expect(wFresh).toBe(100);
+    cleanup();
+    const old = render(<EventCard detail={{ ...detail, deaths: 7 }} info={{ ...info, timeS: NOW - 30 * 86400 }} nowS={NOW} onClose={() => {}} />);
+    expect(screen.getByText('A - B')).toBeTruthy();
+    expect(screen.getByText('7')).toBeTruthy();
+    expect(barWidth(old.container)).toBe(0);
+    expect(document.querySelectorAll('[data-bar][aria-hidden="true"]').length).toBeGreaterThan(0);
+    cleanup();
+    useTime.setState({ backS: 20 * 86400 }); // rewinding the scrubber declassifies: the same fresh event loses its bars
+    const scrubbed = render(<EventCard detail={detail} info={{ ...info, timeS: NOW - 3600 }} nowS={NOW} onClose={() => {}} />);
+    expect(barWidth(scrubbed.container)).toBe(0);
+    useTime.setState({ backS: 0 });
+  });
 });

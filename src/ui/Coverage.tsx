@@ -15,7 +15,7 @@ export function Coverage() {
   const gdelt = sources.find((s) => s.id === 'gdelt');
   const days = gdelt?.coverFromS !== undefined && Number.isFinite(gdelt.coverFromS) ? Math.max(1, Math.round((gdelt.asOfS - gdelt.coverFromS) / 86400)) : null;
   return (
-    <div className="pointer-events-none absolute bottom-6 right-[4vw] flex max-w-[min(300px,50vw)] flex-col items-end gap-1.5 text-right font-[var(--font-mono)] text-[10px] uppercase leading-snug tracking-[0.14em] text-[var(--text-muted)]">
+    <div className="pointer-events-none absolute bottom-[4.5rem] right-[4vw] flex max-w-[min(300px,50vw)] flex-col items-end gap-1.5 text-right font-[var(--font-mono)] text-[10px] uppercase leading-snug tracking-[0.14em] text-[var(--text-muted)]">
       <span>
         <span className="mr-1.5 inline-block h-2 w-2 rounded-full bg-[var(--orange)] align-middle" />
         Filled: human-coded{ucdp ? ` (UCDP), to ${utcDate(ucdp.asOfS)}` : ''}

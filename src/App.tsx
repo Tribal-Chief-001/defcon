@@ -17,6 +17,7 @@ import { DossierPanel } from './ui/DossierPanel';
 import { LiveCapitalLabels, setLabels } from './ui/CapitalLabels';
 import { Coverage } from './ui/Coverage';
 import { EventCard, type EventInfo } from './ui/EventCard';
+import { Scrubber } from './ui/Scrubber';
 
 const BASE = '/data/events';
 const PICK_RADIUS_PX = 14;
@@ -131,12 +132,13 @@ export function App() {
       </div>
       <CommandPalette onPick={(id) => void startDive(id)} />
       <Coverage />
+      <Scrubber />
       {dossierId ? <DossierPanel countryId={dossierId} onClose={exitDive} /> : null}
       {sel ? <EventCard detail={sel.detail} info={sel.info} onClose={() => {
           latest.current.next();
           setSel(null);
         }} /> : null}
-      <p className="pointer-events-none absolute bottom-6 left-[4vw] font-[var(--font-mono)] text-[11px] uppercase tracking-[0.15em] text-[var(--cyan)]">
+      <p className="pointer-events-none absolute bottom-[4.5rem] left-[4vw] font-[var(--font-mono)] text-[11px] uppercase tracking-[0.15em] text-[var(--cyan)]">
         {r ? `${r.lat.toFixed(2)}N ${r.lon.toFixed(2)}E // ${r.id ?? 'open water'}` : 'click the globe'}
       </p>
     </main>

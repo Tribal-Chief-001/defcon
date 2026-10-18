@@ -1,4 +1,6 @@
 import type { Detail, Kind } from '../events/types';
+import { useTime } from '../time/store';
+import { redactionFor } from './redaction';
 
 export type EventInfo = { kind: Kind; severity: number; human: boolean; timeS: number; precision: number; country: string | null };
 
@@ -13,7 +15,15 @@ const ago = (nowS: number, timeS: number) => {
 const utcDate = (timeS: number) => new Date(timeS * 1000).toISOString().slice(0, 10);
 const isHttp = (u?: string) => !!u && /^https?:\/\//i.test(u);
 
+// Cosmetic bar under a value: it shrinks as the file is "declassified". The value itself is always real, readable text.
+const Bar = ({ progress }: { progress: number }) => (
+  <span data-bar aria-hidden="true" className="mt-1 block h-[3px] bg-[var(--text-muted)]" style={{ width: `${Math.round((1 - progress) * 100)}%`, transition: 'width 600ms cubic-bezier(0.16, 1, 0.3, 1)' }} />
+);
+
 export function EventCard({ detail, info, nowS = Math.floor(Date.now() / 1000), onClose }: { detail: Detail | null; info: EventInfo; nowS?: number; onClose: () => void }) {
+  const backS = useTime((s) => s.backS);
+  // rewinding the scrubber declassifies: the effective age grows with how far back the playhead is
+  const progress = redactionFor(nowS - info.timeS + backS);
   return (
     <aside className="pointer-events-auto absolute right-[4vw] top-24 w-[min(340px,calc(100vw-8vw))] rounded-[24px] border border-[var(--border)] bg-white/[0.06] p-6 backdrop-blur-xl">
       <div className="flex items-start justify-between gap-3 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
@@ -33,9 +43,15 @@ export function EventCard({ detail, info, nowS = Math.floor(Date.now() / 1000), 
           </div>
           <dl className="mt-4 grid grid-cols-[88px_1fr] gap-y-2 border-t border-[var(--border)] pt-3 font-[var(--font-mono)] text-[11px]">
             <dt className="text-[var(--text-faint)]">DEATHS</dt>
-            <dd className="font-bold">{detail.deaths === null ? 'unavailable' : String(detail.deaths)}</dd>
+            <dd className="font-bold">
+              {detail.deaths === null ? 'unavailable' : String(detail.deaths)}
+              <Bar progress={progress} />
+            </dd>
             <dt className="text-[var(--text-faint)]">ACTORS</dt>
-            <dd>{detail.actors || 'unavailable'}</dd>
+            <dd>
+              {detail.actors || 'unavailable'}
+              <Bar progress={progress} />
+            </dd>
             <dt className="text-[var(--text-faint)]">PRECISION</dt>
             <dd>{info.precision}/5</dd>
             <dt className="text-[var(--text-faint)]">SOURCES</dt>
@@ -50,8 +66,12 @@ export function EventCard({ detail, info, nowS = Math.floor(Date.now() / 1000), 
                   <span key={i}>{s.name}</span>
                 ),
               )}
+              <Bar progress={progress} />
             </dd>
           </dl>
+          <p className="mt-3 font-[var(--font-mono)] text-[9.5px] uppercase tracking-[0.12em] text-[var(--text-faint)]">
+            File: {progress >= 1 ? 'declassified' : progress <= 0 ? 'classified' : 'declassifying'} (cosmetic: every detail is shown)
+          </p>
         </>
       ) : (
         <p className="mt-4 font-[var(--font-mono)] text-[11px] uppercase tracking-[0.15em] text-[var(--text-muted)]">loading detail</p>
