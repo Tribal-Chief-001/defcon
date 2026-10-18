@@ -15,6 +15,7 @@
     "data:ucdp": "tsx scripts/events/fetch-ucdp.ts",
     "data:gdelt": "tsx scripts/events/fetch-gdelt.ts",
     "data:build": "tsx scripts/events/build-snapshot.ts",
+    "serve:dist": "tsx scripts/serve-dist.ts",
     "ci:scan": "tsx scripts/ci/scan-secrets.ts",
     "data:validate": "tsx scripts/events/validate-snapshot.ts",
     "data:refresh": "tsx scripts/events/fetch-gdelt.ts --days 2 && tsx scripts/events/build-snapshot.ts",

@@ -24,6 +24,9 @@ Versions actually installed (2026-10-18, from `node_modules`). Choices D-006 (cu
 | `npm run typecheck` | `tsc --noEmit` |
 | `npm run build` | typecheck + production build |
 | `npm run check:budgets` | gzip budgets (after a build) |
+| `npm run serve:dist` | serve `dist/` on :4173 with the `vercel.json` headers (CSP check) |
+| `npm run ci:scan` | secret scan of tracked files |
+| `npm run data:validate` | gate for a built event snapshot |
 | `npm run map:fetch` | download and verify pinned Natural Earth files (`-- --accept-new` re-pins) |
 | `npm run map:build` | build borders (two detail levels), country list, capitals into `public/data/` |
 | `npm run data:ucdp` | download and pin UCDP GED 26.1 + candidate CSVs (`-- --accept-new` re-pins) |

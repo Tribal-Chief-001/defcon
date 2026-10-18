@@ -69,4 +69,8 @@ If Vercel's own Git integration is also connected, every push to `main` makes a 
 
 - The Vercel steps of the workflow and the `vercel.json` headers on Vercel's infrastructure have not run (no Vercel account access from this machine). The ingest, validate, build and artifact steps ran successfully on GitHub on 2026-10-18 (first run, cold cache: 2 min 18 s total, GDELT download 72 s, snapshot build 21 s, validation passed, a 2.9 MB `events-snapshot` artifact; the three Vercel steps were skipped because no secrets exist). The Vercel steps themselves have never run.
 - `deploymentEnabled` and the CLI flags are as documented by Vercel at the time of writing and were not run here.
-- The security headers include no Content-Security-Policy yet; Plan 6 adds and tests it against the real app.
+- The Content-Security-Policy and the other headers were verified against the built app served locally with `npm run serve:dist` (which applies `vercel.json`); they have not been seen on Vercel itself.
+
+## Security headers
+
+`vercel.json` sends, on every path: a Content-Security-Policy (`default-src 'self'`; scripts, styles, fonts, workers and connections only from the site itself; images from the site and `data:`; inline styles only as attributes because React sets `style` props; no plugins, no framing, no `<base>`, no form posts; `upgrade-insecure-requests`), `Strict-Transport-Security` (2 years), `Cross-Origin-Opener-Policy`, `Cross-Origin-Resource-Policy`, `X-Content-Type-Options`, `X-Frame-Options`, `Referrer-Policy` and `Permissions-Policy`. The build never inlines assets as `data:` URIs (`vite.config.ts`), which is what keeps `font-src 'self'` strict. If you point `VITE_EVENTS_BASE` at another origin, add that origin to `connect-src` in `vercel.json` (and keep `tests/ci/csp.test.ts` in step). To check headers locally: `npm run build && npm run serve:dist` and open http://localhost:4173 with the browser console open.
