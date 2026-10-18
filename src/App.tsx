@@ -2,7 +2,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadCountries } from './dossier/load';
 import { diveTarget } from './globe/dive';
 import { framingFor } from './globe/framing';
-import { focusDistance, toWarConflicts, type WarLabelPos, type WarState } from './globe/warGeometry';
+import { focusDistance, toWarConflicts, type WarState } from './globe/warGeometry';
+import { warLabelBus } from './globe/warLabelBus';
 import { entriesFor, toPins } from './ui/war/pins';
 import { WarLabels } from './ui/war/WarLabels';
 import { loadConflicts } from './conflicts/load';
@@ -75,13 +76,20 @@ export function App() {
   }, []);
   const warOpen = war !== null && !about;
   warOpenRef.current = warOpen;
-  const framing = useMemo(() => framingFor(dossierId !== null, narrow, warOpen), [dossierId, narrow, warOpen]);
+  // the War room is a bottom sheet below 1100 px (not only below 640 px): the globe moves up there, left beside the docked panel above it
+  const [sheet, setSheet] = useState(() => window.matchMedia('(max-width: 1099px)').matches);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 1099px)');
+    const on = () => setSheet(mq.matches);
+    mq.addEventListener('change', on);
+    return () => mq.removeEventListener('change', on);
+  }, []);
+  const framing = useMemo(() => framingFor(dossierId !== null, warOpen ? sheet : narrow, warOpen), [dossierId, narrow, sheet, warOpen]);
 
   // The War room's presence on the globe: halos for the active conflicts, and for the selected one its zone, hotspots and timeline pins.
   // The data comes from the same cached loaders as the War room itself; a failed load leaves the globe without the layer.
   const [warData, setWarData] = useState<{ file: ConflictsFile | null; timeline: TimelineFile | null }>({ file: null, timeline: null });
   const [warHover, setWarHover] = useState<number | null>(null); // the pin of the timeline card under the pointer
-  const [warLabels, setWarLabels] = useState<WarLabelPos[]>([]);
   useEffect(() => {
     if (war === null) return;
     let live = true;
@@ -102,6 +110,14 @@ export function App() {
     if (!c) return setWarFocus(null);
     setWarFocus({ lat: c.lat, lon: c.lon, distance: focusDistance(c.spreadKm) }); // held while it is selected: the globe stays on it instead of spinning away
   }, [warOpen, warSelected, warConflicts]);
+  // when the selection is cleared or the room closes the camera goes back to the world view instead of staying zoomed on the last conflict
+  const [restoreKey, setRestoreKey] = useState(0);
+  const hadSelection = useRef(false);
+  useEffect(() => {
+    const has = warOpen && warSelected !== null;
+    if (hadSelection.current && !has) setRestoreKey((k) => k + 1);
+    hadSelection.current = has;
+  }, [warOpen, warSelected]);
   // a place chosen on a timeline card ("Show on the map") wins until another conflict is selected or the room closes
   const [placeFocus, setPlaceFocus] = useState<{ lat: number; lon: number; distance: number } | null>(null);
   useEffect(() => setPlaceFocus(null), [warSelected, warOpen]);
@@ -135,6 +151,7 @@ export function App() {
     const token = diveToken.current.next();
     latest.current.next(); // a new dive closes any open event card; a click's own event card is set after this
     setSel(null);
+    setWar(null); // a country opened from anywhere (the globe, the palette, the room) replaces the War room
     setDossierId(key);
     const rows = await loadCountries();
     const row = rows.find((r) => r.id === key) ?? rows.find((r) => r.iso3 === key); // an exact map id wins over a territory sharing the ISO3 (Clipperton has FRA)
@@ -153,6 +170,14 @@ export function App() {
     setDive(null);
     setDossierId(null);
   }, []);
+
+  // the room does not stack on a dossier or an event card: opening it closes them
+  useEffect(() => {
+    if (!warOpen) return;
+    latest.current.next();
+    setSel(null);
+    if (dossierIdRef.current) exitDive();
+  }, [warOpen, exitDive]);
 
   // Esc leaves the dive; the URL hash mirrors it (#c=IND) and is honoured on load and on hashchange
   useEffect(() => {
@@ -214,7 +239,7 @@ export function App() {
   const onPick = useCallback((id: string | null, lat: number, lon: number, kmPerPx: number) => {
     setR({ id, lat, lon });
     if (id && id !== dossierIdRef.current) void startDive(id);
-    openEvent(lat, lon, kmPerPx);
+    if (!warOpenRef.current) openEvent(lat, lon, kmPerPx); // an event card would sit on top of the docked room
   }, [startDive, openEvent]);
   // the Latest rail: fly the camera to the event and open exactly that event (not whichever event is nearest to its coordinates: GDELT
   // events share places and times); the focus target is cleared once the flight is over
@@ -235,7 +260,7 @@ export function App() {
       <SkipLink />
       <StatusRegion />
       <ErrorBoundary where="globe" fallback={<Unsupported reason="failed" />}>
-        <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : watch.marker} focus={watch.focus ?? placeFocus ?? warFocus ?? railFocus} dive={dive} framing={framing} onLabels={setLabels} war={warState} onWarLabels={setWarLabels} />
+        <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : watch.marker} focus={watch.focus ?? placeFocus ?? warFocus ?? railFocus} dive={dive} framing={framing} onLabels={setLabels} war={warState} onWarLabels={warLabelBus.set} restoreKey={restoreKey} />
       </ErrorBoundary>
       <HudFrame />
       <LiveCapitalLabels />
@@ -260,7 +285,7 @@ export function App() {
       ) : null}
       {warOpen ? (
         <>
-          <WarLabels labels={warLabels} />
+          <WarLabels />
           <Suspense fallback={null}>
             <ErrorBoundary where="war" onReset={() => setWar(null)}>
               <WarRoom

@@ -18,20 +18,29 @@ const KIND_BAR: { k: Kind; name: string; note: string; fill: string }[] = [
   { k: 'one-sided', name: 'One-sided', note: 'attacks on civilians', fill: 'var(--orange)' },
 ];
 
+// the headline numeral counts up on its own, so the animation re-renders only this component
+function Hero({ value }: { value: number }) {
+  return <h3 className="font-[var(--font-body)] text-[clamp(52px,9vw,84px)] font-semibold leading-none tracking-tight">{int(useCountUp(value))}</h3>;
+}
+
 export type PlaceHandler = (at: { lat: number; lon: number; place: string } | null) => void;
 
 // The world at a glance: a hero numeral, the stream of weekly deaths with the key events on it, bubbles and a league of the conflicts, the
 // countries, the newest key events and reports. The League is the text equivalent of the bubbles.
 export function Overview({ f, tl, onSelect, onDive, onFocusPlace, onHoverPin }: { f: ConflictsFile; tl: TimelineFile | null | undefined; onSelect: (id: string) => void; onDive: (id: string) => void; onFocusPlace: PlaceHandler; onHoverPin: (i: number | null) => void }) {
   const w = f.world;
-  const hero = useCountUp(w.deaths.d365.best);
+  const [q, setQ] = useState('');
   const [highlight, setHighlight] = useState<string | undefined>();
   const rows = useMemo<(TimelineRow & { conflictId: string | undefined })[]>(
     () => (tl?.theatres ?? []).flatMap((t) => t.entries.map((entry) => ({ entry, theatre: t.title, conflictId: t.conflicts.find((id) => f.conflicts.some((c) => c.id === id)) }))).sort((a, b) => a.entry.date.localeCompare(b.entry.date)),
     [tl, f.conflicts],
   );
-  const bubbles = useMemo(() => f.conflicts.filter((c) => c.deaths.d365.best > 0).slice(0, 30).map((c) => ({ id: c.id, name: c.name, value: c.deaths.d365.best, trend: c.trend })), [f.conflicts]);
   const league = f.conflicts.slice(0, 12);
+  const ranked365 = useMemo(() => f.conflicts.filter((c) => c.deaths.d365.best > 0).sort((a, b) => b.deaths.d365.best - a.deaths.d365.best || a.name.localeCompare(b.name)), [f.conflicts]);
+  const bubbles = useMemo(() => ranked365.slice(0, 30).map((c) => ({ id: c.id, name: c.name, value: c.deaths.d365.best, trend: c.trend })), [ranked365]);
+  const needle = q.trim().toLowerCase();
+  const matches = useMemo(() => (needle ? f.conflicts.filter((c) => c.name.toLowerCase().includes(needle) || c.countries.some((k) => k.name.toLowerCase().includes(needle))) : f.conflicts), [f.conflicts, needle]);
+  const sparkMax = Math.max(1, ...league.flatMap((c) => c.weekly));
   const leagueMax = Math.max(1, ...league.map((c) => c.deaths.d90.high));
   const total365 = Math.max(1, KIND_BAR.reduce((s, k) => s + w.byKind[k.k].d365.best, 0));
 
@@ -40,7 +49,7 @@ export function Overview({ f, tl, onSelect, onDive, onFocusPlace, onHoverPin }: 
       <p className="mt-6 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.18em] text-[var(--text-muted)]">Organised violence · last 365 days to {date(f.dataEnd)}</p>
       <div className="mt-2 flex flex-wrap items-center gap-x-8 gap-y-4">
         <div>
-          <h3 className="font-[var(--font-body)] text-[clamp(52px,9vw,84px)] font-semibold leading-none tracking-tight">{int(hero)}</h3>
+          <Hero value={w.deaths.d365.best} />
           <p className="mt-2 text-[14px] text-[var(--text-muted)]">
             deaths, best estimate; range {span(w.deaths.d365)} <span className="text-[var(--text-faint)]">· {w.conflictsListed} conflicts listed</span>
           </p>
@@ -96,11 +105,11 @@ export function Overview({ f, tl, onSelect, onDive, onFocusPlace, onHoverPin }: 
         />
       </Section>
 
-      <Section title="Where the deaths are" note="Each bubble is a conflict; its area is the deaths in the last 365 days. Orange outline: activity rising.">
+      <Section title="Where the deaths are" note={`Top ${bubbles.length} of ${f.conflicts.length} conflicts by deaths in the last 365 days; each bubble's area is its deaths. Orange outline: activity rising. The list below has every conflict.`}>
         <Bubbles items={bubbles} selected={null} onSelect={onSelect} />
       </Section>
 
-      <Section title="Conflicts league, last 90 days">
+      <Section title="Conflicts league, last 90 days" note="The twelve most deadly in the last 90 days. The sparklines share one scale, so a small conflict looks small.">
         <ul aria-label="Conflicts league" className="flex flex-col">
           {league.map((c, i) => (
             <li key={c.id}>
@@ -115,7 +124,7 @@ export function Overview({ f, tl, onSelect, onDive, onFocusPlace, onHoverPin }: 
                   <span className="flex-1">
                     <RangeBar low={c.deaths.d90.low} best={c.deaths.d90.best} high={c.deaths.d90.high} max={leagueMax} />
                   </span>
-                  <Spark data={c.weekly} width={96} height={22} />
+                  <Spark data={c.weekly} width={96} height={22} max={sparkMax} />
                 </span>
                 <span className="pl-[34px] font-[var(--font-mono)] text-[11.5px] text-[var(--text-muted)]">
                   range {span(c.deaths.d90)} · {int(c.events.d90)} events · last {date(c.lastDate)}
@@ -124,6 +133,25 @@ export function Overview({ f, tl, onSelect, onDive, onFocusPlace, onHoverPin }: 
             </li>
           ))}
         </ul>
+      </Section>
+
+      <Section title={`All ${f.conflicts.length} conflicts`}>
+        <input type="search" aria-label="Filter conflicts" placeholder="Filter by name or country" value={q} onChange={(e) => setQ(e.target.value)} className="mb-2 w-full rounded-[12px] border border-[var(--border)] bg-transparent px-3 py-2 text-[14px] outline-none placeholder:text-[var(--text-faint)] focus:border-[var(--lime)]" />
+        {matches.length === 0 ? (
+          <p className="text-[14px] text-[var(--text-muted)]">No conflicts match.</p>
+        ) : (
+          <ul aria-label="All conflicts" tabIndex={0} className="max-h-[340px] overflow-y-auto rounded-[12px] outline-none focus-visible:ring-1 focus-visible:ring-[var(--lime)]">
+            {matches.map((c) => (
+              <li key={c.id}>
+                <button type="button" onClick={() => onSelect(c.id)} className="flex w-full items-baseline gap-3 border-t border-[var(--border)] px-1 py-2 text-left text-[14px] hover:bg-white/5">
+                  <span className="flex-1">{c.name}</span>
+                  <span className={`font-[var(--font-mono)] text-[11px] uppercase tracking-[0.12em] ${TREND[c.trend]}`}>{c.trend}</span>
+                  <span className="w-[64px] text-right font-[var(--font-mono)] text-[12.5px]">{int(c.deaths.d365.best)}</span>
+                </button>
+              </li>
+            ))}
+          </ul>
+        )}
       </Section>
 
       <Section title="Most deaths in the last 90 days, by country">

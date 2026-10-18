@@ -27,6 +27,7 @@ describe('loadTimeline', () => {
     ['a bad checkedAt', { ...good, checkedAt: 'soon' }, true],
     ['an entry with an unknown status', { ...good, theatres: [{ ...good.theatres[0], entries: [{ ...good.theatres[0]!.entries[0], status: 'maybe' }] }] }, true],
     ['an entry with a non-array sources', { ...good, theatres: [{ ...good.theatres[0], entries: [{ ...good.theatres[0]!.entries[0], sources: 'x' }] }] }, true],
+    ['an entry with a bad place', { ...good, theatres: [{ ...good.theatres[0], entries: [{ ...good.theatres[0]!.entries[0], at: { lat: 'x', lon: 1, place: 'p' } }] }] }, true],
     ['a source without an https url', { ...good, theatres: [{ ...good.theatres[0], entries: [{ ...good.theatres[0]!.entries[0], sources: [{ ...good.theatres[0]!.entries[0]!.sources[0], url: 'javascript:alert(1)' }] }] }] }, true],
   ])('gives null for %s and does not cache the failure', async (_n, body, ok) => {
     vi.stubGlobal('fetch', reply(body, ok));

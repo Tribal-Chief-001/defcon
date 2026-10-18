@@ -26,6 +26,18 @@ describe('Spark', () => {
   });
 });
 
+describe('Spark shared scale', () => {
+  it('draws a small series low when given a larger shared maximum, but still names its own peak', () => {
+    const own = render(<Spark data={weeks(() => 5)} height={28} />);
+    const ownY = Number(/L[\d.]+,([\d.]+)/.exec(own.container.querySelector('path:last-of-type')!.getAttribute('d')!)![1]);
+    cleanup();
+    const shared = render(<Spark data={weeks(() => 5)} height={28} max={2000} />);
+    const sharedY = Number(/L[\d.]+,([\d.]+)/.exec(shared.container.querySelector('path:last-of-type')!.getAttribute('d')!)![1]);
+    expect(sharedY).toBeGreaterThan(ownY + 10); // nearer the baseline
+    expect(shared.container.querySelector('svg')!.getAttribute('aria-label')).toMatch(/peak 5/);
+  });
+});
+
 describe('RangeBar', () => {
   it('draws low-to-high on a zero-based scale with the best estimate marked, and says so in words', () => {
     const { container } = render(<RangeBar low={80} best={100} high={130} max={200} />);
@@ -130,6 +142,18 @@ describe('StreamChart', () => {
     expect(onHover).toHaveBeenLastCalledWith(1);
     fireEvent.mouseLeave(screen.getByRole('button', { name: /Claim and denial/ }));
     expect(onHover).toHaveBeenLastCalledWith(null);
+  });
+  it('says in words how many events are in the after-data band and how many fall before the window', () => {
+    render(<StreamChart layers={kindLayers(by)} dataEnd="2026-08-31" events={ev} />);
+    const t = screen.getByRole('group').textContent ?? '';
+    expect(t).toMatch(/1 key event is after UCDP data \(shaded band\)/);
+    expect(t).toMatch(/1 key event before this window is not shown/);
+  });
+  it('uses a short visible label when the band is narrow, and keeps the long phrase in the text alternative', () => {
+    const { container } = render(<StreamChart layers={kindLayers(by)} dataEnd="2026-08-31" events={ev} />);
+    const visible = Array.from(container.querySelectorAll('svg text')).map((t) => t.textContent);
+    expect(visible).toContain('after data');
+    expect(visible).not.toContain('after UCDP data');
   });
   it('shows no "after UCDP data" band when every event is inside the data window', () => {
     render(<StreamChart layers={kindLayers(by)} dataEnd="2026-08-31" events={ev.slice(0, 2)} />);

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Conflict, Range } from '../../src/conflicts/types';
-import { circlePoints, distanceKm, focusDistance, haloRadiusPx, toWarConflicts } from '../../src/globe/warGeometry';
+import { circlePoints, cullLabels, distanceKm, focusDistance, haloRadiusPx, toWarConflicts, type WarLabelPos } from '../../src/globe/warGeometry';
 
 describe('circlePoints', () => {
   it('lies on the great circle at the requested radius around the centre', () => {
@@ -66,3 +66,20 @@ describe('toWarConflicts', () => {
     expect(toWarConflicts([c('bad', 50, { ...geo(), lat: Number.NaN })])).toEqual([]);
   });
 });
+
+const L = (id: string, x: number, y: number, o: Partial<WarLabelPos> = {}): WarLabelPos => ({ id, name: id.toUpperCase(), x, y, r: 14, selected: false, rising: false, deaths90: 100, ...o });
+describe('cullLabels', () => {
+  it('drops a label that would overlap one already placed (the earlier, higher-ranked one wins)', () => {
+    const out = cullLabels([L('a', 300, 300), L('b', 310, 304), L('c', 300, 500)], { minY: 0 });
+    expect(out.map((l) => l.id)).toEqual(['a', 'c']);
+  });
+  it('keeps the selected label even if it comes last and drops what it overlaps', () => {
+    const out = cullLabels([L('a', 300, 300), L('s', 305, 302, { selected: true })], { minY: 0 });
+    expect(out.map((l) => l.id)).toEqual(['s']);
+  });
+  it('drops labels above the line (the top bar and the controls row) and off-screen ones', () => {
+    const out = cullLabels([L('top', 300, 90), L('ok', 300, 300), L('left', -50, 300)], { minY: 118 });
+    expect(out.map((l) => l.id)).toEqual(['ok']);
+  });
+});
+

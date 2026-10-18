@@ -109,6 +109,39 @@ describe('WarRoom shell', () => {
   });
 });
 
+describe('Overview reachability', () => {
+  const many = (n: number): ConflictsFile => ({
+    ...file,
+    conflicts: Array.from({ length: n }, (_, i) =>
+      conflict({ id: `c${i}`, name: `Conflict ${i}`, deaths: { d30: R(1), d90: R(Math.max(0, 500 - i * 10)), d365: R(1000 - i) }, trend: 'steady' }),
+    ).concat([conflict({ id: 'old-massacre', name: 'Old massacre', deaths: { d30: R(0), d90: R(0), d365: R(19899, 18000, 21000) }, trend: 'low data' })]),
+  });
+  it('lists every conflict, not only the top ones, and filters them by name or country', async () => {
+    const p = props({ load: async () => many(45) });
+    render(<WarRoom {...p} />);
+    const all = await screen.findByRole('list', { name: /all conflicts/i });
+    expect(within(all).getAllByRole('button')).toHaveLength(46);
+    fireEvent.change(screen.getByRole('searchbox', { name: /filter conflicts/i }), { target: { value: 'massacre' } });
+    expect(within(screen.getByRole('list', { name: /all conflicts/i })).getAllByRole('button')).toHaveLength(1);
+    fireEvent.click(within(screen.getByRole('list', { name: /all conflicts/i })).getByRole('button', { name: /Old massacre/ }));
+    expect(p.onSelect).toHaveBeenCalledWith('old-massacre');
+    fireEvent.change(screen.getByRole('searchbox', { name: /filter conflicts/i }), { target: { value: 'zzzz' } });
+    expect(screen.getByText(/no conflicts match/i)).toBeTruthy();
+  });
+  it('ranks the bubbles by deaths in 365 days and says it shows the top 30 of the total', async () => {
+    render(<WarRoom {...props({ load: async () => many(45) })} />);
+    const bubbles = await screen.findByRole('group', { name: /conflicts by deaths/i });
+    const names = within(bubbles).getAllByRole('button').map((b) => b.getAttribute('aria-label')!);
+    expect(names).toHaveLength(30);
+    expect(names.some((n) => /Old massacre/.test(n))).toBe(true); // 19,899 deaths in a year but none in the last 90 days
+    expect(screen.getByRole('region', { name: 'War room' }).textContent).toMatch(/Top 30 of 46 conflicts by deaths in the last 365 days/);
+  });
+  it('draws the league sparklines on one shared scale and says so', async () => {
+    await overview();
+    expect(screen.getByRole('region', { name: 'War room' }).textContent).toMatch(/sparklines share one scale/i);
+  });
+});
+
 describe('Overview', () => {
   it('opens with the world numbers: hero, three windows with ranges, the ring and the by-kind split', async () => {
     await overview();

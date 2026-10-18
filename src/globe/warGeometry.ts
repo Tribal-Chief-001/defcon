@@ -61,3 +61,21 @@ export function toWarConflicts(conflicts: Conflict[]): WarConflict[] {
     .sort((a, b) => b.deaths.d90.best - a.deaths.d90.best || a.name.localeCompare(b.name))
     .map((c, rank) => ({ id: c.id, name: c.name, lat: c.geo!.lat, lon: c.geo!.lon, spreadKm: c.geo!.spreadKm, deaths90: c.deaths.d90.best, deaths365: c.deaths.d365.best, trend: c.trend, cells: c.geo!.cells, rank }));
 }
+
+// Which labels to draw: the selected conflict first, then the others in rank order; a label that would overlap one already placed, sits
+// above `minY` (the top bar and the controls row) or is off the left edge is dropped. Boxes are estimated from the text length.
+export function cullLabels(labels: WarLabelPos[], opts: { minY: number }): WarLabelPos[] {
+  const box = (l: WarLabelPos) => {
+    const x0 = l.x + l.r * 0.75 + 6;
+    return [x0, l.y - 8, x0 + l.name.length * 7.6 + 56, l.y + 8] as const;
+  };
+  const ordered = [...labels.filter((l) => l.selected), ...labels.filter((l) => !l.selected)];
+  const placed: { l: WarLabelPos; b: readonly [number, number, number, number] }[] = [];
+  for (const l of ordered) {
+    if (l.x < 0 || l.y < opts.minY) continue;
+    const b = box(l);
+    if (placed.some((p) => b[0] < p.b[2] && b[2] > p.b[0] && b[1] < p.b[3] && b[3] > p.b[1])) continue;
+    placed.push({ l, b });
+  }
+  return placed.map((p) => p.l);
+}

@@ -41,8 +41,11 @@ export function StreamChart({ layers, dataEnd, events = [], onEventClick, onEven
   const y = scaleLinear(0, yMax, height - PAD.b, PAD.t);
   const xs = Array.from({ length: n }, (_, i) => x(day(weekEnd(dataEnd, i))));
   const after = last > dataEnd;
+  const afterCount = placed.filter(({ e }) => e.date > dataEnd).length;
+  const beforeCount = events.length - placed.length;
 
   const [idx, setIdx] = useState<number | null>(null);
+  const [kb, setKb] = useState(false); // a read-out is announced only for keyboard scrubbing, not for every pointer move
   const box = useRef<HTMLDivElement>(null);
   const onMove = (clientX: number) => {
     const r = box.current?.getBoundingClientRect();
@@ -50,9 +53,11 @@ export function StreamChart({ layers, dataEnd, events = [], onEventClick, onEven
     const px = ((clientX - r.left) / r.width) * W;
     let best = 0;
     xs.forEach((v, i) => Math.abs(v - px) < Math.abs(xs[best]! - px) && (best = i));
+    setKb(false);
     setIdx(best);
   };
   const onKey = (e: React.KeyboardEvent) => {
+    if (['ArrowLeft', 'ArrowRight', 'Home', 'End', 'Escape'].includes(e.key)) setKb(true);
     if (e.key === 'ArrowLeft') setIdx((i) => Math.max(0, (i ?? n) - 1));
     else if (e.key === 'ArrowRight') setIdx((i) => Math.min(n - 1, (i ?? -1) + 1));
     else if (e.key === 'Home') setIdx(0);
@@ -74,6 +79,8 @@ export function StreamChart({ layers, dataEnd, events = [], onEventClick, onEven
     >
       <p className="sr-only">
         Deaths per week, weeks ending {fmtDate(weekEnd(dataEnd, 0))} to {fmtDate(dataEnd)}. {peak > 0 ? `Peak ${int(peak)} in the week ending ${fmtDate(weekEnd(dataEnd, peakAt))}.` : 'No deaths in the window.'} Use the arrow keys to read a week.
+        {afterCount > 0 ? ` ${afterCount} key ${afterCount === 1 ? 'event is' : 'events are'} after UCDP data (shaded band).` : ''}
+        {beforeCount > 0 ? ` ${beforeCount} key ${beforeCount === 1 ? 'event' : 'events'} before this window ${beforeCount === 1 ? 'is' : 'are'} not shown.` : ''}
       </p>
       <div ref={box} className="relative" onPointerMove={(e) => onMove(e.clientX)} onPointerLeave={() => setIdx(null)}>
         <svg viewBox={`0 0 ${W} ${height}`} className="block w-full" aria-hidden="true">
@@ -89,7 +96,7 @@ export function StreamChart({ layers, dataEnd, events = [], onEventClick, onEven
             <g>
               <rect x={x(day(dataEnd))} y={PAD.t} width={W - PAD.r - x(day(dataEnd))} height={height - PAD.b - PAD.t} fill="var(--text)" fillOpacity="0.04" />
               <text x={W - PAD.r - 4} y={height - PAD.b - 6} textAnchor="end" className="fill-[var(--text-muted)] font-[var(--font-mono)] text-[11px]">
-                after UCDP data
+                after data
               </text>
             </g>
           ) : null}
@@ -122,9 +129,14 @@ export function StreamChart({ layers, dataEnd, events = [], onEventClick, onEven
             <span className={`block h-[9px] w-[9px] rounded-full border ${e.status === 'disputed' ? 'border-[var(--orange)] bg-[var(--orange)]' : e.status === 'confirmed' ? 'border-[var(--text)] bg-[var(--text)]' : 'border-[var(--text)] bg-black'}`} />
           </button>
         ))}
-        <div role="status" className="pointer-events-none absolute bottom-7 left-12 right-3 font-[var(--font-mono)] text-[11.5px] text-[var(--lime)]">
-          {tip}
+        <div role="status" className="sr-only">
+          {kb ? tip : ''}
         </div>
+        {tip ? (
+          <div aria-hidden="true" className="pointer-events-none absolute left-12 right-3 top-0 rounded-[8px] bg-black/80 px-2 py-1 font-[var(--font-mono)] text-[11.5px] text-[var(--text)]">
+            {tip}
+          </div>
+        ) : null}
       </div>
       <ul className="mt-1 flex flex-wrap gap-x-4 gap-y-1 font-[var(--font-mono)] text-[11.5px] text-[var(--text-muted)]">
         {layers.map((l) => (

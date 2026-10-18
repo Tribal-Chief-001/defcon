@@ -10,16 +10,16 @@ const countries = vi.hoisted(() => ({ rows: [] as unknown[], gate: null as Promi
 const globe = vi.hoisted(() => ({ dive: null as { id: string } | null | undefined }));
 
 vi.mock('../src/globe/GlobeCanvas', () => ({
-  GlobeCanvas: ({ dive }: { dive?: { id: string } | null }) => {
+  GlobeCanvas: ({ dive, framing, restoreKey }: { dive?: { id: string } | null; framing?: { x: number; y: number }; restoreKey?: number }) => {
     globe.dive = dive;
-    return <div data-testid="globe" data-dive={dive?.id ?? ''} />;
+    return <div data-testid="globe" data-dive={dive?.id ?? ''} data-framing={JSON.stringify(framing ?? null)} data-restore={restoreKey ?? 0} />;
   },
 }));
 vi.mock('../src/events/service', () => ({ startEventService: () => () => {} }));
 vi.mock('../src/timeline/load', () => ({ loadTimeline: async () => null, resetTimelineCache: () => {} }));
 vi.mock('../src/conflicts/load', () => {
   const r = { best: 5, low: 4, high: 9 };
-  const c = (id: string, name: string, cid: string | null) => ({ id, name, kinds: ['state'], countries: [{ id: cid, name: 'Indialand', deaths365: 50 }], deaths: { d30: r, d90: r, d365: r }, events: { d30: 1, d90: 1, d365: 1 }, trend: 'steady', lastDate: '2026-08-30', weekly: new Array(52).fill(0), latest: [], provisionalShare: 0, geo: null });
+  const c = (id: string, name: string, cid: string | null) => ({ id, name, kinds: ['state'], countries: [{ id: cid, name: 'Indialand', deaths365: 50 }], deaths: { d30: r, d90: r, d365: r }, events: { d30: 1, d90: 1, d365: 1 }, trend: 'steady', lastDate: '2026-08-30', weekly: new Array(52).fill(0), latest: [], provisionalShare: 0, geo: { lat: 1, lon: 2, spreadKm: 100, locatedShare: 1, cells: [] } });
   const file = { generated: '2026-10-18', dataEnd: '2026-08-31', sources: ['t'], world: { deaths: { d30: r, d90: r, d365: r }, byKind: { state: { d90: r, d365: r }, 'non-state': { d90: r, d365: r }, 'one-sided': { d90: r, d365: r } }, weekly: new Array(52).fill(0), weeklyByKind: { state: new Array(52).fill(0), 'non-state': new Array(52).fill(0), 'one-sided': new Array(52).fill(0) }, countries: [], conflictsListed: 2, latest: [] }, conflicts: [c('alpha-war', 'Alpha war', 'IND'), c('beta-war', 'Beta war', null)] };
   return { loadConflicts: async () => file, resetConflictsCache: () => {} };
 });
@@ -224,5 +224,35 @@ describe('App War room', () => {
     await waitFor(() => expect(screen.queryByRole('region', { name: 'War room' })).toBeNull(), { timeout: 4000 });
     await waitFor(() => expect(location.hash).toBe('#c=IND'), { timeout: 4000 });
     await waitFor(() => expect(screen.getByTestId('globe').getAttribute('data-dive')).toBe('IND'), { timeout: 4000 });
+  });
+
+  it('moves the globe left beside the docked room on wide screens and up above the bottom sheet below 1100 px (not only below 640 px)', async () => {
+    const media = (q: string, sheet: boolean) => ({ matches: q.includes('1099px') ? sheet : false, media: q, addEventListener() {}, removeEventListener() {} });
+    window.matchMedia = ((q: string) => media(q, true)) as unknown as typeof window.matchMedia;
+    history.replaceState(null, '', '/#war');
+    render(<App />);
+    await screen.findByRole('region', { name: 'War room' }, { timeout: 4000 });
+    await waitFor(() => expect(JSON.parse(screen.getByTestId('globe').getAttribute('data-framing')!)).toEqual({ x: 0, y: 0.22 }), { timeout: 4000 });
+    cleanup();
+    window.matchMedia = ((q: string) => media(q, false)) as unknown as typeof window.matchMedia;
+    render(<App />);
+    await screen.findByRole('region', { name: 'War room' }, { timeout: 4000 });
+    await waitFor(() => expect(JSON.parse(screen.getByTestId('globe').getAttribute('data-framing')!)).toEqual({ x: -0.2, y: 0 }), { timeout: 4000 });
+  });
+  it('sends the camera back to the world view when the selection is cleared or the room closes', async () => {
+    history.replaceState(null, '', '/#war=beta-war');
+    render(<App />);
+    await screen.findByRole('heading', { name: 'Beta war' }, { timeout: 4000 });
+    const before = Number(screen.getByTestId('globe').getAttribute('data-restore'));
+    fireEvent.click(screen.getByRole('button', { name: /world overview/i }));
+    await waitFor(() => expect(Number(screen.getByTestId('globe').getAttribute('data-restore'))).toBeGreaterThan(before), { timeout: 4000 });
+  });
+  it('opening the room closes an open country dossier instead of stacking on it', async () => {
+    history.replaceState(null, '', '/#c=IND');
+    render(<App />);
+    await screen.findByRole('heading', { name: 'Country IND' }, { timeout: 4000 });
+    fireEvent.click(screen.getByRole('button', { name: /^war room$/i }));
+    await screen.findByRole('region', { name: 'War room' }, { timeout: 4000 });
+    await waitFor(() => expect(screen.queryByRole('heading', { name: 'Country IND' })).toBeNull(), { timeout: 4000 });
   });
 });

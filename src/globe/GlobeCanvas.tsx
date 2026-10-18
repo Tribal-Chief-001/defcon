@@ -34,6 +34,7 @@ export function GlobeCanvas({
   focus,
   war,
   onWarLabels,
+  restoreKey,
 }: {
   onPick?: (id: string | null, lat: number, lon: number, kmPerPx: number) => void;
   marker?: { lat: number; lon: number } | null;
@@ -43,6 +44,7 @@ export function GlobeCanvas({
   focus?: { lat: number; lon: number; distance: number } | null;
   war?: WarState; // the War room's layer: halos, the selected conflict's zone and hotspots, timeline pins
   onWarLabels?: (labels: WarLabelPos[]) => void;
+  restoreKey?: number; // each change sends the camera back to the world view (the War room was left)
 }) {
   const diveRef = useRef(dive);
   diveRef.current = dive;
@@ -153,6 +155,11 @@ export function GlobeCanvas({
   useEffect(() => {
     handleRef.current?.setWar(war ?? INACTIVE_WAR);
   }, [war]);
+  const firstRestore = useRef(true);
+  useEffect(() => {
+    if (firstRestore.current) return void (firstRestore.current = false);
+    handleRef.current?.home();
+  }, [restoreKey]);
 
   if (!supported) return <Unsupported />;
   if (failed) return <Unsupported reason="failed" />;

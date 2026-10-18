@@ -20,7 +20,7 @@ export type ConflictEvent = {
 
 // Where a conflict happens: the death-weighted centroid (computed on the sphere), how far its deaths spread around it, and the top
 // 0.5-degree cells by deaths ([cell-centre lat, lon, deaths]), the "shape" of the conflict on the globe.
-// `locatedShare`: the share of the deaths that UCDP located to a district or better (the rest has only a region or country geocode and
+// `locatedShare`: the share of the deaths that UCDP located to a province or better (the rest has only a region or country geocode and
 // is left out of the picture; the centroid and cells come from the located events, or from all events when none is located).
 export type Geo = { lat: number; lon: number; spreadKm: number; locatedShare: number; cells: [number, number, number][] };
 

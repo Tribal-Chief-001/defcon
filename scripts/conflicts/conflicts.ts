@@ -32,6 +32,7 @@ const CELL = 0.5; // degrees
 const MAX_CELLS = 40;
 const SPREAD_MIN = 40;
 const SPREAD_MAX = 2500;
+const SPREAD_SCATTERED = 1000; // km: above this the centroid is not a place
 const LOCATED_PREC = 4; // UCDP where_prec: 1 exact, 2 within 25 km, 3 district, 4 province; 5 and above: region or country geocode
 const haversineKm = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) => {
   const dLat = (b.lat - a.lat) * D2R;
@@ -67,17 +68,16 @@ function geoOf(evs: Ev[]): Geo | null {
   }
   const norm = Math.hypot(x, y, z);
   const heaviest = pts.reduce((m, p) => (p.w > m.w ? p : m), pts[0]!);
-  const c = norm < 1e-9 * total ? { lat: heaviest.lat, lon: heaviest.lon } : { lat: Math.asin(z / norm) / D2R, lon: Math.atan2(y, x) / D2R };
-  const byDist = pts.map((p) => ({ d: haversineKm(c, p), w: p.w })).sort((a, b) => a.d - b.d);
-  let cum = 0;
-  let spread = byDist[byDist.length - 1]!.d;
-  for (const p of byDist) {
-    cum += p.w;
-    if (cum >= 0.75 * total) {
-      spread = p.d;
-      break;
+  let c = norm < 1e-9 * total ? { lat: heaviest.lat, lon: heaviest.lon } : { lat: Math.asin(z / norm) / D2R, lon: Math.atan2(y, x) / D2R };
+  const spreadAround = (ctr: { lat: number; lon: number }) => {
+    const byDist = pts.map((p) => ({ d: haversineKm(ctr, p), w: p.w })).sort((a, b) => a.d - b.d);
+    let cum = 0;
+    for (const p of byDist) {
+      cum += p.w;
+      if (cum >= 0.75 * total) return p.d;
     }
-  }
+    return byDist[byDist.length - 1]!.d;
+  };
   const cells = new Map<string, [number, number, number]>();
   for (const p of pts) {
     const i = Math.floor(p.lat / CELL);
@@ -87,12 +87,19 @@ function geoOf(evs: Ev[]): Geo | null {
     cells.set(key, cell);
     cell[2] += p.deaths;
   }
+  const top = [...cells.values()].sort((a, b) => b[2] - a[2] || a[0] - b[0] || a[1] - b[1]);
+  let spread = spreadAround(c);
+  // a conflict spread over several regions has its centroid in the empty space between them: put it on its heaviest hotspot instead
+  if (spread > SPREAD_SCATTERED && top.length > 0) {
+    c = { lat: top[0]![0], lon: top[0]![1] };
+    spread = spreadAround(c);
+  }
   return {
     lat: Math.round(c.lat * 1000) / 1000,
     lon: Math.round(c.lon * 1000) / 1000,
     spreadKm: Math.round(Math.min(SPREAD_MAX, Math.max(SPREAD_MIN, spread))),
     locatedShare: Math.round(locatedShare * 1000) / 1000,
-    cells: [...cells.values()].filter((v) => v[2] >= 3).sort((a, b) => b[2] - a[2] || a[0] - b[0] || a[1] - b[1]).slice(0, MAX_CELLS),
+    cells: top.filter((v) => v[2] >= 3).slice(0, MAX_CELLS),
   };
 }
 

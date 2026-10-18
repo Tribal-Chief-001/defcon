@@ -55,11 +55,11 @@ void main() {
 }`;
 const PIN_VERT = `
 attribute vec3 aColor; attribute float aHover;
-uniform float uPx; uniform float uFade; uniform float uTime;
+uniform float uPx; uniform float uFade; uniform float uTime; uniform float uStatic;
 varying vec3 vColor; varying float vHover; varying float vA; varying float vPh;
 void main() {
   vColor = aColor; vHover = aHover; vA = uFade;
-  vPh = fract(uTime / 1.4);
+  vPh = uStatic > 0.5 ? 0.5 : fract(uTime / 1.4);
   gl_PointSize = (18.0 + 10.0 * aHover) * uPx;
   gl_Position = projectionMatrix * modelViewMatrix * vec4(position, 1.0);
 }`;

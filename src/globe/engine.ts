@@ -9,7 +9,7 @@ import { buildBorderPositions, buildCountryPositions } from './borderGeometry';
 import type { Relations } from '../relations/types';
 import { createArcLayer } from './arcLayer';
 import { createWarLayer } from './warLayer';
-import { haloRadiusPx, type WarLabelPos, type WarState } from './warGeometry';
+import { cullLabels, haloRadiusPx, type WarLabelPos, type WarState } from './warGeometry';
 import { easeDive } from './dive';
 import { TIERS, createQualityGovernor, type Tier } from '../perf/quality';
 import { buildDensity } from './grain';
@@ -66,6 +66,7 @@ const HOME_DISTANCE = 3.6;
 const DIVE_MS = 1200;
 const MARKER_HIT_PX = 14;
 const R_LABEL = 1.004;
+const LABEL_MIN_Y = 118; // below the top bar and the controls row
 const D2R = Math.PI / 180;
 const wrapPi = (a: number) => ((((a + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) - Math.PI;
 
@@ -561,10 +562,11 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
         out.push({ id: c.id, name: c.name, x: Math.round((v3.x * 0.5 + 0.5) * w), y: Math.round((-v3.y * 0.5 + 0.5) * h), r: haloRadiusPx(c.deaths365), selected: c.id === warNow.selected, rising: c.trend === 'rising', deaths90: c.deaths90 });
       }
     }
-    const key = out.map((l) => `${l.id}@${l.x},${l.y}`).join('|');
+    const shown = cullLabels(out, { minY: LABEL_MIN_Y });
+    const key = shown.map((l) => `${l.id}@${l.x},${l.y}${l.selected ? '*' : ''}`).join('|');
     if (key === warKey) return;
     warKey = key;
-    warListeners.forEach((cb) => cb(out));
+    warListeners.forEach((cb) => cb(shown));
   };
 
   // ---- render loop (paused while the tab is hidden)

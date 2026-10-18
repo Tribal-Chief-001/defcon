@@ -22,6 +22,7 @@ function valid(f: unknown): f is TimelineFile {
           text(e.title) &&
           typeof e.summary === 'string' &&
           ['confirmed', 'reported', 'disputed'].includes(e.status) &&
+          (e.at === undefined || (!!e.at && Number.isFinite(e.at.lat) && Number.isFinite(e.at.lon) && text(e.at.place))) &&
           Array.isArray(e.sources) &&
           e.sources.every((s) => !!s && text(s.outlet) && text(s.title) && typeof s.url === 'string' && /^https:\/\//.test(s.url) && date(s.published)),
       ),

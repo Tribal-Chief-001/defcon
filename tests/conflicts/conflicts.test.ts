@@ -269,6 +269,13 @@ describe('conflictsFromRows', () => {
       expect(wide.spreadKm).toBe(2500); // 3300 km from the centroid, clamped
     });
 
+    it('puts a spread-out conflict on its heaviest hotspot, not in the empty space between regions', () => {
+      const g = geo([row({ ago: 1, best: 200, latitude: '0.1', longitude: '0.1' }), row({ ago: 2, best: 120, latitude: '0.1', longitude: '60.1' })])!;
+      expect(g.lat).toBeCloseTo(0.25, 1);
+      expect(g.lon).toBeCloseTo(0.25, 1); // the 200-death cell, not the weighted middle near 22 E
+      expect(g.spreadKm).toBeLessThanOrEqual(2500);
+    });
+
     it('bins deaths into 0.5-degree cells, drops cells under 3 deaths, orders by deaths and keeps at most 40', () => {
       const g = geo([row({ ago: 1, best: 40, latitude: '10.1', longitude: '20.1' }), row({ ago: 2, best: 60, latitude: '10.2', longitude: '20.2' }), row({ ago: 3, best: 2, latitude: '30.1', longitude: '30.1' }), row({ ago: 4, best: 150, latitude: '-5.1', longitude: '99.9' })])!;
       expect(g.cells[0]).toEqual([-5.25, 99.75, 150]);

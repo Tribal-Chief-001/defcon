@@ -172,3 +172,12 @@ The owner liked World Monitor's Country Instability Index and asked for it to be
 - Animation polish (line draw-in, staggered reveal) was left out to keep the bundle and the reduced-motion audit simple.
 - About still does not use `useDialog` from Plan 8.
 
+## Plan 10 review minors (deferred, 2026-10-19)
+
+- A stem click in the Overview selects its conflict and loses the place focus (the selection effect clears it); "Show on the map" for the same place twice after dragging the globe does nothing (the focus effect compares numbers); `pendingFocus` survives a `focus(null)` when the room closes before the boot ends.
+- Halos are not clickable; labels re-emit only when a position changes (a selection colour change on an unmoved label is missed); the sonar pulse can imply live activity for data that ends 31 Aug.
+- The scrubber is hidden while the room is open although a past playhead may still be active (no indicator); no safe-area padding in the bottom sheet; at 1100 px and wider the room covers the AsOf error line.
+- Axis ticks can read 0.5 or 2.5 for tiny conflicts, the x axis has no year, `locatedShare` is relative to geocoded events only, the hero numeral is an `h3`, `TimelineBlock` adds an sr-only month in the date.
+- Keyboard: about 75 tab stops before the next section (31 stream dots, 30 bubbles, 12 league rows): consider `tabIndex=-1` on the bubbles now that the full list exists.
+- The total JS budget (275 KB) leaves 23 KB of headroom for lazy chunks; revisit if it is used up.
+
