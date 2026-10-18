@@ -29,6 +29,16 @@ Syne 700/800 (display: tight, `line-height` about .85, outline variant for backg
 - Missing data is shown as a redaction bar and says "unavailable"; every field shows source and date.
 - `prefers-reduced-motion` disables the boot and auto-rotation; sound is off by default.
 
+## UI polish (Plan 7)
+
+Owner feedback on the live site: the default scrollbar clashed, the type and top bar were thin, the desktop layout felt empty. Fixes, in the same language:
+
+- **Type scale** (`tokens.css`): mono labels 11.5 px (nothing below 11 px anywhere, a test enforces it), data 13 px, body 14 px, titles 30 px (Syne 800), hero numerals 52 px (Space Grotesk 600).
+- **Scrollbar:** a hairline pill (10 px hit area, about 4 px visible, 28 % bone, 60 % on hover, lime while dragged, no arrows, no shadow; Firefox thin).
+- **Top bar:** 68 px glass bar, Syne wordmark, centred live numbers (events in 30 days, human-coded share, countries affected: "--" when unavailable, never 0 for missing), freshness pill on the right, the pulse line on its edge.
+- **Rails** (1100 px and wider): Hotspots (left, hidden while a dossier is open) and Latest (right, hidden while an event card is open; with a dossier open only from 1500 px). Real data only, a footnote says coverage is uneven, "live view only" during time travel. Rows are buttons.
+- **HUD frame:** four hairline corner ticks and the long-promised faint outline DEFCON word behind the interface; hidden on phones.
+
 ## Text colours (Plan 6)
 
 `--text` #EDEDE9, `--text-muted` 68 % and `--text-faint` 55 % of it on true black: all reach WCAG AA (4.5:1), checked by `tests/a11y/contrast.test.ts`. The earlier 50 % / 25 % values did not (faint was 1.9:1) and carried real field labels.

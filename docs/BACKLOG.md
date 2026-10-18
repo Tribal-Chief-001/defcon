@@ -111,3 +111,10 @@ Open items found during Plan 1 that were deliberately not fixed. Each is graded 
 - `serve:dist` always falls back to index.html (Vercel has no rewrite and would 404 unknown paths; harmless with hash routing).
 - A custom `VITE_EVENTS_BASE` origin must be added to `connect-src` by hand; the build does not check it.
 - `package-lock.json` has a root `engines` entry that `package.json` does not declare (harmless drift).
+
+## Plan 7 deferred (2026-10-18)
+
+- The rails were checked only in headless Chrome screenshots (1100, 1280, 1440, 1920 px and 375 px) and unit tests; real-device feel, Firefox scrollbars and a screen-reader pass are not done.
+- Hotspots rank GDELT-heavy countries (the US, UK) first because GDELT over-reports them; a per-capita or per-source-normalised ranking would be fairer but needs a decision on method.
+- "Human-coded" shows 0 % for the last 30 days because UCDP's data ends 31 Aug 2026 (true, labelled); a newer human-coded source (ACLED, UCDP candidate releases) would fix the number itself.
+- The faint DEFCON word and corner ticks have no reduced-motion concern (static) but were not tuned for very bright event clusters; the rails are hidden on tablets under 1100 px (no tablet layout yet).
