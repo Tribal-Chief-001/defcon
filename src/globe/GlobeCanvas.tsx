@@ -12,6 +12,7 @@ import { loadCountries } from '../dossier/load';
 import { playheadS, useTime } from '../time/store';
 import { loadRelations } from '../relations/load';
 import { makeRadarHandler } from './radarPipeline';
+import { detectStartTier } from '../perf/device';
 import { Unsupported } from './Unsupported';
 
 const getJson = async (url: string) => {
@@ -61,6 +62,7 @@ export function GlobeCanvas({
         canvas: ref.current,
         low,
         reducedMotion: prefersReducedMotion(),
+        startTier: detectStartTier(),
         onContextLost: () => setSupported(false),
         onFrame: import.meta.env.DEV ? (tick ??= installFrameOverlay()) : undefined,
       });

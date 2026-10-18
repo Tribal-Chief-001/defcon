@@ -13,6 +13,7 @@ import { TIERS, createQualityGovernor, type Tier } from '../perf/quality';
 import { buildDensity } from './grain';
 import { createGrainLayer } from './grainLayer';
 import { createClickClassifier } from './gesture';
+import { createPinch } from './pinch';
 import { selectCapitals, type Capital } from './labels';
 import { createPicker } from './pick';
 
@@ -371,8 +372,20 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   let hoverId: string | null = null;
   let hoverQueued = false;
 
+  const pinch = createPinch(); // two fingers zoom; a pinch never drags or clicks
   const onDown = (e: PointerEvent) => {
     boot.skip();
+    if (e.pointerType === 'touch') {
+      pinch.down(e.pointerId, e.clientX, e.clientY);
+      if (pinch.active()) {
+        dragging = false;
+        click.cancel();
+        anim = null;
+        vYaw = vPitch = 0;
+        lastInput = performance.now();
+        return;
+      }
+    }
     anim = null; // the user takes over from a running fly-to
     dragging = true;
     click.down();
@@ -386,6 +399,13 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   };
   const onMove = (e: PointerEvent) => {
     lastInput = performance.now();
+    if (e.pointerType === 'touch') {
+      const z = pinch.move(e.pointerId, e.clientX, e.clientY);
+      if (pinch.active()) {
+        if (z) distance = Math.max(MIN_DIST, Math.min(MAX_DIST, distance / z.scale));
+        return;
+      }
+    }
     if (e.pointerType !== 'touch') queueCursor(e.clientX, e.clientY);
     if (dragging) {
       const dx = e.clientX - lastX;
@@ -417,12 +437,20 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       setCursor(id ? 'pointer' : 'grab');
     });
   };
-  const onCancel = () => {
+  const onCancel = (e?: PointerEvent) => {
+    if (e) pinch.up(e.pointerId);
     dragging = false;
     setCursor('grab');
     click.cancel();
   };
   const onUp = (e: PointerEvent) => {
+    const wasPinching = pinch.active();
+    pinch.up(e.pointerId);
+    if (wasPinching) {
+      dragging = false;
+      click.cancel();
+      return; // the end of a pinch is not a click
+    }
     dragging = false;
     setCursor('grab');
     if (click.up()) {

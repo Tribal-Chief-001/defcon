@@ -153,7 +153,7 @@ export function App() {
           latest.current.next();
           setSel(null);
         }} /> : null}
-      <p className="pointer-events-none absolute bottom-[4.5rem] left-[4vw] font-[var(--font-mono)] text-[11px] uppercase tracking-[0.15em] text-[var(--cyan)]">
+      <p className="pointer-events-none absolute bottom-[calc(4.5rem+var(--safe-bottom))] left-[max(4vw,var(--safe-left))] font-[var(--font-mono)] text-[11px] uppercase tracking-[0.15em] text-[var(--cyan)]">
         {r ? `${r.lat.toFixed(2)}N ${r.lon.toFixed(2)}E // ${r.id ?? 'open water'}` : 'click the globe'}
       </p>
     </main>
