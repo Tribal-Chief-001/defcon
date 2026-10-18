@@ -78,7 +78,7 @@ Every motion feature respects `prefers-reduced-motion` (boot, grain animation, N
 - Source: Natural Earth (public domain), 1:10m, **India point-of-view variant** (`ne_10m_admin_0_countries_ind`). Its download exists (checked 2026-10-18, HTTP 200). Natural Earth's default file shows de facto boundaries and is **not** acceptable.
 - Ready-made basemap tiles (OSM-based, Protomaps, etc.) are **not** used for borders: their boundaries do not follow India's official map. Borders are built from the file above into our own compact vector data (TopoJSON and/or PMTiles), at two detail levels (50m-ish far, 10m near).
 - **Authority (builder's call, owner to confirm):** the reference for "India's official map" is the Survey of India's official political map of India (and the MEA's published depiction). The Natural Earth India file only *approximates* it, so geometry patching in the build step is a planned workstream with its own tooling, not a footnote. Scope: land boundary and territorial extent (J&K, Ladakh incl. Aksai Chin, Gilgit-Baltistan/PoK, Shaksgam, Arunachal Pradesh, and the rest of the LAC/LoC as India depicts them). Maritime zones (EEZ) are out of scope for v1.
-- **Verification before trusting the file (not yet done):** render it and inspect J&K, Ladakh (including Aksai Chin), PoK/Gilgit-Baltistan, Shaksgam, and Arunachal Pradesh against India's official map. Anything missing is fixed in our build step, not ignored.
+- **Verification before trusting the file (outline checked 2026-10-18 against the Survey of India vector map, within about 4 km; see MAP-POLICY and D-027; no Shaksgam patch needed):** render it and inspect J&K, Ladakh (including Aksai Chin), PoK/Gilgit-Baltistan, Shaksgam, and Arunachal Pradesh against India's official map. Anything missing is fixed in our build step, not ignored.
 - **Automated guard:** a test suite asserts that a fixed list of points (e.g. Srinagar, Leh, Gilgit, Muzaffarabad, Tawang, Itanagar, and points in Aksai Chin and Shaksgam) fall inside India's polygon, and that the India outline checksum has not changed. The owner reviews that point list.
 - Labels and dossier for the Kashmir region follow the same policy. No alternative-worldview toggle is offered.
 - Other disputed territories (Crimea, Taiwan, Western Sahara, Kosovo, Palestine, Cyprus and similar): follow the same Natural Earth file as shipped, show contested lines distinctly (dashed), and document each in `docs/MAP-POLICY.md`. Open for owner review.
@@ -145,6 +145,6 @@ Exact shader techniques, file layout, tile format, hosting provider, relation-da
 
 ## 13. Not yet verified
 
-- India POV file geometry (rendered inspection pending).
+- India POV file geometry: checked against the Survey of India map within about 4 km (D-027); individual spots such as Kalapani and Sir Creek not compared; owner review of the guard point list pending.
 - Current ACLED terms (2026), UCDP candidate endpoint access in practice, GDELT usage terms (read from secondary sources only).
 - Performance targets on the owner's hardware (nothing built yet).

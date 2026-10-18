@@ -4,8 +4,8 @@ Open items found during Plan 1 that were deliberately not fixed. Each is graded 
 
 ## Needs the owner
 
-- **Shaksgam Valley patch (Important, blocks "Plan 1 done"):** Natural Earth's India file puts it in China; India's official map includes it. Needs a reference polygon (owner supplies it, or the builder digitises it from the Survey of India map and the owner reviews). Then add `data/map/patches/india-shaksgam.json` (`add-to IND` + `cut-from CHN`), flip the guard entry to `verified`, re-pin the outline (`npm run map:pin-india`), log it in `DECISIONS.md`.
-- **Review the India guard point list** (`data/map/india-guard.json`) against the Survey of India map.
+- ~~Shaksgam Valley patch~~ **Not needed** (D-027): Natural Earth's India file already includes the valley; verified against the Survey of India map.
+- **Review the India guard point list** (`data/map/india-guard.json`, 18 verified points) against the Survey of India map.
 - **Confirm** that capitals of Kosovo, Somaliland and Western Sahara stay dropped (D-022).
 
 ## Engine and UI
@@ -21,6 +21,8 @@ Open items found during Plan 1 that were deliberately not fixed. Each is graded 
 
 ## Tests, scripts, docs
 
+- Regression test against the Survey of India reference: commit a simplified registered boundary (about 3,000 points) and assert the built India outline stays within about 8 km of it everywhere. Needs a decision on redistributing derived data from a Government of India map.
+- Outline differences beyond Shaksgam are unchecked individually: e.g. the northern tip near 75.2E 37.0N differs by up to 18 km, and Kalapani/Sir Creek were not compared.
 - `scripts/check-budgets.ts` passes silently when `dist/` or data files are missing; it should fail.
 - `india-guard.json` `status` is not validated (a typo skips an entry) and a `pending-owner` entry only warns.
 - `docs/DATA-SOURCES.md` border table has stale low-detail numbers (711 KB raw / 177 KB gz; measured 626 KB / 162 KB). D-021 should say the antimeridian split also caused the seam lines (fixed).

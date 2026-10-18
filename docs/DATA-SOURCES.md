@@ -32,3 +32,13 @@ Border build also: rewinds wrongly wound polygons and drops rings that quantizat
 ## Capitals and country list (derived)
 
 `public/data/capitals.json`: 212 capitals from `ne_10m_populated_places_simple` rows with `featurecla` `Admin-0 capital` (202) or `Admin-0 capital alt` (13), minus 3 whose country the India-POV file does not list. Fields: name, country (ADM0_A3), lat, lon (4 decimals), rank. `public/data/countries.json`: all 248 `{ id, name }` from the India-POV file.
+
+## Survey of India Political Map of India (reference only)
+
+| Item | Value |
+|------|-------|
+| File | `https://surveyofindia.gov.in/UserFiles/files/POLMAP_ENGLISH-2026.pdf` (English, 13th edition, file dated 23 Jan 2026) |
+| Size / sha256 | 31,785,145 bytes / `75f4c9f9b14b94c3d383487b6a1b4d599870455f364b3a560e2538fff1c5fe00` |
+| Downloaded | 2026-10-18 |
+| Use | Cross-check of the India outline only (`scripts/map/soi-check/`, `docs/MAP-POLICY.md`). Not committed, not shipped, not used in the build. Government of India publication: check its copyright terms before redistributing any derived data. |
+

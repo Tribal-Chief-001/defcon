@@ -89,6 +89,8 @@ Inputs the spec implies but its tasks would not otherwise exercise. Each has a t
 
 ### Task 4: India guard (the map-correctness tripwire)
 
+> **Correction 2026-10-18 (D-027):** the Shaksgam steps below (a `pending-owner` entry at 36.2N 77.0E and a patch) rested on a wrongly placed point. Natural Earth's India file already includes the valley, so no patch is needed; the guard entry was replaced. The steps are kept as originally planned.
+
 **Files:**
 - Create: `data/map/india-guard.json`, `tests/map/india-guard.test.ts`, `tests/map/india-outline.test.ts`, `data/map/india-outline.sha256`, `scripts/map/pin-india.ts`, `docs/MAP-POLICY.md`
 - Modify: `package.json` (script `map:pin-india`)
