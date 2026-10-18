@@ -103,4 +103,11 @@ describe('Rails', () => {
     const note = screen.getByText(/order and bars use/i);
     expect(note.className).toContain('text-[var(--text-muted)]');
   });
+
+  it('renders nothing while the War room is open (suppressed)', () => {
+    const { container } = render(<Rails {...props({ suppressed: true })} />);
+    expect(container.textContent).toBe('');
+    expect(screen.queryByRole('complementary')).toBeNull();
+  });
 });
+

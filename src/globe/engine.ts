@@ -9,7 +9,7 @@ import { buildBorderPositions, buildCountryPositions } from './borderGeometry';
 import type { Relations } from '../relations/types';
 import { createArcLayer } from './arcLayer';
 import { createWarLayer } from './warLayer';
-import type { WarState } from './warGeometry';
+import { haloRadiusPx, type WarLabelPos, type WarState } from './warGeometry';
 import { easeDive } from './dive';
 import { TIERS, createQualityGovernor, type Tier } from '../perf/quality';
 import { buildDensity } from './grain';
@@ -25,6 +25,7 @@ export type GlobeHandle = {
   onPick(cb: (id: string | null, lat: number, lon: number, kmPerPx: number) => void): () => void;
   setEvents(list: EventAttrs[]): void;
   setWar(state: WarState): void;
+  onWarLabels(cb: (labels: WarLabelPos[]) => void): () => void;
   setEventMarker(lat: number | null, lon?: number): void;
   dive(id: string | null, target?: { lat: number; lon: number; distance: number }): void;
   setFraming(x: number, y: number): void;
@@ -64,6 +65,7 @@ const MAX_SPIN = 4; // rad/s after a flick
 const HOME_DISTANCE = 3.6;
 const DIVE_MS = 1200;
 const MARKER_HIT_PX = 14;
+const R_LABEL = 1.004;
 const D2R = Math.PI / 180;
 const wrapPi = (a: number) => ((((a + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) - Math.PI;
 
@@ -539,6 +541,32 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     labelListeners.forEach((cb) => cb(out));
   };
 
+  // War room labels: the names of the most active conflicts and of the selected one, following the globe. Called after each rendered
+  // frame; the callback fires only when something visible moved a whole pixel.
+  const warListeners = new Set<(l: WarLabelPos[]) => void>();
+  let warNow: WarState | null = null;
+  let warKey = '';
+  const emitWarLabels = () => {
+    if (warListeners.size === 0) return;
+    const out: WarLabelPos[] = [];
+    if (warNow?.active) {
+      const w = canvas.clientWidth || 1;
+      const h = canvas.clientHeight || 1;
+      globe.updateMatrixWorld();
+      for (const c of warNow.conflicts) {
+        if (c.rank >= 6 && c.id !== warNow.selected) continue;
+        v3.set(...latLonToVec3(c.lat, c.lon, R_LABEL)).applyMatrix4(globe.matrixWorld);
+        if (v3.dot(camera.position) <= 1.02) continue; // behind or on the horizon
+        v3.project(camera);
+        out.push({ id: c.id, name: c.name, x: Math.round((v3.x * 0.5 + 0.5) * w), y: Math.round((-v3.y * 0.5 + 0.5) * h), r: haloRadiusPx(c.deaths365), selected: c.id === warNow.selected, rising: c.trend === 'rising', deaths90: c.deaths90 });
+      }
+    }
+    const key = out.map((l) => `${l.id}@${l.x},${l.y}`).join('|');
+    if (key === warKey) return;
+    warKey = key;
+    warListeners.forEach((cb) => cb(out));
+  };
+
   // ---- render loop (paused while the tab is hidden)
   let prev = performance.now();
   let fade = 0;
@@ -623,6 +651,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     war.update(now, renderer.getPixelRatio(), fade);
     renderer.render(scene, camera);
     updateCapitals(now);
+    emitWarLabels();
     opts.onFrame?.(now);
   };
   const start = () => {
@@ -660,6 +689,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       eventLayer.setData(list);
     },
     setWar(state) {
+      warNow = state;
       war.set(state);
       eventLayer.setDim(state.active ? 0.45 : 1);
     },
@@ -720,6 +750,10 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       const w = canvas.clientWidth || 1;
       const h = canvas.clientHeight || 1;
       return { x: (v3.x * 0.5 + 0.5) * w, y: (-v3.y * 0.5 + 0.5) * h, visible };
+    },
+    onWarLabels(cb) {
+      warListeners.add(cb);
+      return () => void warListeners.delete(cb);
     },
     onCursor(cb) {
       cursorListeners.add(cb);

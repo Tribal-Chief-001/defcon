@@ -174,37 +174,54 @@ describe('App deep links and dive state', () => {
   });
 });
 
-describe('App War tracker', () => {
-  it('the top-bar button opens it, #war mirrors it, and Esc closes it and clears the hash', async () => {
+describe('App War room', () => {
+  it('the top-bar button opens it docked (not a modal), #war mirrors it, and Esc closes it and clears the hash', async () => {
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: /^war tracker$/i }));
-    const dialog = await screen.findByRole('dialog', { name: /war tracker/i }, { timeout: 4000 });
+    fireEvent.click(screen.getByRole('button', { name: /^war room$/i }));
+    const room = await screen.findByRole('region', { name: 'War room' }, { timeout: 4000 });
+    expect(screen.queryByRole('dialog')).toBeNull();
     await waitFor(() => expect(location.hash).toBe('#war'), { timeout: 4000 });
-    await within(dialog).findByRole('button', { name: /Alpha war/ }, { timeout: 4000 });
+    await within(room).findByRole('list', { name: /conflicts league/i }, { timeout: 4000 });
     fireEvent.keyDown(window, { key: 'Escape' });
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull(), { timeout: 4000 });
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'War room' })).toBeNull(), { timeout: 4000 });
     await waitFor(() => expect(location.hash).toBe(''), { timeout: 4000 });
+  });
+  it('the button toggles it, and the rails, the scrubber and the legend step aside while it is open', async () => {
+    const NOW = Math.floor(Date.now() / 1000);
+    const e = encodeSnapshot([{ id: 'x1', source: 'ucdp', alsoIds: [], timeS: NOW - 3600, lat: 10, lon: 20, precision: 1, country: 'IND', kind: 'armed', deaths: 1, severity: 3, human: true, place: '', headline: '', actors: '', sources: [], firstSeenS: NOW, updatedS: NOW }], { asOfS: NOW, generatedS: NOW, windowFromS: NOW - 3 * 86400, windowToS: NOW, sources: [] });
+    useEvents.setState({ recent: decodeSnapshot(e.bin.buffer.slice(e.bin.byteOffset, e.bin.byteOffset + e.bin.byteLength) as ArrayBuffer, e.meta), archive: decodeSnapshot(e.bin.buffer.slice(e.bin.byteOffset, e.bin.byteOffset + e.bin.byteLength) as ArrayBuffer, e.meta), status: 'ready' });
+    render(<App />);
+    expect(await screen.findByRole('slider', undefined, { timeout: 4000 })).toBeTruthy(); // the scrubber is there before the room opens
+    const b = screen.getByRole('button', { name: /^war room$/i });
+    fireEvent.click(b);
+    await screen.findByRole('region', { name: 'War room' }, { timeout: 4000 });
+    expect(b.getAttribute('aria-pressed')).toBe('true');
+    expect(screen.queryByRole('complementary', { name: /hotspots/i })).toBeNull();
+    expect(screen.queryByRole('slider')).toBeNull(); // the scrubber and the legend would sit on top of the docked room
+    fireEvent.click(b);
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'War room' })).toBeNull(), { timeout: 4000 });
+    expect(screen.getByRole('slider')).toBeTruthy(); // back again when it closes
   });
   it('opens one conflict from #war=<id> on load and writes the selection back to the hash', async () => {
     history.replaceState(null, '', '/#war=beta-war');
     render(<App />);
-    const detail = await screen.findByRole('region', { name: 'Beta war' }, { timeout: 4000 });
-    expect(detail).toBeTruthy();
-    fireEvent.click(screen.getByRole('button', { name: /Alpha war/ }));
+    expect(await screen.findByRole('heading', { name: 'Beta war' }, { timeout: 4000 })).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /world overview/i }));
+    const league = await screen.findByRole('list', { name: /conflicts league/i }, { timeout: 4000 });
+    fireEvent.click(within(league).getByRole('button', { name: /Alpha war/ }));
     await waitFor(() => expect(location.hash).toBe('#war=alpha-war'), { timeout: 4000 });
   });
-  it('an unknown #war=zzz shows the list, not a crash', async () => {
+  it('an unknown #war=zzz shows the overview, not a crash', async () => {
     history.replaceState(null, '', '/#war=zzz');
     render(<App />);
-    expect(await screen.findByRole('button', { name: /Alpha war/ }, { timeout: 4000 })).toBeTruthy();
-    expect(screen.queryByRole('region', { name: /war/i })).toBeNull();
+    expect(await screen.findByRole('list', { name: /conflicts league/i }, { timeout: 4000 })).toBeTruthy();
   });
-  it('a country in the detail closes the tracker and dives into it', async () => {
+  it('a country in a conflict closes the War room and dives into it', async () => {
     history.replaceState(null, '', '/#war=alpha-war');
     render(<App />);
-    const detail = await screen.findByRole('region', { name: 'Alpha war' }, { timeout: 4000 });
-    fireEvent.click(within(detail).getByRole('button', { name: /Indialand/ }));
-    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull(), { timeout: 4000 });
+    const c = await screen.findByRole('list', { name: /countries in the data/i }, { timeout: 4000 });
+    fireEvent.click(within(c).getByRole('button', { name: /Indialand/ }));
+    await waitFor(() => expect(screen.queryByRole('region', { name: 'War room' })).toBeNull(), { timeout: 4000 });
     await waitFor(() => expect(location.hash).toBe('#c=IND'), { timeout: 4000 });
     await waitFor(() => expect(screen.getByTestId('globe').getAttribute('data-dive')).toBe('IND'), { timeout: 4000 });
   });

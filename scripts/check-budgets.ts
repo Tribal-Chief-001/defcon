@@ -4,7 +4,10 @@ import { existsSync, readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { gzipSync } from 'node:zlib';
 
-const JS_BUDGET = 250_000;
+// What the page loads at start (the entry script and its module preloads) must stay under 250 KB gzip; all JavaScript including lazy
+// chunks (About, the War room) under 275 KB. A lazy chunk costs nothing until its feature opens.
+const JS_INITIAL_BUDGET = 250_000;
+const JS_BUDGET = 275_000;
 const DATA_BUDGETS: [string, number][] = [
   ['borders.low.topo.json', 300_000],
   ['borders.high.topo.json', 1_000_000],
@@ -22,6 +25,12 @@ export function checkBudgets(distDir: string, dataDir: string): { ok: boolean; f
   const js = existsSync(assets)
     ? readdirSync(assets).filter((f) => f.endsWith('.js')).reduce((sum, f) => sum + gz(join(assets, f)), 0)
     : 0;
+  const indexHtml = join(distDir, 'index.html');
+  const loaded = existsSync(indexHtml)
+    ? [...readFileSync(indexHtml, 'utf8').matchAll(/(?:<script[^>]*\ssrc|<link[^>]*modulepreload[^>]*\shref)="\/?([^"]+\.js)"/g)].map((m) => join(distDir, m[1]!)).filter((p) => existsSync(p))
+    : [];
+  const initial = loaded.length > 0 ? loaded.reduce((sum, p) => sum + gz(p), 0) : js; // no index.html: everything counts as initial
+  if (initial > JS_INITIAL_BUDGET) failures.push(`initial JS ${kb(initial)} gzip exceeds ${kb(JS_INITIAL_BUDGET)}`);
   if (js > JS_BUDGET) failures.push(`JS total ${kb(js)} gzip exceeds ${kb(JS_BUDGET)}`);
   for (const [name, cap] of DATA_BUDGETS) {
     const path = join(dataDir, name);

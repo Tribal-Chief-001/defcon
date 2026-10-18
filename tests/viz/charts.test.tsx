@@ -6,7 +6,7 @@ import { Bubbles } from '../../src/viz/Bubbles';
 import { RangeBar } from '../../src/viz/RangeBar';
 import { Ring } from '../../src/viz/Ring';
 import { Spark } from '../../src/viz/Spark';
-import { StreamChart, type StreamEvent } from '../../src/viz/StreamChart';
+import { kindLayers, StreamChart, type StreamEvent } from '../../src/viz/StreamChart';
 
 afterEach(cleanup);
 const check = async (node: Element) => (await axe.run(node as HTMLElement, { rules: { 'color-contrast': { enabled: false }, region: { enabled: false } } })).violations.map((v) => `${v.id}: ${v.help}`);
@@ -99,7 +99,7 @@ describe('StreamChart', () => {
     { date: '2024-01-01', title: 'Before the window', status: 'confirmed' },
   ];
   it('is a labelled group whose summary names the window, the peak week and the kinds', () => {
-    render(<StreamChart weeklyByKind={by} dataEnd="2026-08-31" />);
+    render(<StreamChart layers={kindLayers(by)} dataEnd="2026-08-31" />);
     const g = screen.getByRole('group', { name: /deaths per week/i });
     const t = g.textContent ?? '';
     expect(t).toMatch(/weeks ending 8 Sep 2025 to 31 Aug 2026/i);
@@ -107,17 +107,18 @@ describe('StreamChart', () => {
     for (const k of ['State-based', 'Non-state', 'One-sided']) expect(t).toContain(k);
   });
   it('stacks three areas from a zero baseline and labels the axis with a round maximum and zero', () => {
-    const { container } = render(<StreamChart weeklyByKind={by} dataEnd="2026-08-31" />);
-    expect(container.querySelectorAll('path[data-kind]')).toHaveLength(3);
+    const { container } = render(<StreamChart layers={kindLayers(by)} dataEnd="2026-08-31" />);
+    expect(container.querySelectorAll('path[data-layer]')).toHaveLength(3);
     const ticks = Array.from(container.querySelectorAll('[data-ytick]')).map((e) => e.textContent);
     expect(ticks[0]).toBe('0');
-    expect(['500', '1,000'].includes(ticks[ticks.length - 1]!)).toBe(true); // peak week total is 300 + 51 + 5 = 356 -> 500
+    expect(ticks[ticks.length - 1]).toBe('500'); // peak week total is 300 + 50 + 5 = 355 -> 500
+    expect(ticks[1]).toBe('250');
     expect(container.innerHTML).not.toMatch(/NaN|undefined/);
   });
   it('puts each key event on its date as a button; events after the data end are marked, events before the window are left out', () => {
     const onClick = vi.fn();
     const onHover = vi.fn();
-    render(<StreamChart weeklyByKind={by} dataEnd="2026-08-31" events={ev} onEventClick={onClick} onEventHover={onHover} />);
+    render(<StreamChart layers={kindLayers(by)} dataEnd="2026-08-31" events={ev} onEventClick={onClick} onEventHover={onHover} />);
     const btns = screen.getAllByRole('button');
     expect(btns).toHaveLength(3);
     expect(screen.getByRole('button', { name: /3 Jul 2026.*Claim and denial.*disputed/i })).toBeTruthy();
@@ -131,11 +132,11 @@ describe('StreamChart', () => {
     expect(onHover).toHaveBeenLastCalledWith(null);
   });
   it('shows no "after UCDP data" band when every event is inside the data window', () => {
-    render(<StreamChart weeklyByKind={by} dataEnd="2026-08-31" events={ev.slice(0, 2)} />);
+    render(<StreamChart layers={kindLayers(by)} dataEnd="2026-08-31" events={ev.slice(0, 2)} />);
     expect(screen.getByRole('group').textContent).not.toMatch(/after UCDP data/i);
   });
   it('arrow keys move a scrub tooltip with the week ending date and the deaths per kind, Escape clears it', () => {
-    render(<StreamChart weeklyByKind={by} dataEnd="2026-08-31" />);
+    render(<StreamChart layers={kindLayers(by)} dataEnd="2026-08-31" />);
     const g = screen.getByRole('group');
     fireEvent.keyDown(g, { key: 'End' });
     expect(screen.getByRole('status').textContent).toMatch(/Week ending 31 Aug 2026/);
@@ -145,13 +146,26 @@ describe('StreamChart', () => {
     fireEvent.keyDown(g, { key: 'Escape' });
     expect(screen.getByRole('status').textContent).toBe('');
   });
+  it('draws any layers it is given, e.g. one series for a single conflict, under its own label', () => {
+    render(<StreamChart layers={[{ key: 'd', name: 'Deaths per week', values: weeks((i) => i), fill: 'var(--lime)', opacity: 0.8 }]} dataEnd="2026-08-31" label="Deaths per week in one conflict" />);
+    expect(screen.getByRole('group', { name: 'Deaths per week in one conflict' })).toBeTruthy();
+    expect(document.querySelectorAll('path[data-layer]')).toHaveLength(1);
+  });
   it('survives all zeros and bad numbers', () => {
     const z = { state: weeks(() => 0), 'non-state': weeks(() => Number.NaN), 'one-sided': weeks(() => -3) };
-    const { container } = render(<StreamChart weeklyByKind={z} dataEnd="2026-08-31" />);
+    const { container } = render(<StreamChart layers={kindLayers(z)} dataEnd="2026-08-31" />);
     expect(container.innerHTML).not.toMatch(/NaN|undefined/);
   });
   it('has no axe violations', async () => {
-    const { container } = render(<StreamChart weeklyByKind={by} dataEnd="2026-08-31" events={ev} />);
+    const { container } = render(<StreamChart layers={kindLayers(by)} dataEnd="2026-08-31" events={ev} />);
     expect(await check(container)).toEqual([]);
   });
+
+  it('writes big axis numbers compactly so they fit (100k, 1.5k)', () => {
+    const big = { state: weeks((i) => (i === 3 ? 90000 : 10)), 'non-state': weeks(() => 0), 'one-sided': weeks(() => 0) };
+    const { container } = render(<StreamChart layers={kindLayers(big)} dataEnd="2026-08-31" />);
+    const ticks = Array.from(container.querySelectorAll('[data-ytick]')).map((e) => e.textContent);
+    expect(ticks).toEqual(['0', '50k', '100k']);
+  });
 });
+

@@ -75,4 +75,31 @@ describe('checkBudgets', () => {
     expect(checkBudgets(...make(1000, 1000, 1000, undefined, { index: 20_000, one: 3000 })).ok).toBe(true);
     expect(checkBudgets(...make(1000)).ok).toBe(true);
   });
+
+  describe('initial versus lazy JavaScript', () => {
+    const withEntry = (entry: number, lazy: number, preload = 0) => {
+      const root = mkdtempSync(join(tmpdir(), 'budget-'));
+      mkdirSync(join(root, 'dist/assets'), { recursive: true });
+      mkdirSync(join(root, 'data'), { recursive: true });
+      writeFileSync(join(root, 'dist/assets/index-abc.js'), randomBytes(entry));
+      writeFileSync(join(root, 'dist/assets/lazy-def.js'), randomBytes(lazy));
+      if (preload) writeFileSync(join(root, 'dist/assets/store-ghi.js'), randomBytes(preload));
+      writeFileSync(join(root, 'dist/index.html'), `<html><head><script type="module" crossorigin src="/assets/index-abc.js"></script>${preload ? '<link rel="modulepreload" crossorigin href="/assets/store-ghi.js">' : ''}</head></html>`);
+      return [join(root, 'dist'), join(root, 'data')] as const;
+    };
+    it('does not count a lazy chunk toward the initial budget: 240 KB loaded at start plus 25 KB on demand passes', () => {
+      expect(checkBudgets(...withEntry(240_000, 25_000)).ok).toBe(true);
+    });
+    it('fails when what the page loads at start (the entry and its preloads) exceeds 250 KB, naming it', () => {
+      const r = checkBudgets(...withEntry(245_000, 1000, 8000));
+      expect(r.ok).toBe(false);
+      expect(r.failures.join(' ')).toMatch(/initial JS/i);
+    });
+    it('still caps all JavaScript, lazy chunks included, at 275 KB', () => {
+      const r = checkBudgets(...withEntry(200_000, 90_000));
+      expect(r.ok).toBe(false);
+      expect(r.failures.join(' ')).toMatch(/JS total/);
+    });
+  });
 });
+

@@ -8,7 +8,7 @@ const LABEL_MIN_R = 40;
 
 // Conflicts as bubbles whose AREA is the deaths in the last 365 days (the radius is not: a 100-fold war must not look 100 times wider than
 // a tenth of it). Orange outline when rising, lime when selected. Every bubble is a button; the league table is the text equivalent.
-export function Bubbles({ items, selected, onSelect, height = 300 }: { items: BubbleItem[]; selected: string | null; onSelect: (id: string) => void; height?: number }) {
+export function Bubbles({ items, selected, onSelect, height = 300, label = 'Conflicts by deaths in the last 365 days' }: { items: BubbleItem[]; selected: string | null; onSelect: (id: string) => void; height?: number; label?: string }) {
   const box = useRef<HTMLDivElement>(null);
   const [w, setW] = useState(640);
   useEffect(() => {
@@ -21,7 +21,7 @@ export function Bubbles({ items, selected, onSelect, height = 300 }: { items: Bu
   const circles = useMemo(() => packCircles(items.map((i) => ({ id: i.id, value: i.value })), w, height), [items, w, height]);
   const byId = new Map(items.map((i) => [i.id, i]));
   return (
-    <div ref={box} className="relative w-full" style={{ height }}>
+    <div ref={box} role="group" aria-label={label} className="relative w-full" style={{ height }}>
       {circles.map((c) => {
         const it = byId.get(c.id)!;
         const on = it.id === selected;

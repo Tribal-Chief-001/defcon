@@ -16,6 +16,8 @@ export type WarConflict = {
   rank: number; // 0 = most deaths in the last 90 days
 };
 export type WarPin = { lat: number; lon: number; status: 'confirmed' | 'reported' | 'disputed'; label: string };
+// where a conflict's label goes on screen (CSS px in the canvas) and how big its halo is
+export type WarLabelPos = { id: string; name: string; x: number; y: number; r: number; selected: boolean; rising: boolean; deaths90: number };
 export type WarState = { active: boolean; conflicts: WarConflict[]; selected: string | null; pins: WarPin[]; hoverPin: number | null };
 
 export function distanceKm(a: { lat: number; lon: number }, b: { lat: number; lon: number }): number {

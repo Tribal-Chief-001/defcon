@@ -5,24 +5,29 @@ import { addDays, areaPath, monthTicks, niceMax, scaleLinear, stackAreas, weekEn
 
 export type StreamEvent = { date: string; title: string; status: 'confirmed' | 'reported' | 'disputed'; theatre?: string };
 
-const KINDS: { k: Kind; name: string; fill: string; op: number }[] = [
-  { k: 'state', name: 'State-based', fill: 'var(--lime)', op: 0.78 },
-  { k: 'non-state', name: 'Non-state', fill: 'var(--text)', op: 0.5 },
-  { k: 'one-sided', name: 'One-sided', fill: 'var(--orange)', op: 0.85 },
+export type Layer = { key: string; name: string; values: number[]; fill: string; opacity: number };
+const KIND_STYLE: { k: Kind; name: string; fill: string; opacity: number }[] = [
+  { k: 'state', name: 'State-based', fill: 'var(--lime)', opacity: 0.78 },
+  { k: 'non-state', name: 'Non-state', fill: 'var(--text)', opacity: 0.5 },
+  { k: 'one-sided', name: 'One-sided', fill: 'var(--orange)', opacity: 0.85 },
 ];
+// the three kinds of violence as chart layers: state-based in lime, non-state in bone, one-sided (attacks on civilians) in orange
+export const kindLayers = (w: Record<Kind, number[]>): Layer[] => KIND_STYLE.map((k) => ({ key: k.k, name: k.name, values: w[k.k] ?? [], fill: k.fill, opacity: k.opacity }));
 const W = 640;
-const PAD = { l: 44, r: 10, t: 16, b: 22 };
+const PAD = { l: 40, r: 10, t: 16, b: 22 };
 const clean = (a: number[]) => a.map((v) => (Number.isFinite(v) && v > 0 ? v : 0));
 const int = (n: number) => n.toLocaleString('en-US');
+// axis labels: 1,500 -> 1.5k, 100,000 -> 100k, so they fit in the margin
+const axis = (n: number) => (n >= 1000 ? `${Math.round((n / 1000) * 10) / 10}k` : int(n));
 const day = (iso: string) => Date.parse(`${iso}T00:00:00Z`) / 86400000;
 
 // Weekly deaths stacked by kind of violence from a zero baseline over 52 weeks, with the key events of the timeline as stems on their
 // dates. Events after the data end sit in a marked "after UCDP data" band, so they never float over an empty chart as if the deaths
 // were zero. A scrub line (pointer or arrow keys) reads out the week.
-export function StreamChart({ weeklyByKind, dataEnd, events = [], onEventClick, onEventHover, height = 220 }: { weeklyByKind: Record<Kind, number[]>; dataEnd: string; events?: StreamEvent[]; onEventClick?: (index: number) => void; onEventHover?: (index: number | null) => void; height?: number }) {
-  const series = KINDS.map((k) => clean(weeklyByKind[k.k] ?? []));
+export function StreamChart({ layers, dataEnd, events = [], onEventClick, onEventHover, height = 220, label = 'Deaths per week by kind of violence' }: { layers: Layer[]; dataEnd: string; label?: string; events?: StreamEvent[]; onEventClick?: (index: number) => void; onEventHover?: (index: number | null) => void; height?: number }) {
+  const series = layers.map((l) => clean(l.values));
   const n = 52;
-  const stacks = useMemo(() => stackAreas(series), [weeklyByKind]); // eslint-disable-line react-hooks/exhaustive-deps
+  const stacks = useMemo(() => stackAreas(series), [layers]); // eslint-disable-line react-hooks/exhaustive-deps
   const totals = Array.from({ length: n }, (_, i) => series.reduce((s, a) => s + (a[i] ?? 0), 0));
   const peak = Math.max(0, ...totals);
   const peakAt = totals.indexOf(peak);
@@ -56,12 +61,12 @@ export function StreamChart({ weeklyByKind, dataEnd, events = [], onEventClick, 
     else return;
     e.preventDefault();
   };
-  const tip = idx === null ? '' : `Week ending ${fmtDate(weekEnd(dataEnd, idx))} · ${KINDS.map((k, j) => `${k.name} ${int(series[j]![idx] ?? 0)}`).join(' · ')}`;
+  const tip = idx === null ? '' : `Week ending ${fmtDate(weekEnd(dataEnd, idx))} · ${layers.map((l, j) => `${l.name} ${int(series[j]![idx] ?? 0)}`).join(' · ')}`;
 
   return (
     <div
       role="group"
-      aria-label="Deaths per week by kind of violence"
+      aria-label={label}
       tabIndex={0}
       onKeyDown={onKey}
       onBlur={() => setIdx(null)}
@@ -76,20 +81,20 @@ export function StreamChart({ weeklyByKind, dataEnd, events = [], onEventClick, 
             <g key={i}>
               <line x1={PAD.l} x2={W - PAD.r} y1={y(t)} y2={y(t)} stroke="var(--border)" strokeWidth="1" />
               <text data-ytick x={PAD.l - 6} y={y(t) + 4} textAnchor="end" className="fill-[var(--text-muted)] font-[var(--font-mono)] text-[11px]">
-                {int(t)}
+                {axis(t)}
               </text>
             </g>
           ))}
           {after ? (
             <g>
               <rect x={x(day(dataEnd))} y={PAD.t} width={W - PAD.r - x(day(dataEnd))} height={height - PAD.b - PAD.t} fill="var(--text)" fillOpacity="0.04" />
-              <text x={W - PAD.r - 4} y={PAD.t + 12} textAnchor="end" className="fill-[var(--text-muted)] font-[var(--font-mono)] text-[11px]">
+              <text x={W - PAD.r - 4} y={height - PAD.b - 6} textAnchor="end" className="fill-[var(--text-muted)] font-[var(--font-mono)] text-[11px]">
                 after UCDP data
               </text>
             </g>
           ) : null}
-          {KINDS.map((k, j) => (
-            <path key={k.k} data-kind={k.k} d={areaPath(xs, stacks[j]!.y0.map(y), stacks[j]!.y1.map(y))} fill={k.fill} fillOpacity={k.op} stroke={k.fill} strokeWidth="0.75" strokeOpacity="0.9" />
+          {layers.map((l, j) => (
+            <path key={l.key} data-layer={l.key} d={areaPath(xs, stacks[j]!.y0.map(y), stacks[j]!.y1.map(y))} fill={l.fill} fillOpacity={l.opacity} stroke={l.fill} strokeWidth="0.75" strokeOpacity="0.9" />
           ))}
           {monthTicks(dataEnd).map((t) => (
             <text key={t.i} x={xs[t.i]} y={height - 6} textAnchor="middle" className="fill-[var(--text-muted)] font-[var(--font-mono)] text-[11px]">
@@ -97,7 +102,7 @@ export function StreamChart({ weeklyByKind, dataEnd, events = [], onEventClick, 
             </text>
           ))}
           {placed.map(({ e, index }) => (
-            <line key={index} x1={x(day(e.date))} x2={x(day(e.date))} y1={PAD.t + 6} y2={height - PAD.b} stroke={e.status === 'disputed' ? 'var(--orange)' : 'var(--text)'} strokeOpacity="0.55" strokeWidth="1" strokeDasharray={e.status === 'confirmed' ? undefined : '2 3'} />
+            <line key={index} x1={x(day(e.date))} x2={x(day(e.date))} y1={PAD.t + 6} y2={height - PAD.b} stroke={e.status === 'disputed' ? 'var(--orange)' : 'var(--text)'} strokeOpacity="0.3" strokeWidth="1" strokeDasharray={e.status === 'confirmed' ? undefined : '2 3'} />
           ))}
           {idx !== null ? <line x1={xs[idx]} x2={xs[idx]} y1={PAD.t} y2={height - PAD.b} stroke="var(--lime)" strokeWidth="1" /> : null}
         </svg>
@@ -122,9 +127,9 @@ export function StreamChart({ weeklyByKind, dataEnd, events = [], onEventClick, 
         </div>
       </div>
       <ul className="mt-1 flex flex-wrap gap-x-4 gap-y-1 font-[var(--font-mono)] text-[11.5px] text-[var(--text-muted)]">
-        {KINDS.map((k) => (
-          <li key={k.k} className="flex items-center gap-1.5">
-            <span className="inline-block h-[8px] w-[8px]" style={{ background: k.fill, opacity: k.op }} /> {k.name}
+        {layers.map((l) => (
+          <li key={l.key} className="flex items-center gap-1.5">
+            <span className="inline-block h-[8px] w-[8px]" style={{ background: l.fill, opacity: l.opacity }} /> {l.name}
           </li>
         ))}
       </ul>

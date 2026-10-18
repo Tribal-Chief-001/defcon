@@ -2,7 +2,9 @@ import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { loadCountries } from './dossier/load';
 import { diveTarget } from './globe/dive';
 import { framingFor } from './globe/framing';
-import { focusDistance, toWarConflicts, type WarPin, type WarState } from './globe/warGeometry';
+import { focusDistance, toWarConflicts, type WarLabelPos, type WarState } from './globe/warGeometry';
+import { entriesFor, toPins } from './ui/war/pins';
+import { WarLabels } from './ui/war/WarLabels';
 import { loadConflicts } from './conflicts/load';
 import type { ConflictsFile } from './conflicts/types';
 import { loadTimeline } from './timeline/load';
@@ -42,7 +44,7 @@ import { StatusRegion, announce } from './ui/status';
 
 const BASE = eventsBase(import.meta.env.VITE_EVENTS_BASE);
 const AboutPage = lazy(() => import('./ui/AboutPage').then((m) => ({ default: m.AboutPage })));
-const ConflictsPage = lazy(() => import('./ui/ConflictsPage').then((m) => ({ default: m.ConflictsPage })));
+const WarRoom = lazy(() => import('./ui/WarRoom').then((m) => ({ default: m.WarRoom })));
 const PICK_RADIUS_PX = 14;
 
 type Readout = { id: string | null; lat: number; lon: number };
@@ -62,6 +64,7 @@ export function App() {
   diveIdRef.current = dive?.id ?? null;
   const dossierIdRef = useRef<string | null>(null);
   dossierIdRef.current = dossierId;
+  const warOpenRef = useRef(false); // the War room is open: Night Watch must not take the globe away
   const diveToken = useRef(createLatest()); // only the newest dive request wins
   const [narrow, setNarrow] = useState(() => window.matchMedia('(max-width: 639px)').matches);
   useEffect(() => {
@@ -71,12 +74,14 @@ export function App() {
     return () => mq.removeEventListener('change', on);
   }, []);
   const warOpen = war !== null && !about;
+  warOpenRef.current = warOpen;
   const framing = useMemo(() => framingFor(dossierId !== null, narrow, warOpen), [dossierId, narrow, warOpen]);
 
   // The War room's presence on the globe: halos for the active conflicts, and for the selected one its zone, hotspots and timeline pins.
   // The data comes from the same cached loaders as the War room itself; a failed load leaves the globe without the layer.
   const [warData, setWarData] = useState<{ file: ConflictsFile | null; timeline: TimelineFile | null }>({ file: null, timeline: null });
-  const [warHover] = useState<number | null>(null); // the War room sets it from a timeline card (Task 4)
+  const [warHover, setWarHover] = useState<number | null>(null); // the pin of the timeline card under the pointer
+  const [warLabels, setWarLabels] = useState<WarLabelPos[]>([]);
   useEffect(() => {
     if (war === null) return;
     let live = true;
@@ -88,13 +93,7 @@ export function App() {
   }, [war === null]); // eslint-disable-line react-hooks/exhaustive-deps
   const warConflicts = useMemo(() => (warData.file ? toWarConflicts(warData.file.conflicts) : []), [warData.file]);
   const warSelected = war && war !== 'world' && warConflicts.some((c) => c.id === war) ? war : null;
-  const warPins = useMemo<WarPin[]>(
-    () =>
-      warSelected && warData.timeline
-        ? warData.timeline.theatres.filter((t) => t.conflicts.includes(warSelected)).flatMap((t) => t.entries.flatMap((e) => (e.at ? [{ lat: e.at.lat, lon: e.at.lon, status: e.status, label: e.title }] : [])))
-        : [],
-    [warSelected, warData.timeline],
-  );
+  const warPins = useMemo(() => (warSelected ? toPins(entriesFor(warData.timeline, warSelected)) : []), [warSelected, warData.timeline]);
   const warState = useMemo<WarState>(() => ({ active: warOpen, conflicts: warConflicts, selected: warSelected, pins: warPins, hoverPin: warHover }), [warOpen, warConflicts, warSelected, warPins, warHover]);
   // the camera flies to a conflict when it is selected and stays there until another is chosen or the War room closes
   const [warFocus, setWarFocus] = useState<{ lat: number; lon: number; distance: number } | null>(null);
@@ -103,6 +102,10 @@ export function App() {
     if (!c) return setWarFocus(null);
     setWarFocus({ lat: c.lat, lon: c.lon, distance: focusDistance(c.spreadKm) }); // held while it is selected: the globe stays on it instead of spinning away
   }, [warOpen, warSelected, warConflicts]);
+  // a place chosen on a timeline card ("Show on the map") wins until another conflict is selected or the room closes
+  const [placeFocus, setPlaceFocus] = useState<{ lat: number; lon: number; distance: number } | null>(null);
+  useEffect(() => setPlaceFocus(null), [warSelected, warOpen]);
+  useEffect(() => setWarHover(null), [warSelected, warOpen]);
   const latest = useRef(createLatest()); // only the newest selection may receive its detail
 
   useEffect(() => startEventService(BASE), []);
@@ -122,7 +125,7 @@ export function App() {
   selRef.current = sel;
   const watch = useNightWatch(BASE, () => {
     const t = useTime.getState();
-    return dossierIdRef.current !== null || selRef.current !== null || t.backS > 0 || t.playing || !!document.querySelector('[role="dialog"]');
+    return warOpenRef.current || dossierIdRef.current !== null || selRef.current !== null || t.backS > 0 || t.playing || !!document.querySelector('[role="dialog"]');
   });
 
   // `key` is a map id or an ISO3 code (SSD for the map's SDS); an id with no country row opens nothing and flies nowhere
@@ -232,7 +235,7 @@ export function App() {
       <SkipLink />
       <StatusRegion />
       <ErrorBoundary where="globe" fallback={<Unsupported reason="failed" />}>
-        <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : watch.marker} focus={watch.focus ?? warFocus ?? railFocus} dive={dive} framing={framing} onLabels={setLabels} war={warState} />
+        <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : watch.marker} focus={watch.focus ?? placeFocus ?? warFocus ?? railFocus} dive={dive} framing={framing} onLabels={setLabels} war={warState} onWarLabels={setWarLabels} />
       </ErrorBoundary>
       <HudFrame />
       <LiveCapitalLabels />
@@ -241,8 +244,8 @@ export function App() {
       <TopBar>
         <CommandPalette onPick={(id) => void startDive(id)} />
         <SoundToggle />
-        <button type="button" onClick={() => setWar((w) => w ?? '')} className="rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)]">
-          War tracker
+        <button type="button" aria-pressed={warOpen} onClick={() => setWar((w) => (w === null ? '' : null))} className="rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)]">
+          War room
         </button>
         <button type="button" onClick={() => setAbout(true)} className="rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)]">
           About
@@ -255,26 +258,35 @@ export function App() {
           </ErrorBoundary>
         </Suspense>
       ) : null}
-      {war !== null && !about ? (
-        <Suspense fallback={null}>
-          <ErrorBoundary where="war" onReset={() => setWar(null)}>
-            <ConflictsPage
-              selected={war || null}
-              onSelect={(id) => setWar(id ?? '')}
-              onClose={() => setWar(null)}
-              onDive={(id) => {
-                setWar(null);
-                void startDive(id);
-              }}
-            />
-          </ErrorBoundary>
-        </Suspense>
+      {warOpen ? (
+        <>
+          <WarLabels labels={warLabels} />
+          <Suspense fallback={null}>
+            <ErrorBoundary where="war" onReset={() => setWar(null)}>
+              <WarRoom
+                selected={war || null}
+                onSelect={(id) => setWar(id ?? '')}
+                onClose={() => setWar(null)}
+                onDive={(id) => {
+                  setWar(null);
+                  void startDive(id);
+                }}
+                onFocusPlace={(at) => setPlaceFocus(at ? { lat: at.lat, lon: at.lon, distance: 1.7 } : null)}
+                onHoverPin={setWarHover}
+              />
+            </ErrorBoundary>
+          </Suspense>
+        </>
       ) : null}
-      <Rails dossierOpen={dossierId !== null} cardOpen={sel !== null} onDive={(id) => void startDive(id)} onOpenEvent={onRailEvent} />
-      <Coverage />
-      <ErrorBoundary where="scrubber" fallback={null}>
-        <Scrubber />
-      </ErrorBoundary>
+      <Rails suppressed={warOpen} dossierOpen={dossierId !== null} cardOpen={sel !== null} onDive={(id) => void startDive(id)} onOpenEvent={onRailEvent} />
+      {warOpen ? null : (
+        <>
+          <Coverage />
+          <ErrorBoundary where="scrubber" fallback={null}>
+            <Scrubber />
+          </ErrorBoundary>
+        </>
+      )}
       {dossierId ? (
         <ErrorBoundary key={dossierId} where="dossier" onReset={exitDive}>
           <DossierPanel countryId={dossierId} onClose={exitDive} />

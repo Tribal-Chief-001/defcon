@@ -8,7 +8,7 @@ import { hasWebGL2 } from './capabilities';
 import { createGlobe, type GlobeHandle } from './engine';
 import type { CapitalLabel } from '../ui/CapitalLabels';
 import type { Capital } from './labels';
-import type { WarState } from './warGeometry';
+import type { WarLabelPos, WarState } from './warGeometry';
 import { loadCountries } from '../dossier/load';
 import { playheadS, useTime } from '../time/store';
 import { loadRelations } from '../relations/load';
@@ -33,6 +33,7 @@ export function GlobeCanvas({
   onLabels,
   focus,
   war,
+  onWarLabels,
 }: {
   onPick?: (id: string | null, lat: number, lon: number, kmPerPx: number) => void;
   marker?: { lat: number; lon: number } | null;
@@ -41,6 +42,7 @@ export function GlobeCanvas({
   onLabels?: (labels: CapitalLabel[]) => void;
   focus?: { lat: number; lon: number; distance: number } | null;
   war?: WarState; // the War room's layer: halos, the selected conflict's zone and hotspots, timeline pins
+  onWarLabels?: (labels: WarLabelPos[]) => void;
 }) {
   const diveRef = useRef(dive);
   diveRef.current = dive;
@@ -61,6 +63,7 @@ export function GlobeCanvas({
     let tick: ((nowMs: number) => void) | undefined;
     let unsubscribe: (() => void) | undefined;
     let offLabels: (() => void) | undefined;
+    let offWarLabels: (() => void) | undefined;
     let offTime: (() => void) | undefined;
     let offCursor: (() => void) | undefined;
     (async () => {
@@ -83,6 +86,7 @@ export function GlobeCanvas({
       if (diveRef.current) handle.dive(diveRef.current.id, diveRef.current.target); // a deep link opened before the globe existed
       if (onPick) off = handle.onPick(onPick);
       if (onLabels) offLabels = handle.onLabels(onLabels);
+      if (onWarLabels) offWarLabels = handle.onWarLabels(onWarLabels);
       offCursor = handle.onCursor(makeRadarHandler((lat, lon) => handle!.project(lat, lon), () => useEvents.getState()));
       // capital markers are an extra: a failed fetch leaves the globe without them rather than failing it
       void fetch('/data/capitals.json')
@@ -123,13 +127,14 @@ export function GlobeCanvas({
       cancelled = true;
       off?.();
       offLabels?.();
+      offWarLabels?.();
       offTime?.();
       offCursor?.();
       unsubscribe?.();
       handleRef.current = undefined;
       handle?.dispose();
     };
-  }, [supported, onPick, onLabels]);
+  }, [supported, onPick, onLabels, onWarLabels]);
 
   useEffect(() => {
     if (marker) handleRef.current?.setEventMarker(marker.lat, marker.lon);

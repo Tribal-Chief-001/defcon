@@ -1,11 +1,13 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen, within } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, describe, expect, it, vi } from 'vitest';
+import { fireEvent } from '@testing-library/react';
 import { TimelineBlock, type TimelineRow } from '../../src/ui/TimelineBlock';
 import { timelineFixture } from '../timeline/fixture';
 
 afterEach(cleanup);
 const rows = (): TimelineRow[] => timelineFixture().theatres.flatMap((t) => t.entries.map((entry) => ({ entry, theatre: t.title })));
+const pinned = (): TimelineRow[] => rows().map((r, i) => ({ ...r, pinIndex: r.entry.at ? i : undefined }));
 
 describe('TimelineBlock', () => {
   it('lists entries newest first with date, title, status word and summary', () => {
@@ -68,5 +70,39 @@ describe('TimelineBlock', () => {
   it('gives each source link a name that says what it is and that it opens a new tab', () => {
     render(<TimelineBlock rows={rows()} checkedAt="2026-10-18" />);
     expect(screen.getByRole('link', { name: /Reuters: Kyiv hit .*new tab/i })).toBeTruthy();
+  });
+
+  it('offers "Show on the map" only for entries with a place, and reports the place', () => {
+    const onShow = vi.fn();
+    render(<TimelineBlock rows={pinned()} checkedAt="2026-10-18" onShowOnMap={onShow} />);
+    const btns = screen.getAllByRole('button', { name: /show on the map/i });
+    expect(btns).toHaveLength(2); // Kyiv and Rafah have a place, the July entry has none
+    fireEvent.click(btns[0]!);
+    expect(onShow).toHaveBeenCalledWith({ lat: 31.3, lon: 34.25, place: 'Rafah' }, 0 + 2); // the newest entry first: Rafah, pin index 2
+  });
+  it('tells the globe which pin a hovered or focused entry is, and clears it on leave', () => {
+    const onHover = vi.fn();
+    render(<TimelineBlock rows={pinned()} checkedAt="2026-10-18" onHoverPin={onHover} />);
+    const items = screen.getAllByRole('listitem');
+    fireEvent.mouseEnter(items[0]!);
+    expect(onHover).toHaveBeenLastCalledWith(2);
+    fireEvent.mouseLeave(items[0]!);
+    expect(onHover).toHaveBeenLastCalledWith(null);
+    fireEvent.mouseEnter(items[1]!); // the July entry has no place: no pin to highlight
+    expect(onHover).toHaveBeenLastCalledWith(null);
+  });
+  it('marks a highlighted entry (clicked on the chart) and scrolls it into view', () => {
+    const scroll = vi.fn();
+    Element.prototype.scrollIntoView = scroll;
+    const r = rows();
+    render(<TimelineBlock rows={r} checkedAt="2026-10-18" highlight={`${r[0]!.entry.date}|${r[0]!.entry.title}`} />);
+    const li = screen.getAllByRole('listitem').find((x) => x.getAttribute('data-highlight') === 'true');
+    expect(li).toBeTruthy();
+    expect(li!.textContent).toContain('A big strike hits');
+    expect(scroll).toHaveBeenCalled();
+  });
+  it('conveys the status in words, not only by the colour of the node', () => {
+    render(<TimelineBlock rows={rows()} checkedAt="2026-10-18" />);
+    for (const w of ['confirmed', 'reported', 'disputed']) expect(screen.getAllByText(new RegExp(`^${w}$`, 'i')).length).toBeGreaterThan(0);
   });
 });

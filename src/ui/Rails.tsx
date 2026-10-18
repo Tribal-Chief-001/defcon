@@ -14,7 +14,7 @@ const row = 'group flex w-full items-center gap-3 rounded-[14px] border border-t
 
 // Two information rails for wide screens: where things are most active, and what just happened. Both read the live snapshot only;
 // while time travel is on they say so instead of showing numbers that would not match the globe.
-export function Rails({ dossierOpen, cardOpen, onDive, onOpenEvent }: { dossierOpen: boolean; cardOpen: boolean; onDive: (id: string) => void; onOpenEvent: (e: LatestEvent) => void }) {
+export function Rails({ suppressed = false, dossierOpen, cardOpen, onDive, onOpenEvent }: { suppressed?: boolean; dossierOpen: boolean; cardOpen: boolean; onDive: (id: string) => void; onOpenEvent: (e: LatestEvent) => void }) {
   const snap = useEvents((s) => s.recent);
   const backS = useTime((s) => s.backS);
   const [names, setNames] = useState<Map<string, string>>(new Map());
@@ -27,6 +27,7 @@ export function Rails({ dossierOpen, cardOpen, onDive, onOpenEvent }: { dossierO
   const latest = useMemo(() => (snap ? latestEvents(snap, nowS) : []), [snap, nowS]);
   const name = (id: string) => names.get(id) ?? id;
   const live = backS === 0;
+  if (suppressed) return null; // the War room is open on the right and the rails would sit under it
 
   return (
     <>

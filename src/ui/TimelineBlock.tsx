@@ -1,13 +1,35 @@
+import { useEffect, useRef } from 'react';
 import { fmtDate } from '../lib/fmtDate';
+import { prefersReducedMotion } from '../lib/motion';
+import { rowKey } from '../timeline/key';
 import type { TimelineEntry } from '../timeline/types';
 
-export type TimelineRow = { entry: TimelineEntry; theatre?: string };
+export type TimelineRow = { entry: TimelineEntry; theatre?: string; pinIndex?: number };
+export type TimelineProps = {
+  rows: TimelineRow[];
+  checkedAt: string;
+  showTheatre?: boolean;
+  limit?: number;
+  limits?: string;
+  notes?: string[];
+  highlight?: string; // `${date}|${title}` of an entry to mark and scroll to (clicked on the chart)
+  onShowOnMap?: (at: NonNullable<TimelineEntry['at']>, pinIndex: number | undefined) => void;
+  onHoverPin?: (pinIndex: number | null) => void;
+};
 const STATUS_STYLE: Record<TimelineEntry['status'], string> = { confirmed: 'text-[var(--text)]', reported: 'text-[var(--text-muted)]', disputed: 'text-[var(--orange)]' };
+const NODE: Record<TimelineEntry['status'], string> = { confirmed: 'border-[var(--text)] bg-[var(--text)]', reported: 'border-[var(--text)] bg-black', disputed: 'border-[var(--orange)] bg-[var(--orange)]' };
 const label = 'font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.18em] text-[var(--text-muted)]';
+export { rowKey } from '../timeline/key';
 
-// Key events curated from news sources, newest first. Each entry shows its status and links its sources; the legend says what the
-// statuses mean and when the list was last checked, so it is never read as live.
-export function TimelineBlock({ rows, checkedAt, showTheatre = false, limit, limits, notes = [] }: { rows: TimelineRow[]; checkedAt: string; showTheatre?: boolean; limit?: number; limits?: string; notes?: string[] }) {
+// Key events curated from news sources as an editorial timeline, newest first: a big date, a spine with a status node, the title, the
+// attributed summary and the linked sources. Entries with a place can be shown on the globe; hovering one pulses its pin. The legend
+// says when the list was checked and what the statuses mean, so it is never read as live.
+export function TimelineBlock({ rows, checkedAt, showTheatre = false, limit, limits, notes = [], highlight, onShowOnMap, onHoverPin }: TimelineProps) {
+  const refs = useRef(new Map<string, HTMLLIElement>());
+  useEffect(() => {
+    if (!highlight) return;
+    refs.current.get(highlight)?.scrollIntoView?.({ block: 'nearest', behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
+  }, [highlight]);
   if (rows.length === 0) return null;
   const sorted = rows
     .map((r, i) => ({ r, i }))
@@ -26,28 +48,59 @@ export function TimelineBlock({ rows, checkedAt, showTheatre = false, limit, lim
           {n}
         </p>
       ))}
-      <ul aria-label="Key events" className="flex flex-col">
-        {sorted.map(({ entry: e, theatre }) => (
-          <li key={`${e.date}-${e.title}`} className="grid gap-1 border-t border-[var(--border)] py-3 text-[14px]">
-            <span className="font-[var(--font-mono)] text-[12px] text-[var(--text-muted)]">
-              {fmtDate(e.date)}
-              {showTheatre && theatre ? ` · ${theatre}` : ''} · <span className={`uppercase tracking-[0.12em] ${STATUS_STYLE[e.status]}`}>{e.status}</span>
-            </span>
-            <span className="font-semibold">{e.title}</span>
-            <span>{e.summary}</span>
-            <span className="font-[var(--font-mono)] text-[11.5px] text-[var(--text-muted)]">
-              Sources:{' '}
-              {e.sources.map((s, i) => (
-                <span key={s.url}>
-                  {i > 0 ? ', ' : ''}
-                  <a href={s.url} target="_blank" rel="noopener noreferrer" aria-label={`${s.outlet}: ${s.title} (opens in a new tab)`} className="underline decoration-[var(--border-strong)] underline-offset-2 hover:text-[var(--lime)]">
-                    {s.outlet}
-                  </a>
+      <ul aria-label="Key events" className="mt-3 flex flex-col">
+        {sorted.map(({ entry: e, theatre, pinIndex }) => {
+          const key = rowKey(e);
+          const [y, m, d] = e.date.split('-');
+          const on = highlight === key;
+          return (
+            <li
+              key={`${key}-${theatre ?? ''}`}
+              ref={(el) => void (el ? refs.current.set(key, el) : refs.current.delete(key))}
+              data-highlight={on ? 'true' : undefined}
+              onMouseEnter={() => onHoverPin?.(pinIndex ?? null)}
+              onMouseLeave={() => onHoverPin?.(null)}
+              className={`grid grid-cols-[64px_14px_1fr] gap-x-3 rounded-[12px] px-1 ${on ? 'bg-[rgba(214,255,87,0.07)]' : ''}`}
+            >
+              <time dateTime={e.date} className="pt-3 text-right">
+                <span className="block font-[var(--font-display)] text-[28px] font-extrabold leading-none tracking-tight">{Number(d)}</span>{' '}
+                <span className="block font-[var(--font-mono)] text-[11px] uppercase leading-snug tracking-[0.08em] text-[var(--text-muted)]">
+                  {fmtDate(e.date).split(' ')[1]} {y}
                 </span>
-              ))}
-            </span>
-          </li>
-        ))}
+                <span className="sr-only">{` (${m})`}</span>
+              </time>
+              <span aria-hidden="true" className="relative flex justify-center">
+                <span className="absolute inset-y-0 w-px bg-[var(--border-strong)]" />
+                <span className={`relative mt-[18px] block h-[9px] w-[9px] rounded-full border ${NODE[e.status]}`} />
+              </span>
+              <div className="grid gap-1.5 pb-6 pt-3 text-[14px]">
+                <span className="font-[var(--font-mono)] text-[11.5px] text-[var(--text-muted)]">
+                  {showTheatre && theatre ? `${theatre} · ` : ''}
+                  <span className={`uppercase tracking-[0.12em] ${STATUS_STYLE[e.status]}`}>{e.status}</span>
+                  {e.at ? ` · ${e.at.place}` : ''}
+                </span>
+                <span className="font-[var(--font-display)] text-[17px] font-bold leading-snug">{e.title}</span>
+                <span className="text-[var(--text)]">{e.summary}</span>
+                <span className="font-[var(--font-mono)] text-[11.5px] text-[var(--text-muted)]">
+                  Sources:{' '}
+                  {e.sources.map((s, i) => (
+                    <span key={s.url}>
+                      {i > 0 ? ', ' : ''}
+                      <a href={s.url} target="_blank" rel="noopener noreferrer" aria-label={`${s.outlet}: ${s.title} (opens in a new tab)`} className="underline decoration-[var(--border-strong)] underline-offset-2 hover:text-[var(--lime)]">
+                        {s.outlet}
+                      </a>
+                    </span>
+                  ))}
+                </span>
+                {e.at && onShowOnMap ? (
+                  <button type="button" onClick={() => onShowOnMap(e.at!, pinIndex)} className="mt-0.5 w-fit font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--lime)] underline decoration-[var(--border-strong)] underline-offset-4 hover:decoration-[var(--lime)]" aria-label={`Show on the map: ${e.title}`}>
+                    Show on the map
+                  </button>
+                ) : null}
+              </div>
+            </li>
+          );
+        })}
       </ul>
     </section>
   );
