@@ -162,3 +162,13 @@ The owner liked World Monitor's Country Instability Index and asked for it to be
 - Data details: the Houthi coast entry sits in the Iran theatre; "with Iran's help" in Lebanon 19 June is a US official's statement; some entries have `published` dates earlier than later updates of the page; some URLs are `/amp/` or non-canonical; Ukraine 11 October is dated by the event but its sources are from 15 October; headline asymmetry between Russian and Ukrainian strikes was reduced, not removed.
 - Replace the live-blog sources (CBS, Times of Israel) with dated articles when a human can read them.
 
+## Plan 10 deferred (War room, 2026-10-19)
+
+- A real-GPU and real-phone look at the globe layer (the zone ring, hotspot glow and pins were checked only by forcing the quality tier in a software-rendered browser), the frame rate with the layer on, screen-reader and keyboard pass of the room.
+- Name labels on the globe can crowd the top controls row and each other at some views; a collision pass like the capital labels would fix it.
+- Pins and halos are not clickable (selection is from the room); picking a halo on the globe to select the conflict.
+- Weekly deaths for Russia - Ukraine are spiky because UCDP records large country-level claims on single dates; the chart is faithful to the data but could carry a note.
+- The three kinds of the stream cannot be split per conflict (only the world has `weeklyByKind`).
+- Animation polish (line draw-in, staggered reveal) was left out to keep the bundle and the reduced-motion audit simple.
+- About still does not use `useDialog` from Plan 8.
+

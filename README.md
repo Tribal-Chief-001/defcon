@@ -11,15 +11,17 @@
 
 ![Country dossier with a dive into Ukraine](docs/images/dive.png)
 
-![War tracker](docs/images/war-tracker.png)
+![The War room: world overview docked beside the globe](docs/images/war-room.png)
+
+![A conflict in the War room, with its timeline and the globe](docs/images/war-room-conflict.png)
 
 ## Features
 
 - **Custom Three.js globe** (WebGL2, no map library) with a sonar boot, hairline borders in two detail levels, picking, and sonar ripples at events.
 - **Events from public datasets:** UCDP GED (human-coded) and GDELT (auto-coded), merged, deduplicated and severity-scored; a provisional "DEFCON-style" tension index, shown only when it is comparable (never the official US DEFCON level).
 - **Country dossiers** for 248 countries with the source and date of every field and redaction bars for missing data; **Country Dive**, **Ctrl/Cmd-K** search, capital labels, shareable links (`#c=IND`).
-- **War tracker** (`#war`): every current conflict in the UCDP data with deaths (best estimate and range), trend, weekly timeline and the latest events, plus a world fatalities overview; human-coded data only, windows end at the data end date, 2026 rows labelled provisional.
-- **Sourced timeline** in the War tracker: 46 key events of 2026 (US/Israel-Iran, Israel-Lebanon, Russia-Ukraine, Gaza) with status (confirmed / reported / disputed) and linked sources, read and re-checked by AI research agents (through a summarising fetch tool, long pages only to 100,000 characters), validated by tests, hand-curated, with the checked date, the sources' limits and omissions shown.
+- **War room** (`#war`): a dashboard docked beside the globe, not a popup. A hero numeral and ring, a stream chart of weekly deaths by kind with the key events on it, bubbles and a league of every current conflict (deaths as a best estimate with its range, activity trend, sparkline), a per-conflict view with an editorial timeline, and a presence on the globe itself: halos and names at the conflicts, the selected conflict's zone, its death hotspots and its timeline events as pins. Human-coded UCDP data only, windows end at the data end date, 2026 rows labelled provisional.
+- **Sourced timeline** in the War room: 46 key events of 2026 (US/Israel-Iran, Israel-Lebanon, Russia-Ukraine, Gaza) with status (confirmed / reported / disputed) and linked sources, read and re-checked by AI research agents (through a summarising fetch tool, long pages only to 100,000 characters), validated by tests, hand-curated, with the checked date, the sources' limits and omissions shown.
 - **Alliance arcs** (formal treaty members, cyan) and **active disputes** (UCDP state-vs-state events, orange dashed), both sourced.
 - **Time travel** scrubber with Play and a cosmetic Declassify effect, a shader **heat grain**, a live **day/night terminator**, a **radar cursor**, a **pulse border**, an idle **Night Watch** showcase and optional **World Sound** (off by default).
 - **Production-minded:** adaptive quality tiers and a phone tier, keyboard control and screen-reader announcements, WCAG AA text colours, a strict Content-Security-Policy, an error boundary, a scheduled data pipeline with a validation gate, and a freshness monitor.

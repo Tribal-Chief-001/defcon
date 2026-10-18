@@ -39,7 +39,7 @@ Versions actually installed (2026-10-18, from `node_modules`). Choices D-006 (cu
 
 ## Measured (2026-10-18)
 
-- JS gzip total **232.5 KB** (2026-10-18, after Plan 6: main 228.4 KB + lazy About 2.9 KB + worker 1.2 KB; 224.8 KB after Plan 4, 216.2 KB after Plan 3; budget 250 KB) (budget 250 KB). Borders gzip: low **158 KB** (budget 300 KB), high **775 KB** (budget 1 MB). Capitals 15 KB. Budgets are gzip transfer size.
+- **Update 2026-10-19 (Plan 10):** the JS budget is two numbers: what the page loads at start under 250 KB gzip (238 KB with the War room's globe layer) and all JavaScript including lazy chunks (About, War room) under 275 KB (252 KB). Earlier numbers: JS gzip total **232.5 KB** (2026-10-18, after Plan 6: main 228.4 KB + lazy About 2.9 KB + worker 1.2 KB; 224.8 KB after Plan 4, 216.2 KB after Plan 3; budget 250 KB) (budget 250 KB). Borders gzip: low **158 KB** (budget 300 KB), high **775 KB** (budget 1 MB). Capitals 15 KB. Budgets are gzip transfer size.
 - Globe in the in-app browser on Intel UHD (CML GT2), 465x868, DPR 1: **60.2 fps, worst frame 16.8 ms** over 3 s. Not yet measured at full-screen desktop size or on HiDPI.
 - Dev only: press the backtick key to show a frame-time overlay (`src/dev/`); it is tree-shaken from production builds.
 - Machine rule: run one vitest/vite/build process at a time (7.4 GB RAM).

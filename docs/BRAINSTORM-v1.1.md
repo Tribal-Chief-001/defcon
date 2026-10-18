@@ -126,3 +126,5 @@ No endpoint, licence or rate limit in section 3 was tested; they come from readi
 
 **Status (VRI):** study 2 done ([VRI-STUDY-2.md](VRI-STUDY-2.md)): structural features add almost nothing; onset is not forecastable; ship Activity and Momentum, plus a modest Risk (rise). Next: a build plan for the VRI (constructs, method panel, UI).
 
+**Status (2026-10-19):** the War tracker became the **War room** (Plan 10, D-058): docked dashboard, chart kit and a presence on the globe. Next: the VRI build plan.
+
