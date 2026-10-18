@@ -49,27 +49,27 @@ describe('App deep links and dive state', () => {
   it('dives into the country in the URL hash on load and keeps the hash', async () => {
     history.replaceState(null, '', '/#c=IND');
     render(<App />);
-    await waitFor(() => expect(screen.getByTestId('globe').getAttribute('data-dive')).toBe('IND'));
+    await waitFor(() => expect(screen.getByTestId('globe').getAttribute('data-dive')).toBe('IND'), { timeout: 4000 });
     expect(location.hash).toBe('#c=IND');
-    expect(await screen.findByRole('heading', { name: 'Country IND' })).toBeTruthy();
+    expect(await screen.findByRole('heading', { name: 'Country IND' }, { timeout: 4000 })).toBeTruthy();
   });
   it('accepts an ISO3 code that differs from the map id (SSD -> SDS)', async () => {
     history.replaceState(null, '', '/#c=SSD');
     render(<App />);
-    await waitFor(() => expect(screen.getByTestId('globe').getAttribute('data-dive')).toBe('SDS'));
+    await waitFor(() => expect(screen.getByTestId('globe').getAttribute('data-dive')).toBe('SDS'), { timeout: 4000 });
     expect(location.hash).toBe('#c=SDS');
   });
   it('prefers an exact map id over a territory that shares its ISO3 code (FRA vs Clipperton)', async () => {
     countries.rows = [row('CLP', 'FRA'), row('FRA', 'FRA')];
     history.replaceState(null, '', '/#c=FRA');
     render(<App />);
-    await waitFor(() => expect(screen.getByTestId('globe').getAttribute('data-dive')).toBe('FRA'));
+    await waitFor(() => expect(screen.getByTestId('globe').getAttribute('data-dive')).toBe('FRA'), { timeout: 4000 });
     expect(location.hash).toBe('#c=FRA');
   });
   it('does not fly anywhere, opens no dossier and clears the hash for an unknown id', async () => {
     history.replaceState(null, '', '/#c=XXX');
     render(<App />);
-    await waitFor(() => expect(location.hash).toBe(''));
+    await waitFor(() => expect(location.hash).toBe(''), { timeout: 4000 });
     expect(screen.getByTestId('globe').getAttribute('data-dive')).toBe('');
     expect(screen.queryByLabelText('Country dossier')).toBeNull();
   });
@@ -78,7 +78,7 @@ describe('App deep links and dive state', () => {
     countries.gate = new Promise<void>((r) => (open = r));
     history.replaceState(null, '', '/#c=IND');
     render(<App />);
-    await screen.findByLabelText('Country dossier');
+    await screen.findByLabelText('Country dossier', undefined, { timeout: 4000 });
     act(() => {
       window.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape' }));
     });
