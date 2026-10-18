@@ -12,11 +12,11 @@ Everything below is either an owner decision, an account action the repo cannot 
 
 ## 2. Hosting (owner accounts)
 
-- [ ] **(owner)** Create or import the Vercel project (`docs/DEPLOY.md`, path A) and confirm the first build is green.
-- [ ] **(owner)** Link the folder (`npx vercel link`), create a Vercel token, then store the three secrets with `gh secret set VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` (values on stdin, never pasted anywhere else).
-- [ ] Run `gh workflow run ingest.yml` and watch it (`gh run watch`): all steps green, the three Vercel steps now run, the site shows events.
+- [x] Vercel project imported, first build green (`https://defcon-roan.vercel.app`).
+- [x] Folder linked, token created, the three secrets stored (2026-10-18).
+- [x] `gh workflow run ingest.yml`: all steps green including the three Vercel steps; the site shows events (8,918, as of 10:30 UTC).
 - [ ] **(owner)** Decide on one deployer (Vercel Git integration or the workflow) as described in `docs/DEPLOY.md`.
-- [ ] **(owner)** Domain and HTTPS in the Vercel dashboard; then `gh variable set SITE_URL --body "https://your-domain"` so `monitor.yml` can check freshness.
+- [ ] **(owner)** Domain and HTTPS in the Vercel dashboard; `SITE_URL` is set to the vercel.app address (change it if you add a custom domain).
 - [ ] Enable GitHub secret scanning and Dependabot alerts for the repository (settings; free for private repos on some plans).
 
 ## 3. Checks to repeat on the live site

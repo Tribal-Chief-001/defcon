@@ -71,7 +71,8 @@ If Vercel's own Git integration is also connected, every push to `main` makes a 
 
 ## Not yet verified
 
-- The Vercel steps of the workflow and the `vercel.json` headers on Vercel's infrastructure have not run (no Vercel account access from this machine). The ingest, validate, build and artifact steps ran successfully on GitHub on 2026-10-18 (first run, cold cache: 2 min 18 s total, GDELT download 72 s, snapshot build 21 s, validation passed, a 2.9 MB `events-snapshot` artifact; the three Vercel steps were skipped because no secrets exist). The Vercel steps themselves have never run.
+- (Resolved 2026-10-18.) The Vercel steps ran green on GitHub (run 39120790184: pull, build, deploy) and the live site `https://defcon-roan.vercel.app` serves the events (8,918 events, as of 10:30 UTC) and every header from `vercel.json`, checked with curl and in a browser with no CSP violations.
+- Still not verified: The ingest, validate, build and artifact steps ran successfully on GitHub on 2026-10-18 (first run, cold cache: 2 min 18 s total, GDELT download 72 s, snapshot build 21 s, validation passed, a 2.9 MB `events-snapshot` artifact; the three Vercel steps were skipped because no secrets exist). The Vercel steps themselves have never run.
 - `deploymentEnabled` and the CLI flags are as documented by Vercel at the time of writing and were not run here.
 - The Content-Security-Policy and the other headers were verified against the built app served locally with `npm run serve:dist` (which applies `vercel.json`); they have not been seen on Vercel itself.
 
