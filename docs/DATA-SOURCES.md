@@ -163,7 +163,7 @@ Cadence: the scheduled ingest runs every 3 hours (D-047), so "live" means at mos
 | File | `public/data/conflicts.json` (about 530 KB, 119 KB gzipped; loaded only when the War tracker opens) |
 | Built by | `npm run data:conflicts` (`scripts/conflicts/build-conflicts.ts`) from the pinned UCDP files: GED 26.1 and the 2026 candidate releases (run `npm run data:ucdp` first) |
 | Content | UCDP events grouped by `conflict_name`; per conflict: deaths as `best` with the `low`-`high` range for 30, 90 and 365 days, event counts, a trend word, 52 weekly buckets (364 days), the 12 newest events with place, headline and source names, the countries involved |
-| Windows | End at the **data end date** (the latest UCDP event, 2026-08-31 on 2026-10-18), never at today. A conflict is listed with at least 100 deaths in 365 days or 25 in 90 days (101 conflicts). |
+| Windows | End at the **data end date** (the latest UCDP event, 2026-08-31 on 2026-10-18), never at today. A conflict is listed with at least 100 deaths in 365 days or 25 in 90 days (104 conflicts after Plan 12). | **Dates an event covers (Plan 12):** UCDP candidate rows often cover a month or several months (`date_prec` 4 and 5, start on the 1st, end on the last day); an event's deaths are spread evenly over its days (end clipped to the data end), and each window, the weekly series and the monthly series take the share of days they contain. Events without `date_end` are one day. Event counts, places and the model's training months still use the start date; windows are rounded after summing, so weekly bars may differ from the total by a few deaths.
 | Activity trend | **Event counts** (not deaths, so one mass-casualty event cannot flip it): events in the last 30 days against the average 30 days of the 60 days before: rising (>= 1.5x and >= 5 events), falling (<= 0.5x and base >= 5), steady, or "low data" (under 5 events to compare) |
 | Provisional | Rows from candidate files are provisional (UCDP revises them); each event and each conflict carries that flag or share |
 | Unnamed | UCDP candidate files anonymise some actors as `XXX<number>`; those conflicts keep the code in their name next to the main country |
@@ -183,6 +183,14 @@ Cadence: the scheduled ingest runs every 3 hours (D-047), so "live" means at mos
 | Refresh | by hand (`npm run data:indices`), not in CI; the file carries its data end date |
 | Licence | derived from CC BY 4.0 data (UCDP, World Bank WGI and WDI); attribution on the About page |
 | Not included | countries without a UCDP record (shown as "not modelled", never "low"), protests, onset forecasts |
+
+## Refreshing UCDP data (Plan 12)
+
+| Item | Value |
+|------|-------|
+| Alert | `.github/workflows/data-updates.yml` runs on the 5th of every month (read-only, no secrets) and fails, so GitHub emails the owner, when UCDP has published the next monthly candidate file (`npm run data:ucdp-discover -- --check`, a HEAD request) or when the timeline is more than 45 days old (`npm run data:timeline-age`) |
+| Refresh | `npm run data:ucdp-discover -- --accept` downloads the next file and pins its SHA-256, then `npm run data:conflicts` and `npm run data:indices`, then `npm test`, then commit `data/events/sources.json`, `public/data/conflicts.json`, `public/data/indices.json` and `docs/INDEX-BACKTEST.md` |
+| Why not unattended | the SHA-256 pin is a supply-chain control and the indices are a model output: a person looks at the diff and the guard tests before it goes live |
 
 ## Key-events timeline (curated, committed)
 

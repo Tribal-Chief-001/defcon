@@ -47,6 +47,7 @@ Without the secrets the workflow still ingests and validates (a useful check) bu
 ### Reading a failed run
 
 - `Validate the snapshot (gate)` failed: the step prints the problems (missing file, hash mismatch, no recent events, data older than 48 h, bad coordinates, missing detail shard, overlapping windows). Nothing was deployed. Re-run once; if the source (UCDP or GDELT) is down, wait. Locally: `npm run data:validate`.
+- **Monthly alerts:** `.github/workflows/data-updates.yml` (5th of each month, read-only) fails when UCDP has a newer monthly candidate file or the timeline is older than 45 days; GitHub emails the owner. To refresh, see "Refreshing UCDP data" in docs/DATA-SOURCES.md.
 - `npm run data:ucdp` failed with a SHA-256 mismatch: UCDP revises its candidate files in place. Every run fails until the owner re-pins locally (`npm run data:ucdp -- --accept-new`), checks the diff of `data/events/sources.json` and commits it.
 - A fetch step failed or GDELT is unreachable: the cache keeps older files, and the validator turns the run red once the newest data is older than 12 hours (the live site then keeps its previous data).
 - The `events-snapshot` artifact on a run holds exactly what was validated.
