@@ -22,6 +22,9 @@ describe('monitor.yml (data freshness monitor)', () => {
     expect(t).toMatch(/recent\.meta\.json/);
     expect(t).toMatch(/--fail/);
     expect(t).toMatch(/--max-time/);
+    expect(t).toMatch(/-L\b/); // follow an apex-to-www redirect
+    expect(t).toMatch(/--proto-redir '=https'/);
+    expect(t).toMatch(/negative|future/i); // a future as-of time must not pass
     expect(t).toMatch(/43200|12 \* 3600/); // fails when older than 12 hours
   });
 });

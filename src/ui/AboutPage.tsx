@@ -25,10 +25,37 @@ export function AboutPage({ onClose }: { onClose: () => void }) {
   const [copied, setCopied] = useState(false);
   const diagnostics = errorLog.format();
 
+  // keys are handled on the window while the dialog is open: after a click on plain text focus falls back to the page, where an
+  // onKeyDown on the box would never fire (Esc would do nothing and Tab would walk into the page behind the dialog)
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
   useEffect(() => {
     opener.current = document.activeElement;
     box.current?.querySelector<HTMLElement>('button')?.focus();
-    return () => (opener.current as HTMLElement | null)?.focus?.();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.stopPropagation();
+        onCloseRef.current();
+      } else if (e.key === 'Tab' && box.current) {
+        const f = Array.from(box.current.querySelectorAll<HTMLElement>(FOCUSABLE));
+        if (!f.length) return;
+        const first = f[0]!;
+        const last = f[f.length - 1]!;
+        const inside = box.current.contains(document.activeElement);
+        if (!inside || (e.shiftKey && document.activeElement === first)) {
+          e.preventDefault();
+          (e.shiftKey ? last : first).focus();
+        } else if (!e.shiftKey && document.activeElement === last) {
+          e.preventDefault();
+          first.focus();
+        }
+      }
+    };
+    window.addEventListener('keydown', onKey);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      (opener.current as HTMLElement | null)?.focus?.();
+    };
   }, []);
 
   const link = (url: string, text: string) =>
@@ -48,20 +75,8 @@ export function AboutPage({ onClose }: { onClose: () => void }) {
         role="dialog"
         aria-modal="true"
         aria-labelledby="about-title"
+        tabIndex={-1}
         className="w-[min(680px,100%)] rounded-[24px] border border-[var(--border)] bg-white/[0.06] p-6 backdrop-blur-xl"
-        onKeyDown={(e) => {
-          if (e.key === 'Escape') {
-            e.stopPropagation();
-            onClose();
-          } else if (e.key === 'Tab') {
-            const f = Array.from(box.current!.querySelectorAll<HTMLElement>(FOCUSABLE));
-            if (!f.length) return;
-            const first = f[0]!;
-            const last = f[f.length - 1]!;
-            if (e.shiftKey && document.activeElement === first) (e.preventDefault(), last.focus());
-            else if (!e.shiftKey && document.activeElement === last) (e.preventDefault(), first.focus());
-          }
-        }}
       >
         <div className="flex items-start justify-between gap-3">
           <h2 id="about-title" className="font-[var(--font-display)] text-2xl font-extrabold leading-none tracking-tight">
@@ -136,7 +151,7 @@ export function AboutPage({ onClose }: { onClose: () => void }) {
 
         <section className="mt-5 space-y-2 text-sm leading-relaxed">
           <p className={h}>Privacy</p>
-          <p>No cookies, no analytics, no accounts and no third-party requests; fonts are served from this site. The only thing stored in your browser is the Sound on/off choice.</p>
+          <p>No cookies, no analytics, no accounts and no third-party requests; fonts are served from this site. Two small things are kept in your browser: your Sound on/off choice (local storage) and a flag that the opening animation has already played this session (session storage).</p>
         </section>
 
         <section className="mt-5 space-y-2 text-sm leading-relaxed">

@@ -549,6 +549,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     arcs.setSegments(tierCfg.arcSegments);
     refreshArcs(true);
     terminator.object.visible = tierCfg.terminator && sunSet;
+    grain.object.visible = tierCfg.grain > 0; // at the lowest tier the grain sphere is not drawn at all (not just invisible)
     opts.onTier?.(t);
   };
   const render = (now: number) => {

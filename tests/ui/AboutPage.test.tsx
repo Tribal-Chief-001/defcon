@@ -1,5 +1,7 @@
 // @vitest-environment jsdom
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
+import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { join } from 'node:path';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { decodeSnapshot } from '../../src/events/snapshot';
 import { useEvents } from '../../src/events/store';
@@ -89,5 +91,29 @@ describe('AboutPage', () => {
     const b = render(<AboutPage onClose={() => {}} />);
     expect(b.container.querySelector('[data-diagnostics]')!.textContent).toMatch(/dossier: panel exploded/);
     errorLog.clear();
+  });
+  // review findings: keys must work even when focus has fallen back to the page, and the privacy text must be true
+  it('closes with Esc and keeps Tab inside even when focus is on the body (a click on plain text)', () => {
+    let closed = 0;
+    render(<AboutPage onClose={() => closed++} />);
+    (document.activeElement as HTMLElement).blur();
+    expect(document.activeElement).toBe(document.body);
+    fireEvent.keyDown(document.body, { key: 'Escape' });
+    expect(closed).toBe(1);
+    const proceeded = fireEvent.keyDown(document.body, { key: 'Tab' });
+    expect(proceeded).toBe(false);
+    expect(screen.getByRole('dialog').contains(document.activeElement)).toBe(true);
+  });
+  it('lists everything the app stores in the browser, as the code does it', () => {
+    const walk = (d: string): string[] => readdirSync(d).flatMap((f) => (statSync(join(d, f)).isDirectory() ? walk(join(d, f)) : /\.tsx?$/.test(f) ? [join(d, f)] : []));
+    const src = walk('src').filter((f) => !f.endsWith('AboutPage.tsx')).map((f) => readFileSync(f, 'utf8')).join('\n');
+    const usesLocal = /localStorage\./.test(src);
+    const usesSession = /sessionStorage/.test(src);
+    expect(usesLocal && usesSession).toBe(true); // the audit below must be updated if either goes away
+    render(<AboutPage onClose={() => {}} />);
+    const text = document.body.textContent ?? '';
+    expect(text).toMatch(/local storage/i);
+    expect(text).toMatch(/session storage/i);
+    expect(text).not.toMatch(/only thing stored/i);
   });
 });

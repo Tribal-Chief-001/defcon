@@ -10,12 +10,17 @@ describe('startTier', () => {
     expect(startTier({ coarse: true, narrow: false, memoryGb: 8, cores: 8 })).toBe('medium');
     expect(startTier({ coarse: false, narrow: true, memoryGb: 8, cores: 8 })).toBe('medium');
   });
-  it('is low on a weak device (2 GB or less memory, 2 or fewer cores)', () => {
+  it('is low on a device with 2 GB or less memory', () => {
     expect(startTier({ coarse: true, narrow: true, memoryGb: 2 })).toBe('low');
-    expect(startTier({ coarse: false, narrow: false, cores: 2 })).toBe('low');
     expect(startTier({ coarse: false, narrow: false, memoryGb: 4, cores: 4 })).toBe('high');
   });
   it('ignores non-finite or zero hardware numbers', () => {
     expect(startTier({ coarse: false, narrow: false, memoryGb: NaN, cores: 0 })).toBe('high');
+  });
+  // review finding: privacy modes report 2 cores on strong hardware, and the start tier is the governor's ceiling
+  it('treats few cores as a weak signal: medium, never low', () => {
+    expect(startTier({ coarse: false, narrow: false, cores: 2 })).toBe('medium');
+    expect(startTier({ coarse: false, narrow: false, cores: 1 })).toBe('medium');
+    expect(startTier({ coarse: false, narrow: false, cores: 4 })).toBe('high');
   });
 });

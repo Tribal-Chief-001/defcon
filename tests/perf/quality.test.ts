@@ -78,4 +78,35 @@ describe('createQualityGovernor', () => {
     for (let i = 0; i < 200; i++) g.sample(i % 2 ? NaN : -5);
     expect(g.tier()).toBe('high');
   });
+
+  // review finding: on a 60 Hz display frames are ~16.7 ms, so recovery must work there too
+  it('recovers on a 60 Hz display (16.7 ms frames) after a stall', () => {
+    const { feed, g } = rig('high');
+    feed(16.7, 120); // the display's own rhythm sets the baseline
+    expect(g.tier()).toBe('high');
+    feed(30, 90);
+    expect(g.tier()).toBe('medium');
+    feed(16.7, 1000); // 16 s of a healthy 60 Hz
+    expect(g.tier()).toBe('high');
+  });
+  it('does not treat a permanently slow device as recovered (the baseline never loosens past the slow limit)', () => {
+    const { feed, g } = rig('high');
+    feed(30, 90);
+    feed(30, 90);
+    feed(30, 400);
+    expect(g.tier()).toBe('low');
+  });
+  it('backs off: after a climb that is followed by a quick drop, the next climb needs twice as long', () => {
+    const { feed, g } = rig('high');
+    feed(16.7, 120);
+    feed(30, 90);
+    feed(16.7, 800); // 13 s: climbs back to high
+    expect(g.tier()).toBe('high');
+    feed(30, 150); // slow again right away (4.5 s)
+    expect(g.tier()).toBe('medium');
+    feed(16.7, 700); // 11.7 s is no longer enough
+    expect(g.tier()).toBe('medium');
+    feed(16.7, 800); // 25 s in total
+    expect(g.tier()).toBe('high');
+  });
 });

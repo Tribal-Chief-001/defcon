@@ -3,9 +3,10 @@ import type { Tier } from './quality';
 // The tier to start in (also the ceiling for the adaptive governor): phones and touch screens start at medium, weak devices at low.
 export function startTier(env: { coarse: boolean; narrow: boolean; memoryGb?: number; cores?: number }): Tier {
   const weakMem = Number.isFinite(env.memoryGb) && (env.memoryGb as number) > 0 && (env.memoryGb as number) <= 2;
-  const weakCpu = Number.isFinite(env.cores) && (env.cores as number) > 0 && (env.cores as number) <= 2;
-  if (weakMem || weakCpu) return 'low';
-  return env.coarse || env.narrow ? 'medium' : 'high';
+  // few cores is a weak hint (privacy modes report 2 on strong machines) and the start tier is the governor's ceiling: medium, never low
+  const fewCores = Number.isFinite(env.cores) && (env.cores as number) > 0 && (env.cores as number) <= 2;
+  if (weakMem) return 'low';
+  return env.coarse || env.narrow || fewCores ? 'medium' : 'high';
 }
 
 // Reads the browser; navigator.deviceMemory is Chromium-only (undefined elsewhere, which counts as unknown).

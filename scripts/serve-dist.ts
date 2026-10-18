@@ -2,7 +2,7 @@
 // Verification tool only; not used in production. Usage: npm run build && npm run serve:dist   (http://localhost:4173)
 import { readFileSync, statSync } from 'node:fs';
 import { createServer } from 'node:http';
-import { extname, join, normalize } from 'node:path';
+import { extname, join, normalize, sep } from 'node:path';
 
 const ROOT = 'dist';
 const PORT = Number(process.env.PORT ?? 4173);
@@ -17,9 +17,14 @@ const TYPES: Record<string, string> = {
 
 createServer((req, res) => {
   const url = new URL(req.url ?? '/', 'http://x');
-  const path = decodeURIComponent(url.pathname);
+  let path: string;
+  try {
+    path = decodeURIComponent(url.pathname);
+  } catch {
+    return void res.writeHead(400).end('bad request'); // a malformed % escape must not kill the server
+  }
   let file = normalize(join(ROOT, path));
-  if (!file.startsWith(ROOT)) return void res.writeHead(403).end();
+  if (file !== ROOT && !file.startsWith(ROOT + sep)) return void res.writeHead(403).end();
   let ok = false;
   try {
     ok = statSync(file).isFile();
@@ -33,4 +38,4 @@ createServer((req, res) => {
   const headers: Record<string, string> = { 'Content-Type': TYPES[extname(file)] ?? 'application/octet-stream' };
   for (const r of rules) if (r.re.test(path)) for (const h of r.headers) headers[h.key] = h.value;
   res.writeHead(200, headers).end(readFileSync(file));
-}).listen(PORT, () => console.log(`serving ${ROOT}/ with vercel.json headers on http://localhost:${PORT}`));
+}).listen(PORT, '127.0.0.1', () => console.log(`serving ${ROOT}/ with vercel.json headers on http://localhost:${PORT}`));

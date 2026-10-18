@@ -8,6 +8,8 @@ const files = walk('src');
 // anything that animates on its own: frame loops, timers that drive visuals, CSS animation/transition
 const ANIMATES = /requestAnimationFrame|setAnimationLoop|animation:|transition:|\banimate-|\btransition(-\w+)?\b(?=[ "'`])|@keyframes/;
 const HONOURS = /prefersReducedMotion|reducedMotion|prefers-reduced-motion|\breduced\b/;
+// comments never count: a file that only mentions the word in a comment does not honour anything
+export const stripComments = (t: string) => t.replace(/\/\*[\s\S]*?\*\//g, '').replace(/(^|[^:])\/\/.*$/gm, '$1');
 
 // files allowed to animate without referencing reduced motion, each with the reason
 const ALLOWED: Record<string, string> = {
@@ -19,10 +21,14 @@ const ALLOWED: Record<string, string> = {
 };
 
 describe('reduced motion', () => {
+  it('does not let a comment satisfy the audit', () => {
+    expect(HONOURS.test(stripComments('// reduced motion is handled elsewhere\nrequestAnimationFrame(f)'))).toBe(false);
+    expect(HONOURS.test(stripComments('const r = prefersReducedMotion();'))).toBe(true);
+  });
   it('every file that animates on its own honours prefers-reduced-motion (or has a documented reason)', () => {
     const offenders = files.filter((f) => {
       const text = readFileSync(f, 'utf8');
-      return ANIMATES.test(text) && !HONOURS.test(text) && !(f.replace(/\\/g, '/') in ALLOWED);
+      return ANIMATES.test(text) && !HONOURS.test(stripComments(text)) && !(f.replace(/\\/g, '/') in ALLOWED);
     });
     expect(offenders).toEqual([]);
   });

@@ -191,12 +191,12 @@ export function App() {
         <Scrubber />
       </ErrorBoundary>
       {dossierId ? (
-        <ErrorBoundary where="dossier" onReset={exitDive}>
+        <ErrorBoundary key={dossierId} where="dossier" onReset={exitDive}>
           <DossierPanel countryId={dossierId} onClose={exitDive} />
         </ErrorBoundary>
       ) : null}
       {sel ? (
-        <ErrorBoundary where="event-card" onReset={() => setSel(null)}>
+        <ErrorBoundary key={`${sel.lat},${sel.lon}`} where="event-card" onReset={() => setSel(null)}>
           <EventCard
             detail={sel.detail}
             info={sel.info}

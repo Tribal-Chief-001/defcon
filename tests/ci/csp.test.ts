@@ -28,19 +28,21 @@ describe('Content-Security-Policy in vercel.json', () => {
     expect(vals('connect-src')).toEqual(["'self'"]);
     expect(vals('font-src')).toEqual(["'self'"]);
     expect(vals('worker-src')).toEqual(["'self'"]);
-    expect(vals('img-src').every((x) => ["'self'", 'data:'].includes(x))).toBe(true);
+    expect(vals('img-src')).toEqual(["'self'"]); // the bundle contains no data: images
   });
-  it('allows inline styles only as attributes (React style props), not style elements', () => {
+  it('allows no inline styles at all: React sets style props through the CSSOM, which CSP does not block (verified in the built app)', () => {
     expect(vals('style-src')).toEqual(["'self'"]);
-    expect(vals('style-src-attr')).toEqual(["'unsafe-inline'"]);
+    expect(dir('style-src-attr')).toBeUndefined();
+    expect(dir('style-src-elem')).toBeUndefined();
   });
   it('only uses known directive names and source keywords', () => {
-    const names = new Set(['default-src', 'script-src', 'style-src', 'style-src-attr', 'img-src', 'font-src', 'connect-src', 'worker-src', 'object-src', 'base-uri', 'form-action', 'frame-ancestors', 'upgrade-insecure-requests', 'manifest-src', 'media-src']);
+    const names = new Set(['default-src', 'script-src', 'style-src', 'img-src', 'font-src', 'connect-src', 'worker-src', 'object-src', 'base-uri', 'form-action', 'frame-ancestors', 'upgrade-insecure-requests', 'manifest-src', 'media-src']);
     for (const d of csp) expect(names.has(d.split(/\s+/)[0]!), d).toBe(true);
     for (const d of csp) for (const v of d.split(/\s+/).slice(1)) expect(v, d).toMatch(/^('self'|'none'|'unsafe-inline'|data:|blob:)$/);
   });
   it('sends the other hardening headers', () => {
     expect(header('Strict-Transport-Security')).toMatch(/max-age=\d{7,}/);
+    expect(header('Strict-Transport-Security')).not.toMatch(/includeSubDomains/i); // an apex domain with a plain-HTTP subdomain would break for two years
     expect(header('Cross-Origin-Opener-Policy')).toBe('same-origin');
     expect(header('Cross-Origin-Resource-Policy')).toBe('same-origin');
     for (const h of all.headers) expect(h.value, h.key).not.toMatch(/[\r\n]/);

@@ -100,3 +100,14 @@ Open items found during Plan 1 that were deliberately not fixed. Each is graded 
 - The Esc priority for the event card has no test; the About copy is the builder's draft for the owner to review.
 - `?tier=` forcing exists in dev builds only; there is no in-app quality setting.
 - The monitor only checks age; it does not check event counts or the CSP. Alerting beyond GitHub's failed-run email is not set up.
+
+## Plan 6 review minors (deferred, 2026-10-18)
+
+- Tier changes restart the arc draw-in animation (cosmetic); a lazy chunk that fails to load (offline) stays failed for About until a reload.
+- The palette keeps its key handlers on its input only (focus on the page behind it is unusual); About uses window handlers.
+- `announce()` with the same text twice in a row is not re-announced (the DOM does not change); keyboard users still cannot select an event, only a country (palette).
+- The canvas aria-label says "Control K" on every platform; the palette button carries both Control and Meta shortcuts.
+- `errorLog` strips query strings from absolute URLs only; a browser JSON SyntaxError can quote a few characters of a response. It never leaves the browser.
+- `serve:dist` always falls back to index.html (Vercel has no rewrite and would 404 unknown paths; harmless with hash routing).
+- A custom `VITE_EVENTS_BASE` origin must be added to `connect-src` by hand; the build does not check it.
+- `package-lock.json` has a root `engines` entry that `package.json` does not declare (harmless drift).
