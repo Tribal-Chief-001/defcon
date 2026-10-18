@@ -18,6 +18,8 @@ import { DossierPanel } from './ui/DossierPanel';
 import { LiveCapitalLabels, setLabels } from './ui/CapitalLabels';
 import { Coverage } from './ui/Coverage';
 import { EventCard, type EventInfo } from './ui/EventCard';
+import { Rails } from './ui/Rails';
+import type { LatestEvent } from './events/rails';
 import { NightWatch } from './ui/NightWatch';
 import { Reticle } from './ui/Reticle';
 import { useTime } from './time/store';
@@ -136,9 +138,8 @@ export function App() {
     return () => window.removeEventListener('hashchange', apply);
   }, [startDive, exitDive]);
 
-  const onPick = useCallback((id: string | null, lat: number, lon: number, kmPerPx: number) => {
-    setR({ id, lat, lon });
-    if (id && id !== dossierIdRef.current) void startDive(id);
+  // opens the event nearest to (lat, lon) in the event card; used by clicks on the globe and by the Latest rail
+  const openEvent = useCallback((lat: number, lon: number, kmPerPx: number) => {
     const token = latest.current.next();
     const { recent, archive } = useEvents.getState();
     const hit = pickEvent(recent, archive, lat, lon, PICK_RADIUS_PX * kmPerPx, { nowS: Date.now() / 1000, backS: useTime.getState().backS });
@@ -160,14 +161,26 @@ export function App() {
     void fetchDetail(BASE, name, s, i).then((detail) => {
       if (latest.current.isLatest(token)) setSel((cur) => (cur ? { ...cur, detail } : cur));
     });
-  }, [startDive]);
+  }, []);
+  const onPick = useCallback((id: string | null, lat: number, lon: number, kmPerPx: number) => {
+    setR({ id, lat, lon });
+    if (id && id !== dossierIdRef.current) void startDive(id);
+    openEvent(lat, lon, kmPerPx);
+  }, [startDive, openEvent]);
+  // the Latest rail: fly the camera to the event and open its card (the focus target is cleared once the flight is over)
+  const [railFocus, setRailFocus] = useState<{ lat: number; lon: number; distance: number } | null>(null);
+  const onRailEvent = useCallback((e: LatestEvent) => {
+    setRailFocus({ lat: e.lat, lon: e.lon, distance: 1.9 });
+    openEvent(e.lat, e.lon, 1);
+    window.setTimeout(() => setRailFocus(null), 1600);
+  }, [openEvent]);
 
   return (
     <main className="relative h-full w-full bg-black">
       <SkipLink />
       <StatusRegion />
       <ErrorBoundary where="globe" fallback={<Unsupported reason="failed" />}>
-        <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : watch.marker} focus={watch.focus} dive={dive} framing={framing} onLabels={setLabels} />
+        <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : watch.marker} focus={watch.focus ?? railFocus} dive={dive} framing={framing} onLabels={setLabels} />
       </ErrorBoundary>
       <LiveCapitalLabels />
       <Reticle />
@@ -186,6 +199,7 @@ export function App() {
           </ErrorBoundary>
         </Suspense>
       ) : null}
+      <Rails dossierOpen={dossierId !== null} cardOpen={sel !== null} onDive={(id) => void startDive(id)} onOpenEvent={onRailEvent} />
       <Coverage />
       <ErrorBoundary where="scrubber" fallback={null}>
         <Scrubber />

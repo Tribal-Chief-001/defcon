@@ -14,6 +14,7 @@ import { CommandPalette } from '../../src/ui/CommandPalette';
 import { DossierPanel } from '../../src/ui/DossierPanel';
 import { EventCard } from '../../src/ui/EventCard';
 import { NightWatch } from '../../src/ui/NightWatch';
+import { Rails } from '../../src/ui/Rails';
 import { RelationsBlock } from '../../src/ui/RelationsBlock';
 import { Reticle } from '../../src/ui/Reticle';
 import { Scrubber } from '../../src/ui/Scrubber';
@@ -99,6 +100,10 @@ describe('axe (rules jsdom supports)', () => {
     useEvents.setState({ recent: undefined, archive: undefined });
     const b = render(<AboutPage onClose={() => {}} />);
     expect(await check(b.container)).toEqual([]);
+  });
+  it('the Hotspots and Latest rails', async () => {
+    const { container } = render(<Rails dossierOpen={false} cardOpen={false} onDive={() => {}} onOpenEvent={() => {}} />);
+    expect(await check(container)).toEqual([]);
   });
   it('the scrubber', async () => {
     const { container } = render(<Scrubber />);

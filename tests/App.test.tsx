@@ -2,6 +2,9 @@
 import { act, cleanup, fireEvent, render, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CountryRow } from '../src/dossier/types';
+import { decodeSnapshot } from '../src/events/snapshot';
+import { useEvents } from '../src/events/store';
+import { encodeSnapshot } from '../scripts/events/encode';
 
 const countries = vi.hoisted(() => ({ rows: [] as unknown[], gate: null as Promise<void> | null }));
 const globe = vi.hoisted(() => ({ dive: null as { id: string } | null | undefined }));
@@ -127,5 +130,18 @@ describe('App deep links and dive state', () => {
     await waitFor(() => expect(location.hash).toBe('#about'), { timeout: 4000 });
     fireEvent.click(within(dialog).getByRole('button', { name: /close/i }));
     await waitFor(() => expect(location.hash).toBe('#c=IND'), { timeout: 4000 });
+  });
+
+  it("a Hotspots row opens that country's dossier", async () => {
+    const NOW = Math.floor(Date.now() / 1000);
+    const e = encodeSnapshot(
+      [{ id: 'x1', source: 'ucdp', alsoIds: [], timeS: NOW - 3600, lat: 10, lon: 20, precision: 1, country: 'IND', kind: 'armed', deaths: 1, severity: 3, human: true, place: '', headline: '', actors: '', sources: [], firstSeenS: NOW, updatedS: NOW }],
+      { asOfS: NOW, generatedS: NOW, sources: [] },
+    );
+    useEvents.setState({ recent: decodeSnapshot(e.bin.buffer.slice(e.bin.byteOffset, e.bin.byteOffset + e.bin.byteLength) as ArrayBuffer, e.meta), status: 'ready' });
+    render(<App />);
+    fireEvent.click(await screen.findByRole('button', { name: /open dossier/i }, { timeout: 4000 }));
+    expect(await screen.findByRole('heading', { name: 'Country IND' }, { timeout: 4000 })).toBeTruthy();
+    useEvents.setState({ recent: undefined });
   });
 });
