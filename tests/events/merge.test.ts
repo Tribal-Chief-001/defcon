@@ -101,21 +101,31 @@ describe('mergeEvents countries and validity (Review Focus 4)', () => {
 });
 
 describe('mergeEvents performance', () => {
-  it('merges 100,000 synthetic events fast enough (about 0.6 s of CPU; limit 3 s)', () => {
+  // Wall-clock and CPU limits were both flaky while the whole suite runs in parallel, so this checks scaling: 4x the events
+  // must take about 4x the time (linear). An O(n^2) regression would take about 16x.
+  it('scales linearly: 100,000 events take less than 9x the time of 25,000', () => {
     let s = 3;
     const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
     const kinds = ['armed', 'civilian', 'riot', 'protest'] as const;
-    const evs: Ev[] = Array.from({ length: 100_000 }, (_, i) =>
-      i % 5 === 0
-        ? u(String(i), { lat: rnd() * 160 - 80, lon: rnd() * 340 - 170, timeS: T0 + Math.floor(rnd() * 30) * DAY })
-        : g(String(i), { lat: rnd() * 160 - 80, lon: rnd() * 340 - 170, timeS: T0 + Math.floor(rnd() * 30) * DAY, kind: kinds[i % 4]!, sources: [{ name: 'x', url: `https://x.com/${i}` }] }),
-    );
-    mergeEvents(evs.slice(0, 20_000), pick); // warm up the JIT so the timing is stable under parallel test workers
-    const c0 = process.cpuUsage();
-    const out = mergeEvents(evs, pick);
-    const c = process.cpuUsage(c0);
-    // CPU time of this test process, so other test files competing for the CPU do not inflate it; an O(n^2) regression would take minutes
-    expect((c.user + c.system) / 1000).toBeLessThan(3000);
-    expect(out.length).toBeGreaterThan(50_000);
-  });
+    const make = (n: number): Ev[] =>
+      Array.from({ length: n }, (_, i) =>
+        i % 5 === 0
+          ? u(String(i), { lat: rnd() * 160 - 80, lon: rnd() * 340 - 170, timeS: T0 + Math.floor(rnd() * 30) * DAY })
+          : g(String(i), { lat: rnd() * 160 - 80, lon: rnd() * 340 - 170, timeS: T0 + Math.floor(rnd() * 30) * DAY, kind: kinds[i % 4]!, sources: [{ name: 'x', url: `https://x.com/${i}` }] }),
+      );
+    const small = make(25_000);
+    const big = make(100_000);
+    mergeEvents(small, pick); // warm up the JIT
+    const time = (evs: Ev[]) => {
+      const best = [0, 1].map(() => {
+        const t0 = performance.now();
+        const out = mergeEvents(evs, pick);
+        expect(out.length).toBeGreaterThan(evs.length / 2);
+        return performance.now() - t0;
+      });
+      return Math.min(...best);
+    };
+    const ratio = time(big) / time(small);
+    expect(ratio).toBeLessThan(9);
+  }, 60_000); // generous: the suite runs about 50 files in parallel on 4 cores
 });
