@@ -6,7 +6,7 @@ import { resolveGw } from '../relations/gw-ids';
 import { conflictsFromRows, type GedRow } from './conflicts';
 
 const KEEP_FROM = '2025-01-01'; // the tracker needs 365 days before the data end; this leaves room
-const FIELDS = ['id', 'conflict_name', 'type_of_violence', 'country', 'country_id', 'date_start', 'best', 'low', 'high', 'where_description', 'adm_1', 'latitude', 'longitude', 'where_prec', 'source_headline', 'source_office'];
+const FIELDS = ['id', 'conflict_name', 'type_of_violence', 'country', 'country_id', 'date_start', 'date_end', 'best', 'low', 'high', 'where_description', 'adm_1', 'latitude', 'longitude', 'where_prec', 'source_headline', 'source_office'];
 
 async function main() {
   const manifest = JSON.parse(readFileSync('data/events/sources.json', 'utf8')) as { ucdp: { name: string; csv: string; version: string }[] };

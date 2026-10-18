@@ -95,14 +95,6 @@ describe('countryStats', () => {
     expect(u.locatedShare365).toBeCloseTo(130 / 200);
     expect(u.provisionalShare90).toBe(1);
   });
-  it('reports the share of the 90-day deaths that are dated the 1st of a month (finding: candidate rows put a month on its first day)', () => {
-    const first = (n: number) => { const d = new Date((END - n * 86400) * 1000); return d.getUTCDate() === 1; };
-    const ago1st = [...Array(80).keys()].find(first)!; // a recent day that is the 1st of a month
-    const other = [...Array(80).keys()].find((n) => !first(n))!;
-    const { countries } = countryStats([row({ ago: ago1st, best: 60 }), row({ ago: other, best: 40 }), row({ ago: 200, best: 999 })], opts);
-    expect(countries.get('UKR')!.firstOfMonthShare90).toBeCloseTo(0.6);
-    expect(countryStats([row({ ago: other, best: 5 })], opts).countries.get('UKR')!.firstOfMonthShare90).toBe(0);
-  });
   it('skips and reports countries without an id, and builds a world monthly series from every valid event', () => {
     const r = countryStats([row({ ago: 1, best: 10 }), row({ ago: 1, best: 40, gw: '999' }), row({ ago: 1, best: 5, gw: '365' })], opts);
     expect([...r.countries.keys()].sort()).toEqual(['RUS', 'UKR']);
@@ -114,5 +106,30 @@ describe('countryStats', () => {
     const bad: { row: GedRow; provisional: boolean } = { row: { id: 'b', country_id: '369', date_start: 'garbage', best: '5' }, provisional: false };
     const r = countryStats([bad, row({ ago: 1, best: Number.NaN }), row({ ago: -3, best: 50 }), row({ ago: 1, best: 4 })], opts);
     expect(r.countries.get('UKR')!.deaths365.best).toBe(4);
+  });
+});
+
+describe('countryStats: events that cover several days (finding: Ukraine\'s months were dated the 1st)', () => {
+  const span = (from: string, to: string, best: number, prec = '4') => ({ ...row({ ago: 0, best }), row: { ...row({ ago: 0, best }).row, date_start: `${from} 00:00:00.000`, date_end: `${to} 00:00:00.000`, date_prec: prec } });
+  it('spreads a month over its days in the 30 and 90-day windows', () => {
+    const { countries } = countryStats([span('2026-06-01', '2026-06-30', 3000), span('2026-07-01', '2026-07-31', 3100), span('2026-08-01', '2026-08-31', 3100)], opts);
+    const u = countries.get('UKR')!;
+    expect(u.deaths30.best).toBe(3000); // 2 to 31 August: 30 of 31 days
+    expect(u.deaths90.best).toBe(2800 + 3100 + 3100); // the 90 days start on 3 June: 28 of June's 30 days
+    expect(u.deaths365.best).toBe(9200);
+    expect(u.events90).toBe(2); // events are counted by their start day: June's started 91 days before the data end
+  });
+  it('puts the deaths of a month in the month buckets by days and keeps the world series equal to the sum of the countries', () => {
+    const r = countryStats([span('2026-01-01', '2026-06-30', 1810), span('2026-08-01', '2026-08-31', 310)], opts);
+    const m = r.countries.get('UKR')!.monthly;
+    expect(m[119]).toBeCloseTo(310, 6); // August
+    expect(m[119 - 7]).toBeCloseTo((1810 * 31) / 181, 6); // January
+    expect(m[119 - 6]).toBeCloseTo((1810 * 28) / 181, 6); // February
+    expect(r.world.reduce((t, v) => t + v, 0)).toBeCloseTo(m.reduce((t, v) => t + v, 0), 6);
+  });
+  it('is unchanged for one-day events', () => {
+    const { countries } = countryStats([row({ ago: 0, best: 10 }), row({ ago: 29, best: 5 }), row({ ago: 30, best: 20 })], opts);
+    expect(countries.get('UKR')!.deaths30.best).toBe(15);
+    expect(countries.get('UKR')!.deaths90.best).toBe(35);
   });
 });

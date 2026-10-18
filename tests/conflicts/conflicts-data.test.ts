@@ -35,7 +35,7 @@ describe('public/data/conflicts.json', () => {
       expect(c.weekly).toHaveLength(52);
       expect(c.weekly.every((v) => Number.isFinite(v) && v >= 0)).toBe(true);
       const weeks = c.weekly.reduce((s, v) => s + v, 0);
-      expect(weeks).toBeLessThanOrEqual(c.deaths.d365.best); // the weekly chart covers 364 days, the total 365
+      expect(weeks).toBeLessThanOrEqual(c.deaths.d365.best + 52); // the weekly chart covers 364 days, the total 365; each week and the total are rounded separately (up to half a death each)
       expect(c.latest.length).toBeLessThanOrEqual(12);
       expect(c.provisionalShare).toBeGreaterThanOrEqual(0);
       expect(c.provisionalShare).toBeLessThanOrEqual(1);
@@ -62,9 +62,9 @@ describe('public/data/conflicts.json', () => {
       expect(sum).toBe(w.deaths[w2].best);
     }
     expect(w.weekly).toHaveLength(52);
-    expect(w.weekly.reduce((s, v) => s + v, 0)).toBeLessThanOrEqual(w.deaths.d365.best);
+    expect(w.weekly.reduce((s, v) => s + v, 0)).toBeLessThanOrEqual(w.deaths.d365.best + 52); // rounded separately
     expect(w.conflictsListed).toBe(file.conflicts.length);
-    expect(file.conflicts.reduce((s, c) => s + c.deaths.d365.best, 0)).toBeLessThanOrEqual(w.deaths.d365.best); // the world also holds the small conflicts
+    expect(file.conflicts.reduce((s, c) => s + c.deaths.d365.best, 0)).toBeLessThanOrEqual(w.deaths.d365.best + file.conflicts.length); // the world also holds the small conflicts
     expect(w.countries.length).toBeLessThanOrEqual(12);
     const d = w.countries.map((c) => c.deaths90);
     expect(d).toEqual([...d].sort((a, b) => b - a));

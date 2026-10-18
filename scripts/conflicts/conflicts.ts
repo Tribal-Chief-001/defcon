@@ -1,3 +1,4 @@
+import { share, spanOf, type Span } from '../lib/spread';
 import { activityTrend } from './trend';
 import type { Conflict, ConflictEvent, ConflictsFile, Geo, Kind, Range, World } from '../../src/conflicts/types';
 
@@ -25,7 +26,14 @@ const add = (a: Range, r: Range) => ((a.best += r.best), (a.low += r.low), (a.hi
 export const WORLD_ID = 'world'; // reserved for the World overview page
 const DATE_ONLY = /^(\d{4}-\d{2}-\d{2}|\d{1,2}\s+[A-Za-z]+\s+\d{4})$/; // some UCDP candidate headlines are just the date
 
-type Ev = { id: string; date: string; ageD: number; row: GedRow; kind: Kind; deaths: Range; provisional: boolean };
+type Ev = { id: string; date: string; ageD: number; span: Span; row: GedRow; kind: Kind; deaths: Range; provisional: boolean };
+
+// The part of an event's deaths that falls in the last `days` days up to the data end (an event covers all the days from its start to its
+// end, see scripts/lib/spread.ts), and in each of the 52 weeks. One-day events are in a window wholly or not at all, as before.
+const frac = (e: Ev, lastDay: number, days: number) => share(e.span, lastDay - days + 1, lastDay);
+const scaled = (r: Range, f: number): Range => ({ best: r.best * f, low: r.low * f, high: r.high * f });
+const rounded = (r: Range): Range => ({ best: Math.round(r.best), low: Math.round(r.low), high: Math.round(r.high) });
+const weekShare = (e: Ev, lastDay: number, i: number) => share(e.span, lastDay - (51 - i) * 7 - 6, lastDay - (51 - i) * 7); // week 51 is the newest
 
 const R_KM = 6371;
 const D2R = Math.PI / 180;
@@ -134,6 +142,7 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
   const byId = new Map<string, { row: GedRow; provisional: boolean }>();
   for (const x of input) if (x.row.id) byId.set(x.row.id, x); // a later row for the same id wins
 
+  const lastDay = opts.dataEndS / DAY;
   const groups = new Map<string, Ev[]>();
   const all: Ev[] = [];
   for (const { row, provisional } of byId.values()) {
@@ -141,14 +150,16 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
     const best = num(row.best);
     const kind = KIND[row.type_of_violence ?? ''];
     if (!d || best === null || !kind || d.t > opts.dataEndS) continue;
+    const lastDay = opts.dataEndS / DAY;
+    const span = spanOf(row.date_start, row.date_end, lastDay);
+    if (!span || span.end < lastDay - 364) continue; // nothing of it falls in the last 365 days
     const ageD = Math.floor((opts.dataEndS - d.t) / DAY);
-    if (ageD >= 365) continue;
     const b = Math.max(0, best);
     const deaths: Range = { best: b, low: Math.min(b, Math.max(0, num(row.low) ?? b)), high: Math.max(b, num(row.high) ?? b) };
     const name = (row.conflict_name ?? '').trim();
     const list = groups.get(name) ?? [];
     groups.set(name, list);
-    const ev: Ev = { id: row.id!, date: d.date, ageD, row, kind, deaths, provisional };
+    const ev: Ev = { id: row.id!, date: d.date, ageD, span, row, kind, deaths, provisional };
     list.push(ev);
     all.push(ev);
   }
@@ -162,17 +173,20 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
     const countries = new Map<string, { id: string | null; name: string; deaths365: number }>();
     let provisional = 0;
     for (const e of evs) {
-      add(d365, e.deaths);
-      n.d365++;
-      if (e.ageD < 90) (add(d90, e.deaths), n.d90++);
-      if (e.ageD < 30) (add(d30, e.deaths), n.d30++);
-      if (e.ageD < 364) weekly[51 - Math.floor(e.ageD / 7)]! += e.deaths.best; // 52 whole weeks; day 365 only counts in d365
+      add(d365, scaled(e.deaths, frac(e, lastDay, 365)));
+      add(d90, scaled(e.deaths, frac(e, lastDay, 90)));
+      add(d30, scaled(e.deaths, frac(e, lastDay, 30)));
+      if (e.ageD < 365) n.d365++;
+      if (e.ageD < 90) n.d90++;
+      if (e.ageD < 30) n.d30++;
+      for (let i = 0; i < 52; i++) weekly[i]! += e.deaths.best * weekShare(e, lastDay, i); // 52 whole weeks; day 365 only counts in d365
       if (e.provisional) provisional++;
       const key = e.row.country_id ?? e.row.country ?? '';
       const c = countries.get(key) ?? { id: opts.gwToId[e.row.country_id ?? ''] ?? null, name: e.row.country ?? 'Unknown', deaths365: 0 };
       countries.set(key, c);
-      c.deaths365 += e.deaths.best;
+      c.deaths365 += e.deaths.best * frac(e, lastDay, 365);
     }
+    for (const c of countries.values()) c.deaths365 = Math.round(c.deaths365);
     if (d365.best < LIST_D365 && d90.best < LIST_D90) continue;
 
     const countryList = [...countries.values()].sort((a, b) => b.deaths365 - a.deaths365 || a.name.localeCompare(b.name));
@@ -192,48 +206,53 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
       name,
       kinds: [...new Set(evs.map((e) => e.kind))],
       countries: countryList,
-      deaths: { d30, d90, d365 },
+      deaths: { d30: rounded(d30), d90: rounded(d90), d365: rounded(d365) },
       events: n,
       trend,
       lastDate: evs.reduce((m, e) => (e.date > m ? e.date : m), ''),
-      weekly,
+      weekly: weekly.map(Math.round),
       latest,
       provisionalShare: provisional / evs.length,
       geo: geoOf(evs),
     });
   }
-  const world = worldOf(all, conflicts.length, opts.gwToId);
+  const world = worldOf(all, conflicts.length, opts.gwToId, lastDay);
   conflicts.sort((a, b) => b.deaths.d90.best - a.deaths.d90.best || a.name.localeCompare(b.name));
   return { generated: opts.generated, dataEnd: new Date(opts.dataEndS * 1000).toISOString().slice(0, 10), sources: opts.sources, conflicts, world };
 }
 
-function worldOf(all: Ev[], conflictsListed: number, gwToId: Record<string, string>): World {
+function worldOf(all: Ev[], conflictsListed: number, gwToId: Record<string, string>, lastDay: number): World {
   const deaths = { d30: zero(), d90: zero(), d365: zero() };
   const byKind: World['byKind'] = { state: { d90: zero(), d365: zero() }, 'non-state': { d90: zero(), d365: zero() }, 'one-sided': { d90: zero(), d365: zero() } };
   const weekly = new Array<number>(52).fill(0);
   const weeklyByKind: World['weeklyByKind'] = { state: new Array<number>(52).fill(0), 'non-state': new Array<number>(52).fill(0), 'one-sided': new Array<number>(52).fill(0) };
   const countries = new Map<string, { id: string | null; name: string; deaths90: number; deaths365: number }>();
   for (const e of all) {
-    add(deaths.d365, e.deaths);
-    add(byKind[e.kind].d365, e.deaths);
-    if (e.ageD < 90) (add(deaths.d90, e.deaths), add(byKind[e.kind].d90, e.deaths));
-    if (e.ageD < 30) add(deaths.d30, e.deaths);
-    if (e.ageD < 364) {
-      weekly[51 - Math.floor(e.ageD / 7)]! += e.deaths.best;
-      weeklyByKind[e.kind][51 - Math.floor(e.ageD / 7)]! += e.deaths.best;
+    const f365 = frac(e, lastDay, 365), f90 = frac(e, lastDay, 90);
+    add(deaths.d365, scaled(e.deaths, f365));
+    add(byKind[e.kind].d365, scaled(e.deaths, f365));
+    add(deaths.d90, scaled(e.deaths, f90));
+    add(byKind[e.kind].d90, scaled(e.deaths, f90));
+    add(deaths.d30, scaled(e.deaths, frac(e, lastDay, 30)));
+    for (let i = 0; i < 52; i++) {
+      const w = e.deaths.best * weekShare(e, lastDay, i);
+      weekly[i]! += w;
+      weeklyByKind[e.kind][i]! += w;
     }
     const key = e.row.country_id ?? e.row.country ?? '';
     const c = countries.get(key) ?? { id: gwToId[e.row.country_id ?? ''] ?? null, name: e.row.country ?? 'Unknown', deaths90: 0, deaths365: 0 };
     countries.set(key, c);
-    c.deaths365 += e.deaths.best;
-    if (e.ageD < 90) c.deaths90 += e.deaths.best;
+    c.deaths365 += e.deaths.best * f365;
+    c.deaths90 += e.deaths.best * f90;
   }
+  const roundAll = (a: number[]) => a.map(Math.round);
+  const kinds = { state: roundAll(weeklyByKind.state), 'non-state': roundAll(weeklyByKind['non-state']), 'one-sided': roundAll(weeklyByKind['one-sided']) };
   return {
-    deaths,
-    byKind,
-    weekly,
-    weeklyByKind,
-    countries: [...countries.values()].filter((c) => c.deaths90 > 0).sort((a, b) => b.deaths90 - a.deaths90 || a.name.localeCompare(b.name)).slice(0, 12),
+    deaths: { d30: rounded(deaths.d30), d90: rounded(deaths.d90), d365: rounded(deaths.d365) },
+    byKind: Object.fromEntries(Object.entries(byKind).map(([k, v]) => [k, { d90: rounded(v.d90), d365: rounded(v.d365) }])) as World['byKind'],
+    weekly: kinds.state.map((v, i) => v + kinds['non-state'][i]! + kinds['one-sided'][i]!), // the total is the sum of the rounded kinds, so the stacked chart adds up exactly
+    weeklyByKind: kinds,
+    countries: [...countries.values()].map((c) => ({ ...c, deaths90: Math.round(c.deaths90), deaths365: Math.round(c.deaths365) })).filter((c) => c.deaths90 > 0).sort((a, b) => b.deaths90 - a.deaths90 || a.name.localeCompare(b.name)).slice(0, 12),
     conflictsListed,
     latest: all.map(toEvent).filter((e): e is ConflictEvent => e !== null).sort(newestFirst).slice(0, 20),
   };

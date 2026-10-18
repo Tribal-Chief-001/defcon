@@ -298,3 +298,41 @@ describe('conflictsFromRows', () => {
   });
 });
 
+describe('conflictsFromRows: events that cover several days (finding: candidate rows dated by their start only)', () => {
+  const span = (from: string, to: string, best: number, extra: Record<string, string | number> = {}) => row({ ago: 0, best, date_start: `${from} 00:00:00.000`, date_end: `${to} 00:00:00.000`, ...extra });
+  it('spreads a month-long event over its days: the last 90 days get all of an August event, the last 30 days get 30 of its 31 days', () => {
+    const [c] = one([span('2026-08-01', '2026-08-31', 3100), row({ ago: 200, best: 50 })]);
+    expect(c!.deaths.d30.best).toBe(3000);
+    expect(c!.deaths.d90.best).toBe(3100);
+    expect(c!.deaths.d365.best).toBe(3150);
+  });
+  it('counts an event that started over 365 days ago but ends inside the window, partly', () => {
+    const start = day(369); // 369 days before the data end
+    const end = day(360);
+    const [c] = one([span(start, end, 100), row({ ago: 1, best: 500 })]);
+    expect(c!.deaths.d365.best).toBe(500 + 50); // 5 of its 10 days (ages 364 to 360); the 365-day window is ages 0 to 364
+  });
+  it('keeps low <= best <= high after spreading and rounding', () => {
+    const [c] = one([span('2026-07-01', '2026-09-30', 1000, { low: '800', high: '1500' }), row({ ago: 0, best: 10, low: '5', high: '40' })]);
+    for (const w of [c!.deaths.d30, c!.deaths.d90, c!.deaths.d365]) expect(w.low <= w.best && w.best <= w.high).toBe(true);
+  });
+  it('clips an end after the data end (those days are not data yet) and ignores a bad end', () => {
+    const [a] = one([span('2026-08-30', '2026-09-30', 100)]);
+    expect(a!.deaths.d30.best).toBe(100); // only 2 days of data: all of the deaths are placed there
+    const [b] = one([row({ ago: 3, best: 40, date_end: 'garbage' }), row({ ago: 3, best: 8, date_end: '' })]);
+    expect(b!.deaths.d30.best).toBe(48);
+  });
+  it('puts the weekly series on the days the event covers (a month is spread over its weeks)', () => {
+    const [c] = one([span('2026-08-01', '2026-08-31', 3100)]);
+    expect(c!.weekly).toHaveLength(52);
+    expect(Math.abs(c!.weekly.reduce((s, v) => s + v, 0) - 3100)).toBeLessThanOrEqual(52); // rounding only
+    expect(c!.weekly[51]).toBeGreaterThan(500);
+    expect(c!.weekly[50]).toBeGreaterThan(500);
+    expect(c!.weekly[47]).toBeGreaterThan(0);
+  });
+  it('does not change anything for events without an end: they are one day', () => {
+    const [c] = one([row({ ago: 0, best: 10 }), row({ ago: 29, best: 5 }), row({ ago: 30, best: 20 })]);
+    expect([c!.deaths.d30.best, c!.deaths.d90.best]).toEqual([15, 35]);
+    expect(c!.events).toEqual({ d30: 2, d90: 3, d365: 3 });
+  });
+});
