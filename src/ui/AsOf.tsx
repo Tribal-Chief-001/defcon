@@ -25,14 +25,16 @@ export function AsOf({ nowS: fixedNowS }: { nowS?: number }) {
     lastPill.current = pill;
   }, [pill]);
   return (
-    <div className="pointer-events-none flex flex-col items-end gap-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+    <div className="pointer-events-none relative flex flex-col items-end gap-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
       <div className="flex items-center gap-2">
         <span>{f ? f.label : 'NO EVENT DATA'}</span>
         <span className={`rounded-full border px-2.5 py-1 ${alert ? 'border-[var(--orange)] text-[var(--orange)]' : 'border-[var(--border-strong)] text-[var(--lime)]'}`}>{pill}</span>
       </div>
-      {status === 'error' && snap ? <span className="text-[var(--orange)]">refresh failed, showing last data</span> : null}
-      {archiveError && snap ? <span>archive unavailable</span> : null}
-      {status === 'error' && !snap ? <span title={error}>run npm run data:build</span> : null}
+      <div className="absolute right-0 top-full mt-2 flex flex-col items-end gap-1 whitespace-nowrap">
+        {status === 'error' && snap ? <span className="text-[var(--orange)]">refresh failed, showing last data</span> : null}
+        {archiveError && snap ? <span>archive unavailable</span> : null}
+        {status === 'error' && !snap ? <span title={error}>run npm run data:build</span> : null}
+      </div>
     </div>
   );
 }

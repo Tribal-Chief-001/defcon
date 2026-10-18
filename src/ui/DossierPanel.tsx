@@ -48,7 +48,7 @@ export function DossierPanel({ countryId, onClose, nowS: fixedNowS }: { countryI
       ref={panel}
       tabIndex={-1}
       aria-label="Country dossier"
-      className="pointer-events-auto absolute left-[4vw] top-[7rem] z-10 max-h-[calc(100vh-13rem)] w-[min(360px,calc(100vw-8vw))] overflow-y-auto rounded-[24px] border border-[var(--border)] bg-white/[0.06] p-6 backdrop-blur-xl max-sm:bottom-[calc(4.5rem+var(--safe-bottom))] max-sm:left-[4vw] max-sm:right-[4vw] max-sm:top-auto max-sm:max-h-[50vh] max-sm:w-auto"
+      className="pointer-events-auto absolute left-[4vw] top-[8rem] z-10 max-h-[calc(100vh-14rem)] w-[min(360px,calc(100vw-8vw))] overflow-y-auto rounded-[24px] border border-[var(--border)] bg-white/[0.06] p-6 backdrop-blur-xl max-sm:bottom-[calc(4.5rem+var(--safe-bottom))] max-sm:left-[4vw] max-sm:right-[4vw] max-sm:top-auto max-sm:max-h-[50vh] max-sm:w-auto"
     >
       {children}
     </aside>
