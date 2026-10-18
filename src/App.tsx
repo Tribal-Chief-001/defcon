@@ -8,6 +8,7 @@ import type { Detail } from './events/types';
 import { KINDS } from './events/types';
 import { GlobeCanvas } from './globe/GlobeCanvas';
 import { AsOf } from './ui/AsOf';
+import { CommandPalette } from './ui/CommandPalette';
 import { DossierPanel } from './ui/DossierPanel';
 import { Coverage } from './ui/Coverage';
 import { EventCard, type EventInfo } from './ui/EventCard';
@@ -62,6 +63,7 @@ export function App() {
       <div className="absolute right-[4vw] top-6">
         <AsOf />
       </div>
+      <CommandPalette onPick={setDossierId} />
       <Coverage />
       {dossierId ? <DossierPanel countryId={dossierId} onClose={() => setDossierId(null)} /> : null}
       {sel ? <EventCard detail={sel.detail} info={sel.info} onClose={() => {
