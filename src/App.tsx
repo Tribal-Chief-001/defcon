@@ -14,7 +14,7 @@ import { GlobeCanvas } from './globe/GlobeCanvas';
 import { AsOf } from './ui/AsOf';
 import { CommandPalette } from './ui/CommandPalette';
 import { DossierPanel } from './ui/DossierPanel';
-import { CapitalLabels, type CapitalLabel } from './ui/CapitalLabels';
+import { LiveCapitalLabels, setLabels } from './ui/CapitalLabels';
 import { Coverage } from './ui/Coverage';
 import { EventCard, type EventInfo } from './ui/EventCard';
 
@@ -28,11 +28,13 @@ type Selected = { info: EventInfo; detail: Detail | null; lat: number; lon: numb
 export function App() {
   const [r, setR] = useState<Readout | null>(null);
   const [sel, setSel] = useState<Selected | null>(null);
-  const [dossierId, setDossierId] = useState<string | null>(null);
-  const [labels, setLabels] = useState<CapitalLabel[]>([]);
+  // initialised from the URL so the hash-mirroring effect below does not erase a shared #c=IND link before it is applied
+  const [dossierId, setDossierId] = useState<string | null>(() => parseHash(location.hash).country);
   const [dive, setDive] = useState<Dive | null>(null);
   const diveIdRef = useRef<string | null>(null);
   diveIdRef.current = dive?.id ?? null;
+  const dossierIdRef = useRef<string | null>(null);
+  dossierIdRef.current = dossierId;
   const diveToken = useRef(createLatest()); // only the newest dive request wins
   const [narrow, setNarrow] = useState(() => window.matchMedia('(max-width: 639px)').matches);
   useEffect(() => {
@@ -46,14 +48,21 @@ export function App() {
 
   useEffect(() => startEventService(BASE), []);
 
-  const startDive = useCallback(async (id: string) => {
+  // `key` is a map id or an ISO3 code (SSD for the map's SDS); an id with no country row opens nothing and flies nowhere
+  const startDive = useCallback(async (key: string) => {
     const token = diveToken.current.next();
     latest.current.next(); // a new dive closes any open event card; a click's own event card is set after this
     setSel(null);
-    setDossierId(id);
-    const row = (await loadCountries()).find((r) => r.id === id);
+    setDossierId(key);
+    const row = (await loadCountries()).find((r) => r.id === key || r.iso3 === key);
     if (!diveToken.current.isLatest(token)) return;
-    setDive({ id, target: diveTarget(row?.bbox ?? null, row ? { lat: row.lat, lon: row.lon } : null) });
+    if (!row) {
+      setDossierId(null);
+      setDive(null);
+      return;
+    }
+    setDossierId(row.id);
+    setDive({ id: row.id, target: diveTarget(row.bbox ?? null, { lat: row.lat, lon: row.lon }) });
   }, []);
   const exitDive = useCallback(() => {
     diveToken.current.next();
@@ -61,21 +70,21 @@ export function App() {
     setDossierId(null);
   }, []);
 
-  // Esc leaves the dive; the URL hash mirrors it (#c=IND) and is honoured on load and on back/forward
+  // Esc leaves the dive; the URL hash mirrors it (#c=IND) and is honoured on load and on hashchange
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && diveIdRef.current && exitDive();
+    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && dossierIdRef.current && exitDive();
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [exitDive]);
   useEffect(() => {
-    const want = formatHash(dive?.id ?? null);
+    const want = formatHash(dossierId);
     if (location.hash !== want) history.replaceState(null, '', want || location.pathname + location.search);
-  }, [dive]);
+  }, [dossierId]);
   useEffect(() => {
     const apply = () => {
       const { country } = parseHash(location.hash);
       if (country && country !== diveIdRef.current) void startDive(country);
-      else if (!country && diveIdRef.current) exitDive();
+      else if (!country && dossierIdRef.current) exitDive();
     };
     apply();
     window.addEventListener('hashchange', apply);
@@ -84,7 +93,7 @@ export function App() {
 
   const onPick = useCallback((id: string | null, lat: number, lon: number, kmPerPx: number) => {
     setR({ id, lat, lon });
-    if (id && id !== diveIdRef.current) void startDive(id);
+    if (id && id !== dossierIdRef.current) void startDive(id);
     const token = latest.current.next();
     const { recent, archive } = useEvents.getState();
     const hit = pickEvent(recent, archive, lat, lon, PICK_RADIUS_PX * kmPerPx);
@@ -111,7 +120,7 @@ export function App() {
   return (
     <main className="relative h-full w-full bg-black">
       <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : null} dive={dive} framing={framing} onLabels={setLabels} />
-      <CapitalLabels labels={labels} />
+      <LiveCapitalLabels />
       <p className="pointer-events-none absolute left-[4vw] top-6 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
         <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-[var(--lime)]" />
         Defcon // globe core

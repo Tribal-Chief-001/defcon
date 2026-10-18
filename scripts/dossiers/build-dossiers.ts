@@ -10,7 +10,7 @@ import { loadMemberships, membershipOf, type Memberships } from './memberships';
 import { WB_INDICATORS, parseWb, type WbValue } from './worldbank';
 
 export type BuildCtx = {
-  caps: { name: string; country: string; lat: number; lon: number; rank: number }[];
+  caps: { name: string; country: string; lat: number; lon: number; rank: number; alt?: true }[];
   wb: Record<keyof typeof WB_INDICATORS, Map<string, WbValue>>;
   wbMeta: { lastupdated: string };
   factbookByCountry: Record<string, FactbookFacts | undefined>;
@@ -33,13 +33,16 @@ export function buildDossier(row: CountryRow, ctx: BuildCtx): Dossier {
   const fbField = (v: string | undefined): Field<string> =>
     v ? { value: v, source: 'CIA World Factbook (archived)', asOf: ctx.fbMeta.dataDate, url: ctx.fbMeta.url, note: FB_NOTE } : null;
   const { un, nato } = membershipOf(ctx.mem, row.id);
-  const capitals = ctx.caps
-    .filter((c) => c.country === row.id)
-    .sort((a, b) => a.rank - b.rank || a.name.localeCompare(b.name))
+  const own = ctx.caps.filter((c) => c.country === row.id);
+  const fbIs = (name: string) => !!fb?.capitalName && norm(fb.capitalName) === norm(name);
+  const fbAgrees = !fb?.capitalName || own.some((c) => norm(fb.capitalName!) === norm(c.name));
+  const capitals = own
+    // the capital the Factbook names first, then Natural Earth's primary capitals, then its alternates
+    .sort((a, b) => Number(!fbIs(a.name)) - Number(!fbIs(b.name)) || Number(!!a.alt) - Number(!!b.alt) || a.rank - b.rank || a.name.localeCompare(b.name))
     .map((c) => {
-      const base = { name: c.name, lat: c.lat, lon: c.lon };
+      const base = { name: c.name, lat: c.lat, lon: c.lon, ...(c.alt ? { alt: true as const } : {}) };
       // keep Natural Earth's capital; note (never silently replace) a different capital in the Factbook, e.g. Burundi's Gitega
-      return fb?.capitalName && norm(fb.capitalName) !== norm(c.name) ? { ...base, note: `CIA World Factbook lists: ${fb.capitalName}` } : base;
+      return !fbAgrees && !c.alt ? { ...base, note: `CIA World Factbook lists: ${fb!.capitalName}` } : base;
     });
   return {
     id: row.id,

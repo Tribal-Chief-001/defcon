@@ -1,3 +1,5 @@
+import { create } from 'zustand';
+
 export type CapitalLabel = { id: string; name: string; x: number; y: number };
 
 const MAX_LABELS = 40;
@@ -17,4 +19,12 @@ export function CapitalLabels({ labels }: { labels: CapitalLabel[] }) {
       ))}
     </div>
   );
+}
+
+// The globe pushes label positions up to 15 times a second; they live in their own store so only this layer re-renders, not the whole App.
+export const useLabels = create<{ labels: CapitalLabel[]; setLabels(l: CapitalLabel[]): void }>((set) => ({ labels: [], setLabels: (labels) => set({ labels }) }));
+export const setLabels = (l: CapitalLabel[]) => useLabels.getState().setLabels(l);
+
+export function LiveCapitalLabels() {
+  return <CapitalLabels labels={useLabels((s) => s.labels)} />;
 }

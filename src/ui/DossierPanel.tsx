@@ -15,7 +15,9 @@ const KIND_LABEL: Record<string, string> = { armed: 'Armed', civilian: 'Civilian
 const latest = createLatest();
 type Loaded = { id: string; dossier: Dossier | null };
 
-export function DossierPanel({ countryId, onClose, nowS = Math.floor(Date.now() / 1000) }: { countryId: string; onClose: () => void; nowS?: number }) {
+export function DossierPanel({ countryId, onClose, nowS: fixedNowS }: { countryId: string; onClose: () => void; nowS?: number }) {
+  // fixed per country: a clock read on every render would re-run the summary each second
+  const nowS = useMemo(() => fixedNowS ?? Math.floor(Date.now() / 1000), [fixedNowS, countryId]);
   const [loaded, setLoaded] = useState<Loaded | null>(null);
   const [names, setNames] = useState<Map<string, string>>(new Map());
   const { recent, archive } = useEvents();
@@ -70,8 +72,21 @@ export function DossierPanel({ countryId, onClose, nowS = Math.floor(Date.now() 
       <div className="mt-4 border-t border-[var(--border)]">
         <div className="grid grid-cols-[92px_1fr] gap-3 border-b border-[var(--border)] py-2 text-[12px]">
           <span className="font-[var(--font-mono)] text-[9.5px] uppercase tracking-[0.12em] text-[var(--text-faint)] pt-0.5">Capital</span>
-          <span className="font-[var(--font-mono)] font-bold" title={d.capitals[0]?.note}>
-            {d.capitals.length ? d.capitals.map((c) => c.name).join(', ') : <span className="text-[var(--text-faint)]">none listed</span>}
+          <span className="font-[var(--font-mono)] font-bold">
+            {d.capitals.length ? (
+              d.capitals.map((c, i) => (
+                <span key={c.name} className={c.alt && i > 0 ? 'font-normal text-[var(--text-muted)]' : ''}>
+                  {i > 0 ? ', ' : ''}
+                  {c.name}
+                  {c.alt && i > 0 ? ' (alt.)' : ''}
+                </span>
+              ))
+            ) : (
+              <span className="text-[var(--text-faint)]">none listed</span>
+            )}
+            {d.capitals.find((c) => c.note)?.note ? (
+              <span className="mt-1 block text-[10px] font-normal normal-case tracking-normal text-[var(--text-muted)]">{d.capitals.find((c) => c.note)?.note}</span>
+            ) : null}
           </span>
         </div>
         <div className="grid grid-cols-[92px_1fr] gap-3 border-b border-[var(--border)] py-2 text-[12px]">

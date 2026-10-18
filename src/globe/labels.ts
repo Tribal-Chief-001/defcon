@@ -1,6 +1,6 @@
 import { latLonToVec3 } from '../lib/geo';
 
-export type Capital = { name: string; country: string; lat: number; lon: number; rank: number };
+export type Capital = { name: string; country: string; lat: number; lon: number; rank: number; alt?: true }; // alt = Natural Earth alternate capital: listed in the dossier, never marked on the globe
 export type View = { lat: number; lon: number; distance: number };
 
 const FAR = 3.2; // beyond this distance no labels are drawn (unless diving)
@@ -26,10 +26,11 @@ export function selectCapitals(caps: Capital[], view: View, diveId: string | nul
     return x * vx + y * vy + z * vz > minDot;
   };
   const byRank = (a: Capital, b: Capital) => a.rank - b.rank || a.name.localeCompare(b.name) || a.country.localeCompare(b.country);
-  const dived = diveId ? caps.filter((c) => c.country === diveId && visible(c)).sort(byRank) : [];
+  const main = caps.filter((c) => !c.alt);
+  const dived = diveId ? main.filter((c) => c.country === diveId && visible(c)).sort(byRank) : [];
   const others = far
     ? []
-    : caps
+    : main
         .filter((c) => c.country !== diveId && c.rank <= maxRank && visible(c))
         .sort(byRank)
         .slice(0, Math.max(0, limit - dived.length));

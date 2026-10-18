@@ -1,8 +1,9 @@
 import { mkdirSync, writeFileSync } from 'node:fs';
 import { dirname } from 'node:path';
-import { read } from 'shapefile';
+import { readUtf8 } from './read-utf8.ts';
 
-export type Capital = { name: string; country: string; lat: number; lon: number; rank: number };
+// `alt` marks Natural Earth's "alternate" capitals (Lagos, Kyoto, ...): seats, former or second capitals listed beside the primary one.
+export type Capital = { name: string; country: string; lat: number; lon: number; rank: number; alt?: true };
 
 // Natural Earth featurecla values for national capitals (checked in the dbf 2026-10-18: 202 + 13 alt).
 const CAPITAL_CLASSES = new Set(['Admin-0 capital', 'Admin-0 capital alt']);
@@ -19,7 +20,7 @@ export async function buildCapitals(
   outPath: string,
   countryIds: Set<string>,
 ): Promise<Capital[]> {
-  const fc = await read(shpPath, dbfPath);
+  const fc = await readUtf8(shpPath, dbfPath);
   const caps: Capital[] = [];
   for (const f of fc.features) {
     const p = f.properties ?? {};
@@ -31,7 +32,9 @@ export async function buildCapitals(
       console.log(`capital dropped (country not in India-POV file): ${clean(p.name)} [${raw}]`);
       continue;
     }
-    caps.push({ name: clean(p.name), country, lat: r4(lat), lon: r4(lon), rank: Number(p.scalerank) });
+    const cap: Capital = { name: clean(p.name), country, lat: r4(lat), lon: r4(lon), rank: Number(p.scalerank) };
+    if (String(p.featurecla) === 'Admin-0 capital alt') cap.alt = true;
+    caps.push(cap);
   }
   caps.sort((a, b) => a.country.localeCompare(b.country) || a.name.localeCompare(b.name));
   mkdirSync(dirname(outPath), { recursive: true });

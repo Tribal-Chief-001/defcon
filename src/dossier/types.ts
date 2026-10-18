@@ -28,7 +28,7 @@ export type Dossier = {
   type: string;
   continent: string | null;
   subregion: string | null;
-  capitals: { name: string; lat: number; lon: number; note?: string }[];
+  capitals: { name: string; lat: number; lon: number; note?: string; alt?: true }[]; // primary capital first; `alt` = Natural Earth alternate capital
   neighbours: string[];
   population: Field<number>;
   areaKm2: Field<number>;

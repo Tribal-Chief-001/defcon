@@ -101,6 +101,14 @@ describe('DossierPanel', () => {
     expect(screen.getByText(/^Sources$/i)).toBeTruthy();
     expect(screen.getAllByText(/CC BY 4\.0/).length).toBeGreaterThanOrEqual(1);
   });
+  it('shows alternate capitals muted and the capital note as visible text (not only a hover title)', async () => {
+    const d: Dossier = { ...base, id: 'BDI', name: 'Burundi', iso3: 'BDI', capitals: [{ name: 'Bujumbura', lat: -3.4, lon: 29.4, note: 'CIA World Factbook lists: Gitega' }, { name: 'Gitega', lat: -3.4, lon: 29.9, alt: true }] };
+    stubFetch({ BDI: d });
+    render(<DossierPanel countryId="BDI" onClose={() => {}} nowS={NOW} />);
+    await screen.findByRole('heading', { name: 'Burundi' });
+    expect(screen.getByText(/Gitega \(alt\.\)/)).toBeTruthy();
+    expect(screen.getByText('CIA World Factbook lists: Gitega')).toBeTruthy();
+  });
   it('says "auto-coded data only" instead of a tension level when the window is not comparable', async () => {
     stubFetch({ IND: base });
     useEvents.setState({ recent: snap([ev({ human: false, kind: 'protest' }), ev({ human: false, kind: 'armed', lat: 11 })]), status: 'ready' });

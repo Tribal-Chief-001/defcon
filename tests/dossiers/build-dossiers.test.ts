@@ -82,6 +82,25 @@ describe('buildDossier', () => {
     expect(buildDossier(row({ id: 'IND', iso3: 'IND' }), c).population).toBeNull();
   });
   // Review Focus 2: Burundi's capital
+  it('lists the primary capital first and marks Natural Earth alternates', () => {
+    const caps = [
+      { name: 'Lagos', country: 'NGA', lat: 6.4, lon: 3.4, rank: 1, alt: true as const },
+      { name: 'Abuja', country: 'NGA', lat: 9.1, lon: 7.5, rank: 3 },
+    ];
+    const d = buildDossier(row({ id: 'NGA', name: 'Nigeria' }), ctx({ caps }));
+    expect(d.capitals.map((c) => c.name)).toEqual(['Abuja', 'Lagos']);
+    expect(d.capitals[0]!.alt).toBeUndefined();
+    expect(d.capitals[1]!.alt).toBe(true);
+  });
+  it('puts the capital the Factbook names first even when Natural Earth marks it alternate (Tanzania)', () => {
+    const caps = [
+      { name: 'Dar es Salaam', country: 'TZA', lat: -6.8, lon: 39.3, rank: 1 },
+      { name: 'Dodoma', country: 'TZA', lat: -6.2, lon: 35.7, rank: 3, alt: true as const },
+    ];
+    const d = buildDossier(row({ id: 'TZA' }), ctx({ caps, factbookByCountry: { TZA: { capitalName: 'Dodoma' } } }));
+    expect(d.capitals.map((c) => c.name)).toEqual(['Dodoma', 'Dar es Salaam']);
+    expect(d.capitals.every((c) => c.note === undefined)).toBe(true);
+  });
   it('keeps Natural Earth capitals and notes a different Factbook capital instead of overwriting', () => {
     const d = buildDossier(row({ id: 'BDI', iso3: 'BDI' }), ctx());
     expect(d.capitals[0]!.name).toBe('Bujumbura');

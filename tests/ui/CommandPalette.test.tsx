@@ -31,6 +31,16 @@ describe('CommandPalette', () => {
     fireEvent.keyDown(input(), { key: 'Escape' });
     expect(document.activeElement).toBe(b);
   });
+  it('returns focus to the previously focused element after picking a result', () => {
+    render(<><button>before</button><CommandPalette index={index} onPick={() => {}} /></>);
+    const b = screen.getByText('before');
+    b.focus();
+    open();
+    fireEvent.change(input(), { target: { value: 'fran' } });
+    fireEvent.keyDown(input(), { key: 'Enter' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(document.activeElement).toBe(b);
+  });
   it('has a visible button for touch users', () => {
     render(<CommandPalette index={index} onPick={() => {}} />);
     fireEvent.click(screen.getByRole('button', { name: /search/i }));

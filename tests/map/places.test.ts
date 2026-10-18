@@ -1,7 +1,7 @@
 import { readFileSync, statSync } from 'node:fs';
 import { describe, expect, it } from 'vitest';
 
-type Capital = { name: string; country: string; lat: number; lon: number; rank: number };
+type Capital = { name: string; country: string; lat: number; lon: number; rank: number; alt?: true };
 const PATH = 'public/data/capitals.json';
 const caps = JSON.parse(readFileSync(PATH, 'utf8')) as Capital[];
 
@@ -45,5 +45,21 @@ describe('capitals dataset', () => {
   });
   it('has clean names (no NUL padding or stray whitespace)', () => {
     expect(caps.filter((c) => c.name !== c.name.replace(/\0/g, '').trim() || !c.name).length).toBe(0);
+  });
+  it('marks Natural Earth alternate capitals (Lagos, Kyoto) so the primary capital comes first', () => {
+    const by = (name: string) => caps.find((c) => c.name === name);
+    expect(by('Abuja')?.alt).toBeUndefined();
+    expect(by('Lagos')?.alt).toBe(true);
+    expect(by('Kyoto')?.alt).toBe(true);
+    expect(by('Tokyo')?.alt).toBeUndefined();
+    // Natural Earth lists several primary capitals only for BOL, CIV, MMR and ZAF
+    const primaries = new Map<string, number>();
+    for (const c of caps) if (!c.alt) primaries.set(c.country, (primaries.get(c.country) ?? 0) + 1);
+    expect([...primaries.values()].filter((n) => n > 1).length).toBeLessThanOrEqual(4);
+  });
+  it('has correctly decoded names (no UTF-8 read as Windows-1252)', () => {
+    const files = ['public/data/capitals.json', 'public/data/countries.json', 'public/data/dossiers/index.json'];
+    for (const f of files) expect(readFileSync(f, 'utf8'), f).not.toMatch(/Ã.|â€|Â./);
+    expect(caps.some((c) => c.name === 'Brasília')).toBe(true);
   });
 });

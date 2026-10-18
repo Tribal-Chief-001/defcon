@@ -48,7 +48,7 @@ export function CommandPalette({ onPick, index: given }: { onPick: (id: string) 
   const results = useMemo(() => searchCountries(index, q), [index, q]);
   const pick = (id: string) => {
     onPick(id);
-    setOpen(false);
+    hide();
   };
   const optId = (i: number) => `${uid}-opt-${i}`;
 

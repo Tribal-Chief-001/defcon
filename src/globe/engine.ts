@@ -201,6 +201,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   let shown: { c: Capital; x: number; y: number }[] = [];
   let capSig = '';
   let capLastT = 0;
+  let labelKey = '';
   const labelListeners = new Set<(l: { id: string; name: string; x: number; y: number }[]) => void>();
 
   let topo: Topology = opts.low;
@@ -414,6 +415,9 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       boxes.push(box);
       out.push({ id: `${c.country}:${c.name}`, name: c.name, x, y });
     }
+    const key = out.map((l) => `${l.id}@${Math.round(l.x)},${Math.round(l.y)}`).join('|');
+    if (key === labelKey) return; // nothing visible moved: no callback, so nothing re-renders
+    labelKey = key;
     labelListeners.forEach((cb) => cb(out));
   };
 
@@ -534,6 +538,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
         m.geometry?.dispose();
         (m.material as THREE.Material | undefined)?.dispose();
       });
+      crosshair.dispose();
       eventLayer.dispose();
       renderer.dispose();
     },

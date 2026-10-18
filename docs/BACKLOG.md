@@ -42,9 +42,12 @@ Open items found during Plan 1 that were deliberately not fixed. Each is graded 
 
 ## Plan 3 deferred minors (2026-10-18)
 
-- An unknown id in the URL (`#c=XXX`) leaves the hash in place while no dossier opens; it should be cleared.
 - Clicking a capital marker that has an event under it opens the event card as well as the dive.
 - Capital labels are not culled against the open dossier panel; no hover cursor over markers; no keyboard route to markers (the palette is the accessible route).
 - The dive framing shift (0.17 / 0.2 of the canvas) is a fixed guess; desktop-width framing was not checked visually.
 - Factbook fields are archived (data date 2026-01-22, D-038): replace them (Wikidata or national sources) in a later plan; 61 Factbook files did not match a country by capital coordinates (see DATA-SOURCES.md).
 - `GlobeCanvas` rebuilds the whole globe when `onPick` or `onLabels` changes identity (both are stable today; keep them in refs if that changes).
+- Natural Earth's "alternate capital" flag is not always the minor seat: for Tanzania it marks Dodoma (the Factbook's capital) as alternate, so the globe marks Dar es Salaam and the dossier lists Dodoma first. A small override table would fix it.
+- 54 dossiers (for example GRL, ABW, HKG) have no capital: Natural Earth lists those capitals as "Admin-1" places. Nuuk and Oranjestad are not searchable. Palestine's type chip reads "Indeterminate".
+- World Bank area for countries touching India's disputed areas (CHN 9,562,910 km2, PAK 796,100 km2) is the national statistic, not derived from India's depicted borders, while India's own figure is the World Bank's national one too. The Area row's source says so; a note in the dossier is a Plan 6 copy decision.
+- Ids vs ISO3: `#c=` accepts both, but the dossier files and `CountryRow.id` use Natural Earth's ADM0_A3 (SDS for South Sudan, PSX for Palestine).

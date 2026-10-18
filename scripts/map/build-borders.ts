@@ -1,6 +1,6 @@
 import { mkdirSync, readdirSync, readFileSync, statSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { read } from 'shapefile';
+import { readUtf8 } from './read-utf8.ts';
 import { topology } from 'topojson-server';
 import { filter, presimplify, simplify } from 'topojson-simplify';
 import { feature, quantize } from 'topojson-client';
@@ -32,7 +32,7 @@ export async function buildBorders(
   dbfPath: string,
   outDir: string,
 ): Promise<{ countries: number; highBytes: number; lowBytes: number }> {
-  const raw = await read(shpPath, dbfPath);
+  const raw = await readUtf8(shpPath, dbfPath);
   const patched = applyPatches(raw, loadPatches());
   const slim: FeatureCollection = {
     type: 'FeatureCollection',

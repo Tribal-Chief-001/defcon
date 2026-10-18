@@ -50,6 +50,11 @@ describe('selectCapitals', () => {
     expect(names(selectCapitals([...caps].reverse(), view(1.5), null))).toEqual(names(selectCapitals(caps, view(1.5), null)));
     expect(selectCapitals([], view(1.5), 'FRA')).toEqual([]);
   });
+  it('never marks Natural Earth alternate capitals (Lagos, Kyoto), not even for the dived country', () => {
+    const more = [...caps, { ...cap('NGA', 'Lagos', 1, 1, 0), alt: true as const }];
+    expect(names(selectCapitals(more, view(1.5), null))).not.toContain('Lagos');
+    expect(names(selectCapitals(more, view(1.5), 'NGA'))).not.toContain('Lagos');
+  });
   it('is safe with a non-finite view', () => {
     expect(selectCapitals(caps, view(NaN), null)).toEqual([]);
   });
