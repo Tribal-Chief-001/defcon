@@ -4,6 +4,7 @@ import { latLonToVec3, vec3ToLatLon } from '../lib/geo';
 import type { EventAttrs } from '../events/attributes';
 import { createBootControl, type BootControl, type BootState } from './boot';
 import { createEventLayer } from './eventLayer';
+import { createTerminatorLayer } from './terminatorLayer';
 import { buildBorderPositions, buildCountryPositions } from './borderGeometry';
 import type { Relations } from '../relations/types';
 import { createArcLayer } from './arcLayer';
@@ -23,6 +24,7 @@ export type GlobeHandle = {
   dive(id: string | null, target?: { lat: number; lon: number; distance: number }): void;
   setFraming(x: number, y: number): void;
   setTimeBack(backS: number): void;
+  setSunTime(unixS: number): void;
   project(lat: number, lon: number): { x: number; y: number; visible: boolean } | null;
   onCursor(cb: (c: { x: number; y: number; lat: number; lon: number } | null, kmPerPx: number, dragging: boolean) => void): () => void;
   setCapitals(caps: Capital[]): void;
@@ -166,6 +168,8 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   window.addEventListener('keydown', skipBoot);
   const eventLayer = createEventLayer();
   globe.add(eventLayer.points, eventLayer.marker);
+  const terminator = createTerminatorLayer();
+  globe.add(terminator.object);
   // Grain = Data: heat texture rebuilt at most 4 times a second, only when the events or the playhead changed
   const grain = createGrainLayer();
   globe.add(grain.object);
@@ -566,6 +570,9 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     },
     setFraming(x, y) {
       frameTarget = { x, y };
+    },
+    setSunTime(unixS) {
+      terminator.update(unixS);
     },
     setTimeBack(backS) {
       eventLayer.setBack(backS);

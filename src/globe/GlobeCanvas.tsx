@@ -9,7 +9,7 @@ import { createGlobe, type GlobeHandle } from './engine';
 import type { CapitalLabel } from '../ui/CapitalLabels';
 import type { Capital } from './labels';
 import { loadCountries } from '../dossier/load';
-import { useTime } from '../time/store';
+import { playheadS, useTime } from '../time/store';
 import { loadRelations } from '../relations/load';
 import { makeRadarHandler } from './radarPipeline';
 import { Unsupported } from './Unsupported';
@@ -79,8 +79,17 @@ export function GlobeCanvas({
         handle?.setEvents([archive, recent].filter((x) => !!x).map((x) => buildAttributes(x!, 1.004, now)));
       };
       push();
+      // the terminator follows the playhead: refreshed once a minute while live and on every scrub change
+      const sun = () => handle?.setSunTime(playheadS(Date.now() / 1000, useTime.getState().backS));
       handle.setTimeBack(useTime.getState().backS);
-      offTime = useTime.subscribe((st, prev) => st.backS !== prev.backS && handle?.setTimeBack(st.backS));
+      sun();
+      const sunTimer = window.setInterval(sun, 60_000);
+      const offStore = useTime.subscribe((st, prev) => {
+        if (st.backS === prev.backS) return;
+        handle?.setTimeBack(st.backS);
+        sun();
+      });
+      offTime = () => (offStore(), window.clearInterval(sunTimer));
       unsubscribe = useEvents.subscribe((st, prev) => {
         if (st.recent !== prev.recent || st.archive !== prev.archive) push();
       });
