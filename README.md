@@ -20,6 +20,8 @@ npm run data:gdelt -- --days 7   # GDELT 2.0 events, 15-minute files
 npm run data:build           # merge, dedupe, write public/data/events/
 ```
 
+Live data and hosting: [`docs/DEPLOY.md`](docs/DEPLOY.md) (scheduled ingest workflow, Vercel runbook). Checks before publishing: `npm run data:validate`; secret scan: `npm run ci:scan`.
+
 Without event data the app shows the globe with a "NO DATA" label.
 
 Country dossiers are committed (`public/data/dossiers/`). To refresh them (monthly, or when a source changes):
