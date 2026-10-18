@@ -187,7 +187,7 @@ The owner liked World Monitor's Country Instability Index and asked for it to be
 - Refresh is a reviewed change by design (Plan 12: `data:ucdp-discover`, a monthly alert workflow); an unattended rebuild-and-open-a-pull-request job is not done (needs the repository setting that lets Actions create pull requests).
 - The model's training months and the event counts still use the start date of an event (the windows and series follow the days); calendar-month training features would change the model and need a new backtest.
 - The key-events timeline is hand-curated: the monthly alert tells when it is old, but updating it is manual research.
-- The 90% intervals cover training uncertainty only; a conformal or walk-forward interval would cover model error too. One time split only: a rolling-origin backtest would show stability.
+- The 90% intervals cover training uncertainty only; a conformal or walk-forward interval would cover model error too. The yearly rolling backtest exists (Plan 12); the features were chosen after seeing 2021-2025, so a truly untouched final test period (hold out the next year before touching the features) is still missing.
 - Reviewer minors not done: the calibration guard checks absolute bin errors only (0.05), not a relative error for the small bins; "Why this score" is the unclamped log-odds (the card says so when the rise is capped at "continue"); Iran-type cases (very deadly year, quiet quarter) can show a high rise estimate with momentum "falling" (stated in the limits).
 - No independent review of the model by a person who does conflict forecasting; protests (ACLED) are not available, so unrest is not in the index.
 

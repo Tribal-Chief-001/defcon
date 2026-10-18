@@ -41,3 +41,10 @@ export async function probeCandidate(fetchFn: typeof fetch, url: string): Promis
     return 'error';
   }
 }
+
+// A download that is a UCDP CSV: not an HTML content type, at least 1,000 bytes, and the header row starts with `id,relid` (after an optional
+// byte-order mark). An HTML page that merely contains the letters "id" is not accepted.
+export function looksLikeUcdpCsv(bytes: Uint8Array, contentType: string): boolean {
+  if (/html/i.test(contentType) || bytes.length < 1000) return false;
+  return new TextDecoder().decode(bytes.subarray(0, 64)).replace(/^\uFEFF/, '').startsWith('id,relid');
+}

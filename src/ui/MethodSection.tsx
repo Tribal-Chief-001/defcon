@@ -169,7 +169,7 @@ function Body({ f }: { f: IndicesFile }) {
           <li>Deaths are estimates with ranges, from reports; where UCDP could not locate deaths precisely, the confidence is lower.</li>
           <li>Governance scores are perceptions of experts and surveys, published once a year about a year after the period they describe; only values that were already published at the time of an estimate are used.</li>
           <li>The recent-deaths terms can extrapolate: a country with a very deadly last year but a quiet last 90 days can still show a high sharp-rise estimate. Read it together with the momentum, the confidence and the "why this score" list.</li>
-          <li>The backtest is one time split, not many; the intervals cover training uncertainty only, not model error or a change in the world.</li>
+          <li>The backtest uses one fixed split and each year from 2016 on; the features were chosen after seeing 2021 to 2025, so the earlier years are not a clean out-of-sample test. The intervals cover training uncertainty only, not model error or a change in the world.</li>
           <li>The model does not forecast the onset of violence in peaceful places (tested: it is not forecastable from these inputs).</li>
           <li>UCDP files the events of Gaza and the West Bank under Israel, so Palestine has no separate figure and Israel's indices include them.</li>
           <li>An event that covers several days (UCDP candidate rows often cover a month) has its deaths spread evenly over those days, so the 30, 90 and 365-day windows and the monthly series follow the calendar. Event counts, places and the model's training months use the start date.</li>

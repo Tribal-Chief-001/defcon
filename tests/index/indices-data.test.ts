@@ -96,7 +96,7 @@ describe('public/data/indices.json', () => {
     const u = by.get('UKR')!;
     const m = u.fatality.monthly; // the last three months of the series are the calendar months up to the data end
     const quarter = m[119]! + m[118]! + m[117]!;
-    expect(Math.abs(u.fatality.deaths90.best - quarter) / quarter).toBeLessThan(0.08); // 90 days against three calendar months (about 92 days)
+    expect(Math.abs(u.fatality.deaths90.best - quarter) / quarter).toBeLessThan(0.05); // 90 days against three calendar months (about 92 days)
     expect(u.risk!.momentum.direction).not.toBe('low data');
   });
 

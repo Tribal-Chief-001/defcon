@@ -312,6 +312,19 @@ describe('conflictsFromRows: events that cover several days (finding: candidate 
     const [c] = one([span(start, end, 100), row({ ago: 1, best: 500 })]);
     expect(c!.deaths.d365.best).toBe(500 + 50); // 5 of its 10 days (ages 364 to 360); the 365-day window is ages 0 to 364
   });
+  it('keeps an event that started over 365 days ago out of the latest events, the last date, the provisional share and the geography (finding)', () => {
+    const old = span(day(369), day(360), 100, { id: 'old', latitude: '10', longitude: '10', source_headline: 'Old raid' });
+    old.provisional = true;
+    const recent = row({ ago: 1, best: 500, id: 'new', latitude: '48.1', longitude: '37.5' });
+    const out = conflictsFromRows([old, recent], opts);
+    const c = out.conflicts[0]!;
+    expect(c.deaths.d365.best).toBe(550); // its deaths still count in the window, by share
+    expect(c.latest.map((e) => e.id)).toEqual(['new']);
+    expect(c.lastDate).toBe(day(1));
+    expect(c.provisionalShare).toBe(0);
+    expect(c.geo!.lat).toBeCloseTo(48.1, 1); // the old event's place does not pull the centre
+    expect(out.world.latest.map((e) => e.id)).toEqual(['new']);
+  });
   it('keeps low <= best <= high after spreading and rounding', () => {
     const [c] = one([span('2026-07-01', '2026-09-30', 1000, { low: '800', high: '1500' }), row({ ago: 0, best: 10, low: '5', high: '40' })]);
     for (const w of [c!.deaths.d30, c!.deaths.d90, c!.deaths.d365]) expect(w.low <= w.best && w.best <= w.high).toBe(true);

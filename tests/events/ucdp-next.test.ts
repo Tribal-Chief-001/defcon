@@ -1,5 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import { newestCandidate, nextCandidate, probeCandidate, type UcdpSource } from '../../scripts/events/ucdp-next';
+import { looksLikeUcdpCsv, newestCandidate, nextCandidate, probeCandidate, type UcdpSource } from '../../scripts/events/ucdp-next';
 
 const src = (name: string, csv: string): UcdpSource => ({ name, kind: 'csv', url: `https://ucdp.uu.se/downloads/candidateged/${csv}`, csv, version: 'x', sha256: 'a'.repeat(64) });
 const manifest = [
@@ -42,5 +42,19 @@ describe('probeCandidate (HEAD only, never downloads)', () => {
   it('refuses a URL that is not https on the UCDP host', async () => {
     await expect(probeCandidate(reply(200) as never, 'http://ucdp.uu.se/x.csv')).rejects.toThrow(/https/);
     await expect(probeCandidate(reply(200) as never, 'https://evil.example/x.csv')).rejects.toThrow(/ucdp\.uu\.se/);
+  });
+});
+
+describe('looksLikeUcdpCsv (finding: an HTML page containing "id" passed the old check)', () => {
+  const bytes = (t: string) => new TextEncoder().encode(t.padEnd(2000, 'x'));
+  it('accepts a UCDP CSV (header starts with id,relid), also after a byte-order mark', () => {
+    expect(looksLikeUcdpCsv(bytes('id,relid,year,active_year\n1,2,3'), 'text/csv')).toBe(true);
+    expect(looksLikeUcdpCsv(bytes('\uFEFFid,relid,year\n1,2,3'), 'application/octet-stream')).toBe(true);
+  });
+  it('rejects an HTML page, a CSV of another shape, an HTML content type and a tiny file', () => {
+    expect(looksLikeUcdpCsv(bytes('<!doctype html><meta name="viewport" content="width=device-width">'), 'text/csv')).toBe(false);
+    expect(looksLikeUcdpCsv(bytes('name,value\n1,2'), 'text/csv')).toBe(false);
+    expect(looksLikeUcdpCsv(bytes('id,relid,year'), 'text/html; charset=utf-8')).toBe(false);
+    expect(looksLikeUcdpCsv(new TextEncoder().encode('id,relid'), 'text/csv')).toBe(false);
   });
 });

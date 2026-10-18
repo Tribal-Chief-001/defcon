@@ -150,7 +150,6 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
     const best = num(row.best);
     const kind = KIND[row.type_of_violence ?? ''];
     if (!d || best === null || !kind || d.t > opts.dataEndS) continue;
-    const lastDay = opts.dataEndS / DAY;
     const span = spanOf(row.date_start, row.date_end, lastDay);
     if (!span || span.end < lastDay - 364) continue; // nothing of it falls in the last 365 days
     const ageD = Math.floor((opts.dataEndS - d.t) / DAY);
@@ -172,6 +171,7 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
     const weekly = new Array<number>(52).fill(0);
     const countries = new Map<string, { id: string | null; name: string; deaths365: number }>();
     let provisional = 0;
+    const started = evs.filter((e) => e.ageD < 365); // events that started inside the window: they alone give the places, the latest list and the dates (an older event only contributes its share of deaths)
     for (const e of evs) {
       add(d365, scaled(e.deaths, frac(e, lastDay, 365)));
       add(d90, scaled(e.deaths, frac(e, lastDay, 90)));
@@ -180,7 +180,7 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
       if (e.ageD < 90) n.d90++;
       if (e.ageD < 30) n.d30++;
       for (let i = 0; i < 52; i++) weekly[i]! += e.deaths.best * weekShare(e, lastDay, i); // 52 whole weeks; day 365 only counts in d365
-      if (e.provisional) provisional++;
+      if (e.provisional && e.ageD < 365) provisional++;
       const key = e.row.country_id ?? e.row.country ?? '';
       const c = countries.get(key) ?? { id: opts.gwToId[e.row.country_id ?? ''] ?? null, name: e.row.country ?? 'Unknown', deaths365: 0 };
       countries.set(key, c);
@@ -199,7 +199,7 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
 
     const trend: Conflict['trend'] = activityTrend(n.d30, n.d90);
 
-    const latest = evs.map(toEvent).filter((e): e is ConflictEvent => e !== null).sort(newestFirst).slice(0, 12);
+    const latest = started.map(toEvent).filter((e): e is ConflictEvent => e !== null).sort(newestFirst).slice(0, 12);
 
     conflicts.push({
       id,
@@ -209,11 +209,11 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
       deaths: { d30: rounded(d30), d90: rounded(d90), d365: rounded(d365) },
       events: n,
       trend,
-      lastDate: evs.reduce((m, e) => (e.date > m ? e.date : m), ''),
+      lastDate: started.reduce((m, e) => (e.date > m ? e.date : m), ''),
       weekly: weekly.map(Math.round),
       latest,
-      provisionalShare: provisional / evs.length,
-      geo: geoOf(evs),
+      provisionalShare: started.length ? provisional / started.length : 0,
+      geo: geoOf(started),
     });
   }
   const world = worldOf(all, conflicts.length, opts.gwToId, lastDay);
@@ -254,6 +254,6 @@ function worldOf(all: Ev[], conflictsListed: number, gwToId: Record<string, stri
     weeklyByKind: kinds,
     countries: [...countries.values()].map((c) => ({ ...c, deaths90: Math.round(c.deaths90), deaths365: Math.round(c.deaths365) })).filter((c) => c.deaths90 > 0).sort((a, b) => b.deaths90 - a.deaths90 || a.name.localeCompare(b.name)).slice(0, 12),
     conflictsListed,
-    latest: all.map(toEvent).filter((e): e is ConflictEvent => e !== null).sort(newestFirst).slice(0, 20),
+    latest: all.filter((e) => e.ageD < 365).map(toEvent).filter((e): e is ConflictEvent => e !== null).sort(newestFirst).slice(0, 20),
   };
 }
