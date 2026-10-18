@@ -1,4 +1,4 @@
-export type Provenance = { source: string; asOf: string; url?: string };
+export type Provenance = { source: string; asOf: string; url?: string; note?: string };
 // null = unavailable: no reliable value (never 0, never a guess)
 export type Field<T> = ({ value: T } & Provenance) | null;
 

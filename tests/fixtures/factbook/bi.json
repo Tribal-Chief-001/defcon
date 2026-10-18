@@ -1,0 +1,69 @@
+{
+ "Government": {
+  "Country name": {
+   "conventional long form": {
+    "text": "Republic of Burundi"
+   },
+   "conventional short form": {
+    "text": "Burundi"
+   },
+   "local long form": {
+    "text": "R&eacute;publique du Burundi (French)/ Republika y'u Burundi (Kirundi)"
+   },
+   "local short form": {
+    "text": "Burundi"
+   },
+   "former": {
+    "text": "Urundi, German East Africa, Ruanda-Urundi, Kingdom of Burundi"
+   },
+   "etymology": {
+    "text": "name dates from 1966 and is derived from the name of the local Bantu people, the Rundi or Barundi; <em>ba</em>- is the prefix for the people, and <em>bu</em>- is the prefix for the country; the former name, Urundi, is the Swahili version"
+   }
+  },
+  "Government type": {
+   "text": "presidential republic"
+  },
+  "Capital": {
+   "name": {
+    "text": "Gitega (political capital), Bujumbura (commercial capital)"
+   },
+   "geographic coordinates": {
+    "text": "3 25 S, 29 55 E"
+   },
+   "time difference": {
+    "text": "UTC+2 (7 hours ahead of Washington, DC, during Standard Time)"
+   },
+   "etymology": {
+    "text": "the origin of the name Bujumbura is unclear, but \"bu-\" is a Bantu prefix meaning \"place\""
+   },
+   "note": "<strong>note:</strong> in January 2019, the Burundian parliament voted to make Gitega the political capital of the country while Bujumbura would remain its economic capital; as of 2023, the government's move to Gitega remains incomplete"
+  },
+  "Independence": {
+   "text": "1 July 1962 (from UN trusteeship under Belgian administration)"
+  },
+  "International organization participation": {
+   "text": "ACP, AfDB, ATMIS, AU, CEMAC, CEPGL, CICA, COMESA, EAC, FAO, G-77, IBRD, ICAO, ICGLR, ICRM, IDA, IFAD, IFC, IFRCS, ILO, IMF, Interpol, IOC, IOM, IPU, ISO (correspondent), ITU, ITUC (NGOs), MIGA, NAM, OIF, OPCW, UN, UNCTAD, UNESCO, UNHRC, UNIDO, UNISFA, UNMISS, UNWTO, UPU, WCO, WHO, WIPO, WMO, WTO"
+  }
+ },
+ "People and Society": {
+  "Languages": {
+   "Languages": {
+    "text": "Kirundi (official), French (official), English (official, least spoken), Swahili (2008 est.)"
+   },
+   "major-language sample(s)": {
+    "text": "<br>Igitabo Mpuzamakungu c'ibimenyetso bifatika, isoko ntabanduka ku nkuru z'urufatiro. (Kirundi)<br><br>The World Factbook, the indispensable source for basic information."
+   },
+   "note": "<strong>note:</strong> data represent languages read and written by people 10 years of age or older; spoken Kirundi is nearly universal"
+  }
+ },
+ "Transnational Issues": {
+  "Disputes - international": {
+   "text": "(trimmed fixture: disputes text must never be imported)"
+  }
+ },
+ "Geography": {
+  "Area": {
+   "text": "(trimmed)"
+  }
+ }
+}

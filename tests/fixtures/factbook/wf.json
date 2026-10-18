@@ -1,0 +1,59 @@
+{
+ "Government": {
+  "Country name": {
+   "conventional long form": {
+    "text": "Territory of the Wallis and Futuna Islands"
+   },
+   "conventional short form": {
+    "text": "Wallis and Futuna"
+   },
+   "local long form": {
+    "text": "Territoire des Iles Wallis et Futuna"
+   },
+   "local short form": {
+    "text": "Wallis et Futuna"
+   },
+   "former": {
+    "text": "Hoorn Islands is the former name of the Futuna Islands"
+   },
+   "etymology": {
+    "text": "Wallis Island is named after British Captain Samuel WALLIS, who visited in 1767; Futuna is a local name, and the meaning is unclear"
+   }
+  },
+  "Government type": {
+   "text": "parliamentary democracy (Territorial Assembly); overseas collectivity of France"
+  },
+  "Capital": {
+   "name": {
+    "text": "Mata-Utu (on Ile Uvea)"
+   },
+   "geographic coordinates": {
+    "text": "13 57 S, 171 56 W"
+   },
+   "time difference": {
+    "text": "UTC+12 (17 hours ahead of Washington, DC, during Standard Time)"
+   }
+  },
+  "Independence": {
+   "text": "none (overseas collectivity of France)"
+  },
+  "International organization participation": {
+   "text": "PIF (observer), SPC, UPU"
+  }
+ },
+ "People and Society": {
+  "Languages": {
+   "text": "Wallisian (indigenous Polynesian language) 58.9%, Futunian 30.1%, French (official) 10.8%, other 0.2% (2003 est.)"
+  }
+ },
+ "Transnational Issues": {
+  "Disputes - international": {
+   "text": "(trimmed fixture: disputes text must never be imported)"
+  }
+ },
+ "Geography": {
+  "Area": {
+   "text": "(trimmed)"
+  }
+ }
+}

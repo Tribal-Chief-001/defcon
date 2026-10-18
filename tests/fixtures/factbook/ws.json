@@ -1,0 +1,59 @@
+{
+ "Government": {
+  "Country name": {
+   "conventional long form": {
+    "text": "Independent State of Samoa"
+   },
+   "conventional short form": {
+    "text": "Samoa"
+   },
+   "local long form": {
+    "text": "Malo Sa'oloto Tuto'atasi o Samoa"
+   },
+   "local short form": {
+    "text": "Samoa"
+   },
+   "former": {
+    "text": "Western Samoa"
+   },
+   "etymology": {
+    "text": "the name's meaning and origin are unclear; some assert that it can mean \"place of the moa bird\" of Polynesian mythology, or it could be a local chieftain's name"
+   }
+  },
+  "Government type": {
+   "text": "parliamentary republic"
+  },
+  "Capital": {
+   "name": {
+    "text": "Apia"
+   },
+   "geographic coordinates": {
+    "text": "13 49 S, 171 46 W"
+   },
+   "time difference": {
+    "text": "UTC+13 (18 hours ahead of Washington, DC, during Standard Time)"
+   }
+  },
+  "Independence": {
+   "text": "1 January 1962 (from New Zealand-administered UN trusteeship)"
+  },
+  "International organization participation": {
+   "text": "ACP, ADB, AOSIS, C, FAO, G-77, IBRD, ICAO, ICCt, ICRM, IDA, IFAD, IFC, IFRCS, ILO, IMF, IMO, Interpol, IOC, IPU, ITU, ITUC (NGOs), MIGA, OPCW, PIF, Sparteca, SPC, UN, UNCTAD, UNESCO, UNIDO, UPU, WCO, WHO, WIPO, WMO, WTO"
+  }
+ },
+ "People and Society": {
+  "Languages": {
+   "text": "Samoan (Polynesian) (official) 91.1%, Samoan/English 6.7%, English (official) 0.5%, other 0.2%, unspecified 1.6% (2006 est.)"
+  }
+ },
+ "Transnational Issues": {
+  "Disputes - international": {
+   "text": "(trimmed fixture: disputes text must never be imported)"
+  }
+ },
+ "Geography": {
+  "Area": {
+   "text": "(trimmed)"
+  }
+ }
+}

@@ -1,0 +1,65 @@
+{
+ "Government": {
+  "Country name": {
+   "conventional long form": {
+    "text": "Republic of India"
+   },
+   "conventional short form": {
+    "text": "India"
+   },
+   "local long form": {
+    "text": "Republic of India (English)/ Bharatiya Ganarajya (Hindi)"
+   },
+   "local short form": {
+    "text": "India (English)/ Bharat (Hindi)"
+   },
+   "etymology": {
+    "text": "the English name derives from the Indus River; the Indian name, Bharat, may derive from the Bharatas tribe mentioned in the Sanskrit Vedas (Hindu religious texts); the name is also associated with Emperor Bharata, the legendary conqueror of India"
+   }
+  },
+  "Government type": {
+   "text": "federal parliamentary republic"
+  },
+  "Capital": {
+   "name": {
+    "text": "New Delhi"
+   },
+   "geographic coordinates": {
+    "text": "28 36 N, 77 12 E"
+   },
+   "time difference": {
+    "text": "UTC+5.5 (10.5 hours ahead of Washington, DC, during Standard Time)"
+   },
+   "etymology": {
+    "text": "the name is of unknown origin; one theory says it may come from the Hindi word <em>dehli </em>(threshold), because of the city's location between the Indus and the Ganges Rivers"
+   }
+  },
+  "Independence": {
+   "text": "15 August 1947 (from the UK)"
+  },
+  "International organization participation": {
+   "text": "ADB, AfDB (nonregional member), Arctic Council (observer), ARF, ASEAN (dialogue partner), BIMSTEC, BIS, BRICS, C, CD, CERN (observer), CICA, CP, EAS, FAO, FATF, G-15, G-20, G-24, G-5, G-77, IAEA, IBRD, ICAO, ICC (national committees), ICRM, IDA, IFAD, IFC, IFRCS, IHO, ILO, IMF, IMO, IMSO, Interpol, IOC, IOM, IPU, ISO, ITSO, ITU, ITUC (NGOs), LAS (observer), MIGA, MINURSO, MONUSCO, NAM, OAS (observer), OECD, OPCW, Pacific Alliance (observer), PCA, PIF (partner), Quad, SAARC, SACEP, SCO (observer), UN, UNCTAD, UNDOF, UNESCO, UNHCR, UNHRC, UNIDO, UNIFIL, UNISFA, UNITAR, UNMISS, UNOCI, UNOOSA, UNSOM, UNWTO, UPU, Wassenaar Arrangement, WCO, WFTU (NGOs), WHO, WIPO, WMO, WTO"
+  }
+ },
+ "People and Society": {
+  "Languages": {
+   "Languages": {
+    "text": "Hindi 43.6%, Bengali 8%, Marathi 6.9%, Telugu 6.7%, Tamil 5.7%, Gujarati 4.6%, Urdu 4.2%, Kannada 3.6%, Odia 3.1%, Malayalam 2.9%, Punjabi 2.7%, Assamese 1.3%, Maithili 1.1%, other 5.6%;&nbsp; English is the subsidiary official language but is the most important one for national, political, and commercial communication (2011 est.)"
+   },
+   "major-language sample(s)": {
+    "text": "<p>विश्व फ़ैक्टबुक, आधारभूत जानकारी का एक अनिवार्य स्रोत (Hindi)</p> The World Factbook, the indispensable source for basic information."
+   },
+   "note": "<strong>note 1: </strong>there are 22 other recognized languages -- Assamese, Bengali, Bodo, Dogri, Gujarati, Hindi, Kannada, Kashmiri, Konkani, Maithili, Malayalam, Manipuri, Marathi, Nepali, Odia, Punjabi, Sanskrit, Santali, Sindhi, Tamil, Telugu, Urdu <br><strong>note 2: </strong>Hindustani is a popular variant of Hindi/Urdu spoken widely throughout northern India but is not an official language"
+  }
+ },
+ "Transnational Issues": {
+  "Disputes - international": {
+   "text": "(trimmed fixture: disputes text must never be imported)"
+  }
+ },
+ "Geography": {
+  "Area": {
+   "text": "(trimmed)"
+  }
+ }
+}
