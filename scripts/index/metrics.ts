@@ -85,3 +85,41 @@ function solve(a: number[][], b: number[]): number[] {
   for (let r = n - 1; r >= 0; r--) x[r] = (m[r]![n]! - m[r]!.slice(r + 1, n).reduce((s, v, k) => s + v * x[r + 1 + k]!, 0)) / (m[r]![r]! || 1e-12);
   return x;
 }
+
+// deterministic PRNG so bootstrap results are reproducible
+export function mulberry32(seed: number): () => number {
+  let a = seed >>> 0;
+  return () => {
+    a = (a + 0x6d2b79f5) >>> 0;
+    let t = a;
+    t = Math.imul(t ^ (t >>> 15), t | 1);
+    t ^= t + Math.imul(t ^ (t >>> 7), t | 61);
+    return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+  };
+}
+
+export function percentile(xs: number[], p: number): number {
+  if (xs.length === 0) return NaN;
+  const s = [...xs].sort((a, b) => a - b);
+  const pos = p * (s.length - 1);
+  const lo = Math.floor(pos);
+  const hi = Math.ceil(pos);
+  return s[lo]! + (s[hi]! - s[lo]!) * (pos - lo);
+}
+
+// Cluster bootstrap: resamples whole groups (countries) with replacement, because the months of one country are not independent.
+// `stat` gets the row indices of one resample and returns a vector of statistics.
+export function clusterBootstrap(groups: number[], reps: number, seed: number, stat: (idx: number[]) => number[]): number[][] {
+  const byGroup = new Map<number, number[]>();
+  groups.forEach((g, i) => (byGroup.get(g) ?? byGroup.set(g, []).get(g)!).push(i));
+  const keys = [...byGroup.keys()];
+  const rnd = mulberry32(seed);
+  const out: number[][] = [];
+  for (let r = 0; r < reps; r++) {
+    const idx: number[] = [];
+    for (let k = 0; k < keys.length; k++) idx.push(...byGroup.get(keys[Math.floor(rnd() * keys.length)]!)!);
+    out.push(stat(idx));
+  }
+  return out;
+}
+

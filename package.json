@@ -25,7 +25,9 @@
     "data:dossiers": "tsx scripts/dossiers/build-dossiers.ts",
     "data:relations": "tsx scripts/relations/build-relations.ts",
     "data:conflicts": "tsx scripts/conflicts/build-conflicts.ts",
-    "index:study": "tsx scripts/index/study.ts"
+    "index:fetch": "tsx scripts/index/fetch-structural.ts",
+    "index:study": "tsx scripts/index/study.ts",
+    "index:study2": "tsx scripts/index/study2.ts"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",

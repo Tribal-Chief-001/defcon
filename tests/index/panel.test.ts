@@ -45,4 +45,13 @@ describe('country-month panel', () => {
     const r = buildPanel(aggregate([ev('A', 1989, 1, 1)]), ym(1989, 1), ym(1992, 12), { minHistory: 36 });
     expect(r[0]!.ym).toBe(ym(1991, 12));
   });
+
+  it('has the summed deaths of the next 3, 6 and 12 months, null while that window is not fully observed', () => {
+    const agg = aggregate([ev('A', 2000, 2, 10), ev('A', 2000, 6, 20), ev('A', 2000, 12, 40)]);
+    const r = buildPanel(agg, ym(2000, 1), ym(2000, 12), { minHistory: 0 });
+    const at = (m: number) => r.find((x) => x.ym === ym(2000, m))!;
+    expect(at(1)).toMatchObject({ next3: 10, next6: 30, next12: null }); // Feb..Apr, Feb..Jul, Feb..Jan(2001) not observed
+    expect(at(6)).toMatchObject({ next3: 0, next6: 40 }); // Jul..Sep is empty; Jul..Dec holds Dec
+  });
 });
+

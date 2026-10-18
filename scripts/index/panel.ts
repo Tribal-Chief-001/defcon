@@ -16,6 +16,9 @@ export type PanelRow = {
   f3: number;
   f12: number;
   f36: number;
+  next3: number | null; // deaths in the next 3, 6, 12 months; null while that window is not fully observed
+  next6: number | null;
+  next12: number | null;
   label3: 0 | 1 | null; // next three months hold >= 25 deaths
   labelRise: 0 | 1 | null; // ... and at least double the previous three months
 };
@@ -52,8 +55,8 @@ export function buildPanel(agg: ReturnType<typeof aggregate>, start: number, end
     for (let i = Math.max(0, minHistory - 1); i < n; i++) {
       const c = cells.get(start + i) ?? { events: 0, fat: 0, state: 0, nonstate: 0, onesided: 0 };
       const f3 = sum(i - 2, i);
-      const known = i + 3 <= n - 1; // the whole next quarter is observed
-      const next = known ? sum(i + 1, i + 3) : null;
+      const ahead = (h: number) => (i + h <= n - 1 ? sum(i + 1, i + h) : null); // null unless the whole window is observed
+      const next = ahead(3);
       rows.push({
         gw,
         name,
@@ -62,6 +65,9 @@ export function buildPanel(agg: ReturnType<typeof aggregate>, start: number, end
         f3,
         f12: sum(i - 11, i),
         f36: sum(i - 35, i),
+        next3: next,
+        next6: ahead(6),
+        next12: ahead(12),
         label3: next === null ? null : next >= THRESHOLD ? 1 : 0,
         labelRise: next === null ? null : next >= THRESHOLD && next >= 2 * f3 ? 1 : 0,
       });

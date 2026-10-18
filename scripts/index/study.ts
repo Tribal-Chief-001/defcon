@@ -1,27 +1,13 @@
 // VRI first-step study (docs/INSTABILITY-INDEX.md section 9): build the country-month panel from UCDP GED 26.1 and see how hard a
 // persistence baseline is to beat. Usage: npm run index:study   (needs data/raw/ucdp/ged/GEDEvent_v26_1.csv from npm run data:ucdp)
-import { createReadStream, mkdirSync, writeFileSync } from 'node:fs';
-import { parse } from 'csv-parse';
+import { mkdirSync, writeFileSync } from 'node:fs';
+import { loadGed } from './ged';
 import { auc, averagePrecision, brier, fitLogistic, logLoss, predictLogistic } from './metrics';
-import { aggregate, buildPanel, type GedEv, type PanelRow, ym } from './panel';
+import { aggregate, buildPanel, type PanelRow, ym } from './panel';
 
 const CSV = 'data/raw/ucdp/ged/GEDEvent_v26_1.csv';
 const START = ym(1989, 1);
 const END = ym(2025, 12);
-
-async function load(): Promise<GedEv[]> {
-  const out: GedEv[] = [];
-  const parser = createReadStream(CSV).pipe(parse({ columns: true, relax_column_count: true, bom: true }));
-  for await (const r of parser as AsyncIterable<Record<string, string>>) {
-    const m = /^(\d{4})-(\d{2})/.exec(r.date_start ?? '');
-    const best = Number(r.best);
-    if (!m || !r.country_id || !Number.isFinite(best)) continue;
-    const t = ym(+m[1]!, +m[2]!);
-    if (t < START || t > END) continue;
-    out.push({ gw: r.country_id, name: r.country ?? r.country_id, ym: t, best, type: Number(r.type_of_violence) });
-  }
-  return out;
-}
 
 const feats = (r: PanelRow) => [Math.log1p(r.f3), Math.log1p(r.f12), Math.log1p(r.f36)];
 const pct = (v: number) => (Number.isNaN(v) ? 'n/a' : (v * 100).toFixed(1) + '%');
@@ -39,7 +25,7 @@ function report(name: string, rows: PanelRow[], label: 'label3' | 'labelRise', m
 }
 
 async function main() {
-  const events = await load();
+  const events = await loadGed(CSV, START, END);
   const agg = aggregate(events);
   const panel = buildPanel(agg, START, END, { minHistory: 36 });
   mkdirSync('data/index', { recursive: true });
