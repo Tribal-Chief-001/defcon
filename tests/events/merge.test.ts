@@ -90,7 +90,7 @@ describe('mergeEvents countries and validity (Review Focus 4)', () => {
 });
 
 describe('mergeEvents performance', () => {
-  it('merges 100,000 synthetic events fast enough (about 0.6 s alone; limit 6 s because the suite runs in parallel)', () => {
+  it('merges 100,000 synthetic events fast enough (about 0.6 s of CPU; limit 3 s)', () => {
     let s = 3;
     const rnd = () => ((s = (s * 16807) % 2147483647) / 2147483647);
     const kinds = ['armed', 'civilian', 'riot', 'protest'] as const;
@@ -100,9 +100,11 @@ describe('mergeEvents performance', () => {
         : g(String(i), { lat: rnd() * 160 - 80, lon: rnd() * 340 - 170, timeS: T0 + Math.floor(rnd() * 30) * DAY, kind: kinds[i % 4]!, sources: [{ name: 'x', url: `https://x.com/${i}` }] }),
     );
     mergeEvents(evs.slice(0, 20_000), pick); // warm up the JIT so the timing is stable under parallel test workers
-    const t0 = performance.now();
+    const c0 = process.cpuUsage();
     const out = mergeEvents(evs, pick);
-    expect(performance.now() - t0).toBeLessThan(6000); // an O(n^2) regression would take minutes
+    const c = process.cpuUsage(c0);
+    // CPU time of this test process, so other test files competing for the CPU do not inflate it; an O(n^2) regression would take minutes
+    expect((c.user + c.system) / 1000).toBeLessThan(3000);
     expect(out.length).toBeGreaterThan(50_000);
   });
 });

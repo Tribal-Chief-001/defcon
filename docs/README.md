@@ -9,4 +9,5 @@ The project ledger. Updated in the same change as the work it describes.
 
 - [DESIGN-LANGUAGE.md](DESIGN-LANGUAGE.md), [TECH-STACK.md](TECH-STACK.md), [DATA-SOURCES.md](DATA-SOURCES.md), [MAP-POLICY.md](MAP-POLICY.md): created in Plan 1.
 - [BACKLOG.md](BACKLOG.md): open and deferred items from Plan 1.
-- [Plan 2: events and live data](superpowers/plans/2026-10-18-plan-2-events-live-data.md) (written, not started).
+- [Plan 2: events and live data](superpowers/plans/2026-10-18-plan-2-events-live-data.md) (implemented on branch `plan-2-events`).
+- [SEVERITY.md](SEVERITY.md), [TENSION-INDEX.md](TENSION-INDEX.md): Plan 2 scales (provisional, owner reviews).
