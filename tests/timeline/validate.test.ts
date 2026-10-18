@@ -31,7 +31,8 @@ describe('validateTimeline', () => {
   it('limits title and summary length and rejects empty text', () => {
     expect(problems(file([entry({ title: '' })])).join()).toMatch(/title/);
     expect(problems(file([entry({ title: 'x'.repeat(101) })])).join()).toMatch(/title/);
-    expect(problems(file([entry({ summary: 'word '.repeat(46) })])).join()).toMatch(/summary/);
+    expect(problems(file([entry({ summary: 'word '.repeat(61) })])).join()).toMatch(/summary/);
+    expect(problems(file([entry({ summary: 'word '.repeat(59) })]))).toEqual([]); // attribution needs words: up to 60 are fine
     expect(problems(file([entry({ summary: '' })])).join()).toMatch(/summary/);
   });
   it('requires a known status', () => {

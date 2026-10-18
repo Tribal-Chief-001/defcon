@@ -47,7 +47,7 @@ export function validateTimeline(f: TimelineFile, opts: { conflictIds: Set<strin
         prev = e.date;
       }
       if (!e.title?.trim() || e.title.length > 100) bad(`${at}: title must be 1-100 characters`);
-      if (!e.summary?.trim() || e.summary.length > 320 || words(e.summary) > 45) bad(`${at}: summary must be 1-45 words and at most 320 characters`);
+      if (!e.summary?.trim() || e.summary.length > 450 || words(e.summary) > 60) bad(`${at}: summary must be 1-60 words and at most 450 characters`);
       if (!STATUS.includes(e.status)) bad(`${at}: unknown status ${e.status}`);
       if (!Array.isArray(e.sources) || e.sources.length === 0) {
         bad(`${at}: no sources`);

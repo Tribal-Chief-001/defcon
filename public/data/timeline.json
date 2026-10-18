@@ -1,0 +1,1091 @@
+{
+ "generated": "2026-10-18",
+ "checkedAt": "2026-10-18",
+ "theatres": [
+  {
+   "key": "iran-war",
+   "title": "US/Israel - Iran",
+   "conflicts": [
+    "iran-israel-united-states-of-america"
+   ],
+   "entries": [
+    {
+     "date": "2026-01-08",
+     "title": "Iran's crackdown on protests: internet cut, thousands reported killed",
+     "summary": "After protests that began in late December, France 24 reported a near-total internet blackout from 8 January. Rights groups accuse security forces of killing many protesters; Iranian state TV gave 3,117 dead and HRANA counted over 4,500. All tolls are unverified.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "At least 3,117 people killed during Iran protests, state media reports",
+       "url": "https://www.aljazeera.com/news/2026/1/21/at-least-3117-people-killed-during-iran-protests-state-media-reports",
+       "published": "2026-01-21",
+       "verified": "State TV toll 3,117; HRANA 4,519; protests began late December over currency"
+      },
+      {
+       "outlet": "France 24",
+       "title": "How many people have been killed during the crackdown on Iranian protesters?",
+       "url": "https://www.france24.com/en/middle-east/20260121-how-many-people-killed-crackdown-iranian-protesters",
+       "published": "2026-01-21",
+       "verified": "Blackout from 8 Jan; Iran Human Rights says most killed 8-12 Jan; toll estimates"
+      }
+     ]
+    },
+    {
+     "date": "2026-02-28",
+     "title": "US and Israel strike Iran; Khamenei killed in opening attack",
+     "summary": "The US and Israel launched strikes on Iran. Trump announced that Supreme Leader Ali Khamenei had been killed, and Iranian state media confirmed it on 1 March. The Revolutionary Guards launched retaliatory strikes on Israel and on US bases in Gulf states.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Iran confirms Supreme Leader Ali Khamenei dead after US-Israeli attacks",
+       "url": "https://www.aljazeera.com/news/2026/2/28/irans-supreme-leader-ali-khamenei-killed-in-us-israeli-attacks-reports",
+       "published": "2026-02-28",
+       "verified": "Joint strikes began 28 Feb; Trump announced death; state media confirmed; Gulf interceptions"
+      },
+      {
+       "outlet": "France 24",
+       "title": "Ayatollah Ali Khamenei killed in Israeli-American attack, Iran declares 40 days of mourning",
+       "url": "https://www.france24.com/en/middle-east/20260228-ayatollah-ali-khamenei-killed-in-israeli%E2%80%91american-attack-iran-declares-40-days-of-mourning",
+       "published": "2026-02-28",
+       "verified": "Opening strikes killed Khamenei; Trump announced; state TV confirmed; IRGC retaliation"
+      }
+     ]
+    },
+    {
+     "date": "2026-03-02",
+     "title": "Revolutionary Guards say the Strait of Hormuz is closed",
+     "summary": "Al Jazeera, citing Iranian state media, reported that Revolutionary Guards adviser Ebrahim Jabari said the strait was closed and ships trying to pass would be attacked. CBS said on 20 March that tanker passage had all but halted, quoting an analyst who called the strait de facto closed.",
+     "status": "reported",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Iran says will attack any ship trying to pass through Strait of Hormuz",
+       "url": "https://www.aljazeera.com/news/2026/3/2/iran-says-will-attack-any-ship-trying-to-pass-through-strait-of-hormuz",
+       "published": "2026-03-02",
+       "verified": "IRGC adviser Jabari declared strait closed on 2 March; threatened ships"
+      },
+      {
+       "outlet": "CBS News",
+       "title": "Strait of Hormuz remains shut as Trump pushes U.S. allies to help open the key waterway",
+       "url": "https://www.cbsnews.com/news/strait-of-hormuz-iran-oil-prices-us/",
+       "published": "2026-03-20",
+       "verified": "Analyst calls strait de facto closed; tanker passage nearly stopped; no physical blockade"
+      }
+     ]
+    },
+    {
+     "date": "2026-03-08",
+     "title": "Assembly of Experts names Mojtaba Khamenei as new supreme leader",
+     "summary": "Iran's Assembly of Experts named Mojtaba Khamenei, son of the slain leader, as supreme leader, and the Revolutionary Guards pledged allegiance. Trump told ABC News the new leader needed US approval; the Israeli military warned it would target anyone involved.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Iran names Mojtaba Khamenei as new supreme leader after father's killing",
+       "url": "https://www.aljazeera.com/news/2026/3/8/iran-names-khameneis-son-as-new-supreme-leader-after-fathers-killing-2",
+       "published": "2026-03-08",
+       "verified": "Assembly of Experts named him 8 March; IRGC backing; Trump and Israeli reactions"
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "Iran names Khamenei's shadowy, hardline son Mojtaba as new supreme leader",
+       "url": "https://www.timesofisrael.com/iran-names-khameneis-shadowy-hardline-son-mojtaba-as-new-supreme-leader/",
+       "published": "2026-03-09",
+       "verified": "Named Sunday 8 March, virtual meeting; IRGC pledged allegiance"
+      }
+     ]
+    },
+    {
+     "date": "2026-04-07",
+     "title": "Pakistan-brokered two-week US-Iran ceasefire announced",
+     "summary": "Trump announced a two-week pause in strikes, conditional on Iran reopening Hormuz and citing Pakistani mediation; Iran's foreign minister confirmed a tentative agreement (Al Jazeera). Israel said Lebanon was excluded; France 24 reports Pakistan disputed that. Some outlets date the deal 8 April.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Trump announces two-week ceasefire as Iran agrees to reopen Hormuz Strait",
+       "url": "https://www.aljazeera.com/news/2026/4/7/trump-suspends-iran-bombing-for-two-weeks-following-dire-threats",
+       "published": "2026-04-07",
+       "verified": "Trump post 22:32 GMT; Araghchi confirmed; Pakistan credited; talks planned in Islamabad"
+      },
+      {
+       "outlet": "CBS News",
+       "title": "Trump agrees to 2-week ceasefire with Iran, delaying threat of large-scale bombing campaign",
+       "url": "https://www.cbsnews.com/news/trump-2-week-ceasefire-iran-delaying-bombing/",
+       "published": "2026-04-08",
+       "verified": "Two-week double-sided ceasefire; Netanyahu's office said Hezbollah fight excluded"
+      },
+      {
+       "outlet": "France 24",
+       "title": "US, Iran agree to ceasefire as Trump pulls back on threat to destroy Iranian civilisation",
+       "url": "https://www.france24.com/en/middle-east/20260408-us-iran-agree-two-week-ceasefire-trump-pulls-back-threats",
+       "published": "2026-04-08",
+       "verified": "Pakistan brokered; Pakistan said Lebanon covered, Netanyahu said not"
+      }
+     ]
+    },
+    {
+     "date": "2026-04-12",
+     "title": "Islamabad talks end without a deal; Trump announces a naval blockade",
+     "summary": "US and Iranian delegations ended talks in Islamabad without a deal; Vice President Vance said Iran's nuclear commitments were the main obstacle, while Iran's side blamed US demands. Trump announced a US Navy blockade; CBS reported it took effect on 13 April for ships entering or leaving Iranian ports.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Times of Israel",
+       "title": "US-Iran talks in Pakistan end after 21 hours with no deal; US negotiators leave",
+       "url": "https://www.timesofisrael.com/us-iran-talks-in-pakistan-end-after-21-hours-with-no-deal-us-negotiators-leave/",
+       "published": "2026-04-12",
+       "verified": "Talks 11-12 April ended without agreement; Vance cited Iran refusing nuclear commitment"
+      },
+      {
+       "outlet": "Al Jazeera",
+       "title": "Pakistan eyes narrow window to resuscitate US-Iran talks after breakdown",
+       "url": "https://www.aljazeera.com/news/2026/4/13/pakistan-eyes-narrow-window-to-resuscitate-us-iran-talks-after-breakdown",
+       "published": "2026-04-13",
+       "verified": "Talks failed over nuclear issue; Trump announced Navy blockade on 12 April"
+      },
+      {
+       "outlet": "CBS News",
+       "title": "U.S. imposes military blockade of Iranian ports on Strait of Hormuz",
+       "url": "https://www.cbsnews.com/live-updates/iran-war-us-iran-ports-blockade-strait-of-hormuz-trump/",
+       "published": "2026-04-14",
+       "verified": "Blockade announced Sunday 12 April; effective 10am EDT 13 April"
+      }
+     ]
+    },
+    {
+     "date": "2026-06-07",
+     "title": "Iran and Israel trade strikes after a Beirut attack, then halt at Trump's request",
+     "summary": "After Israel struck Beirut's southern suburbs, Iran fired missiles at Israel, which Israel called its first barrage since the early-April ceasefire (CBS), and Israel hit targets in Iran. Both halted by 8 June after Trump pressed them; Iran's halt was conditional on Israel stopping attacks, including in Lebanon (CBS).",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Times of Israel",
+       "title": "Israel and Iran say they're halting attacks on each other after Trump pressure",
+       "url": "https://www.timesofisrael.com/israel-and-iran-say-theyre-halting-attacks-on-each-other-after-trump-pressure/",
+       "published": "2026-06-08",
+       "verified": "Iran fired first missiles since 8 April on 7 June night; Israel retaliated; both halted"
+      },
+      {
+       "outlet": "Al Jazeera",
+       "title": "Iran and Israel halt attacks but sabre-rattling continues",
+       "url": "https://www.aljazeera.com/news/2026/6/8/israel-and-iran-exchange-attacks-as-ceasefire-falters",
+       "published": "2026-06-08",
+       "verified": "Sequence 7-8 June, petrochemical plant hit, Trump told both to stop shooting"
+      },
+      {
+       "outlet": "CBS News",
+       "title": "Iran and Israel say attacks halted after Trump tells both to stop shooting on war's 101st day",
+       "url": "https://www.cbsnews.com/live-updates/iran-war-trump-israel-strikes-ceasefire-lebanon-beirut/",
+       "published": "2026-06-09",
+       "verified": "Israel struck Beirut 7 June; Iran fired missiles; Trump urged halt; Israel struck Iran 8 June"
+      }
+     ]
+    },
+    {
+     "date": "2026-06-17",
+     "title": "US and Iran sign a Pakistan-mediated memorandum extending the ceasefire",
+     "summary": "Al Jazeera reported the US and Iran signed a memorandum extending the ceasefire by 60 days, with nuclear and sanctions talks to follow. Times of Israel, citing Reuters, said negotiators first signed digitally on Sunday 14 June; Pakistan's prime minister said the US would lift its naval blockade.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "World reacts to US-Iran deal to extend ceasefire, reopen Strait of Hormuz",
+       "url": "https://www.aljazeera.com/news/2026/6/18/world-reacts-to-us-iran-deal-to-extend-ceasefire-begin-negotations",
+       "published": "2026-06-18",
+       "verified": "Signed Wednesday 17 June by Trump and Pezeshkian; 60-day ceasefire extension; Hormuz reopening"
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "June 18: Khamenei okays MOU in written statement, says talks with US do not mean accepting its views",
+       "url": "https://www.timesofisrael.com/liveblog-june-18-2026/",
+       "published": "2026-06-18",
+       "verified": "Digital signing 14 June; presidential signing 17 June; 60-day talks on nuclear and sanctions"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-08",
+     "title": "US strikes Iran after tanker attacks; Trump says he thinks the memorandum is over",
+     "summary": "CENTCOM said Iran attacked three tankers in Hormuz and the US struck over 80 targets from 7 July (Al Jazeera); the Revolutionary Guards said they hit US targets in Bahrain and Kuwait. On 8 July Trump said he thought the memorandum was over, though talks might continue.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Why have US-Iran strikes resumed and what does it mean for peace talks?",
+       "url": "https://www.aljazeera.com/news/2026/7/8/why-have-us-iran-strikes-resumed-and-what-does-it-mean-for-peace-talks",
+       "published": "2026-07-08",
+       "verified": "CENTCOM: three tankers attacked, 80+ targets struck; IRGC claims; Trump says MoU over"
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "Trump: Iran MOU likely over, 'we'll hit them hard again tonight,' but talks can continue",
+       "url": "https://www.timesofisrael.com/trump-iran-mou-is-over-well-hit-them-hard-again-tonight-but-talks-can-continue/",
+       "published": "2026-07-08",
+       "verified": "US struck overnight 7-8 July; Trump said MOU over; Iran hit Bahrain and Kuwait"
+      }
+     ]
+    },
+    {
+     "date": "2026-09-10",
+     "title": "Houthis reported to take Mocha and the Bab al-Mandeb coast",
+     "summary": "Houthi forces reached the Red Sea port of Mocha on 10 September; by 11 September AFP and Reuters, citing Yemeni government sources, reported they had taken the strait's coast and Perim island. The Houthis had not officially confirmed control. Times of Israel cited Axios saying Trump declined a Saudi request for strikes.",
+     "status": "reported",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Houthis control key shipping route after gains along Yemen's Red Sea coast",
+       "url": "https://www.aljazeera.com/news/2026/9/11/houthis-take-control-of-yemens-red-sea-coast-key-shipping-route",
+       "published": "2026-09-11",
+       "verified": "Mocha reached 10 Sept; coast and Mayyun island taken 11 Sept per government sources"
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "Trump said to reject Saudi request for strikes on Houthis as they seize Red Sea island",
+       "url": "https://www.timesofisrael.com/trump-said-to-reject-saudi-request-for-strikes-on-houthis-as-they-seize-red-sea-island/",
+       "published": "2026-09-11",
+       "verified": "AFP-sourced island takeover; Axios-sourced Saudi request and Trump refusal"
+      }
+     ]
+    },
+    {
+     "date": "2026-09-26",
+     "title": "Trump rejects Iran's roadmap to reopen Hormuz",
+     "summary": "Iran proposed releasing frozen funds, lifting oil sanctions and ending the US blockade in return for reopening Hormuz. Al Jazeera: Trump said the plan would not be acceptable but he wanted a deal; France 24: he expected talks to resume within a week. Al Jazeera, citing the Wall Street Journal, said he expects renewed bombing after the midterms.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Trump rejects Iran's seven-day roadmap to end war and reopen Hormuz",
+       "url": "https://www.aljazeera.com/news/2026/9/26/trump-rejects-irans-seven-day-roadmap-to-reopen-strait-of-hormuz",
+       "published": "2026-09-26",
+       "verified": "Proposal announced 25 Sept; Trump said not acceptable Saturday 26 Sept; WSJ report"
+      },
+      {
+       "outlet": "France 24",
+       "title": "Trump expects Iran talks next week after rejecting seven-day truce proposal",
+       "url": "https://www.france24.com/en/middle-east/20260927-trump-expects-iran-talks-next-week-after-rejecting-seven-day-truce-proposal",
+       "published": "2026-09-28",
+       "verified": "Seven-day truce plan rejected; talks expected; France 24 says Sunday rather than Saturday"
+      }
+     ]
+    },
+    {
+     "date": "2026-10-14",
+     "title": "Attacks on Hormuz shipping rise while US-Iran talks stall",
+     "summary": "Al Jazeera, citing UKMTO, reported 15 attacks on shipping in Hormuz between 6 and 14 October and said Iran called the US response insufficient. CBS gave a different attack count and said indirect talks continued. The US blockade continues.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Iran steps up Hormuz surveillance: Attacks soar, oil flows crash again",
+       "url": "https://www.aljazeera.com/news/2026/10/14/iran-steps-up-hormuz-surveillance-attacks-soar-oil-flows-crash-again",
+       "published": "2026-10-14",
+       "verified": "UKMTO 15 attacks 6-14 Oct; Kpler flows fell to 2.9m barrels on 11 Oct"
+      },
+      {
+       "outlet": "CBS News",
+       "title": "Live Updates: Iran says Strait of Hormuz reopening, seven-day ceasefire conditions still on the table",
+       "url": "https://www.cbsnews.com/live-updates/iran-war-us-trump-strait-of-hormuz-yemen-houthis-saudi-arabia/",
+       "published": "2026-10-18",
+       "verified": "UKMTO 10+ vessels attacked in a week; Araghchi conditions; Guards say tanker hit mine"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "israel-lebanon",
+   "title": "Israel - Lebanon",
+   "conflicts": [
+    "israel-southern-lebanon"
+   ],
+   "entries": [
+    {
+     "date": "2026-03-02",
+     "title": "Hezbollah fires on Israel; Israel strikes Beirut; Lebanon outlaws Hezbollah's military activity",
+     "summary": "Hezbollah fired at northern Israel, citing Khamenei's killing, and Israel struck Beirut's southern suburbs. Al Jazeera reported Israeli displacement notices for more than 50 towns and villages; Times of Israel reported the IDF said it killed Hezbollah intelligence head Hussein Makled. Lebanon's cabinet declared Hezbollah's military activity illegal.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Israel intensifies war on Lebanon after Hezbollah attack",
+       "url": "https://www.aljazeera.com/features/2026/3/2/israel-intensifies-war-on-lebanon-after-hezbollah-attack",
+       "published": "2026-03-02",
+       "verified": "Hezbollah barrage, Dahiyeh strikes, 50+ villages evacuation, ministry toll 52 killed"
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "IDF strike kills Hezbollah intel chief; Lebanon to ban terror group's military activity",
+       "url": "https://www.timesofisrael.com/idf-strike-kills-hezbollah-intel-chief-lebanon-to-ban-terror-groups-military-activity/",
+       "published": "2026-03-02",
+       "verified": "First Hezbollah fire since Nov 2024; IDF says intel chief killed; Salam's ban"
+      }
+     ]
+    },
+    {
+     "date": "2026-03-16",
+     "title": "Israel announces ground operation in southern Lebanon",
+     "summary": "Israel announced a limited, targeted ground operation in southern Lebanon. Al Jazeera reported over a million people registered as displaced and 886 killed according to Lebanon's health ministry since the renewed fighting began; France 24 gave lower figures of about 800,000 displaced and 800 killed.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Israeli attacks hit Beirut, southern Lebanon, one million displaced",
+       "url": "https://www.aljazeera.com/news/2026/3/17/israeli-strikes-target-beirut-southern-lebanon-one-million-displaced",
+       "published": "2026-03-17",
+       "verified": "Operation announced Monday 16 March; Zamir to deepen; health ministry 886 killed"
+      },
+      {
+       "outlet": "France 24",
+       "title": "Israel expands its ground operation in southern Lebanon",
+       "url": "https://www.france24.com/en/israel-expands-its-ground-operation-in-southern-lebanon",
+       "published": "2026-03-16",
+       "verified": "Army said it began limited targeted ground operations in south Lebanon"
+      }
+     ]
+    },
+    {
+     "date": "2026-04-08",
+     "title": "Israel launches its largest strike wave on Lebanon hours after the US-Iran truce",
+     "summary": "Israel hit about 100 targets across Lebanon, including Beirut, in what its military called its largest wave. Al Jazeera reported at least 254 killed in an early count by Lebanon's civil defence. Netanyahu's office said the Iran truce excluded Lebanon; Pakistan said it covered it.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Israeli attacks across Lebanon kill at least 254 after Iran-US ceasefire",
+       "url": "https://www.aljazeera.com/news/2026/4/8/hundreds-of-casualties-across-lebanon-after-israel-says-it-hit-100-sites",
+       "published": "2026-04-08",
+       "verified": "100+ strikes incl. Beirut; civil defence 254 killed, 1,165 wounded; ceasefire dispute"
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "IDF launches largest airstrikes yet on Hezbollah; Trump: Iran truce doesn't cover Lebanon",
+       "url": "https://www.timesofisrael.com/idf-launches-largest-airstrikes-yet-against-hezbollah-after-truce-with-iran/",
+       "published": "2026-04-08",
+       "verified": "IDF: 100 targets in 10 minutes; Beirut hit; Pakistan versus Netanyahu on Lebanon"
+      }
+     ]
+    },
+    {
+     "date": "2026-04-16",
+     "title": "Trump announces 10-day Israel-Lebanon ceasefire",
+     "summary": "Trump announced a 10-day ceasefire from 5pm Eastern after calls with Netanyahu and Aoun. Netanyahu said Israeli forces would stay in an extensive security zone and the US State Department said Israel kept the right to self-defence (Al Jazeera). Hezbollah lawmaker Ibrahim al-Moussawi told AFP the group would comply if attacks on its fighters stopped.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Trump says Israel and Lebanon agree to temporary ceasefire",
+       "url": "https://www.aljazeera.com/news/2026/4/16/trump-says-israel-and-lebanon-agree-to-temporary-ceasefire",
+       "published": "2026-04-16",
+       "verified": "10 days from 5pm ET 16 April; terms; Salam and Hezbollah MP reactions"
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "Trump announces Israel-Hezbollah 10-day ceasefire, to take effect at midnight",
+       "url": "https://www.timesofisrael.com/liveblog_entry/trump-announces-israel-hezbollah-10-day-ceasefire-to-take-effect-at-midnight/",
+       "published": "2026-04-16",
+       "verified": "Trump post after calls with Aoun and Netanyahu; 10 days; start time"
+      }
+     ]
+    },
+    {
+     "date": "2026-06-01",
+     "title": "Israel threatens Beirut after seizing Beaufort; Trump announces a halt that Israel disputes",
+     "summary": "Al Jazeera reported Israeli forces took Beaufort Castle on 31 May. Netanyahu's office said Israel would strike Beirut if Hezbollah kept attacking (France 24, Times of Israel). Trump said Israel and Hezbollah had agreed to stop fighting; Israel disputed that, and fighting went on.",
+     "status": "disputed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Trump says Israel and Hezbollah agree to halt hostilities, Lebanon invasion",
+       "url": "https://www.aljazeera.com/news/2026/6/1/washington-proposes-roadmap-for-de-escalation-in-lebanon-us-official",
+       "published": "2026-06-01",
+       "verified": "Beaufort seized 31 May; Trump announcement; Lebanese presidency's narrower version"
+      },
+      {
+       "outlet": "France 24",
+       "title": "Trump says Israel, Hezbollah agree to halt fighting",
+       "url": "https://www.france24.com/en/live-news/20260601-trump-says-israel-hezbollah-agree-to-halt-fighting",
+       "published": "2026-06-01",
+       "verified": "Trump says Netanyahu called off Beirut raid; Netanyahu office says strikes if attacks continue"
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "Trump announces fresh Lebanon truce as Netanyahu appears to call off Beirut strikes",
+       "url": "https://www.timesofisrael.com/trump-announces-fresh-lebanon-truce-as-netanyahu-appears-to-call-off-beirut-strikes/",
+       "published": "2026-06-02",
+       "verified": "Israeli source: Beirut strikes postponed at US request; IDF says no troops heading to Beirut"
+      }
+     ]
+    },
+    {
+     "date": "2026-06-19",
+     "title": "US- and Qatar-mediated Israel-Hezbollah truce announced; reports differ on whether Israel halted",
+     "summary": "A truce between Israel and Hezbollah, brokered by the US and Qatar with Iran's help, was announced. Times of Israel: Israel's ambassador said Israel halted offensive operations and Netanyahu said troops would stay in the buffer zone. Al Jazeera: Israeli air raids and shelling continued after the deadline. Lebanon's health ministry reported at least 47 killed that day.",
+     "status": "disputed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Israel continues attacks on Lebanon despite agreeing to ceasefire",
+       "url": "https://www.aljazeera.com/news/2026/6/19/israel-continues-attacks-on-lebanon-despite-agreeing-to-ceasefire",
+       "published": "2026-06-19",
+       "verified": "Ceasefire from 4pm local; 47 killed per health ministry; violations reported"
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "Israel and Hezbollah renew ceasefire after flare-up, but IDF to stay in southern Lebanon",
+       "url": "https://www.timesofisrael.com/israel-and-hezbollah-renew-ceasefire-after-flare-up-but-idf-to-stay-in-southern-lebanon/amp/",
+       "published": "2026-06-19",
+       "verified": "US official announced; Leiter said offensive operations halted; US-Qatar mediation via Iran"
+      }
+     ]
+    },
+    {
+     "date": "2026-06-26",
+     "title": "Israel and Lebanon sign US-brokered framework agreement in Washington",
+     "summary": "Israeli and Lebanese ambassadors signed a US-brokered framework in Washington with Rubio present, covering Hezbollah's disarmament and Israeli redeployment. Times of Israel said it set two initial pilot zones; Al Jazeera called them a reported proposal. Hezbollah, not party to the talks, rejected it (Al Jazeera).",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "US announces framework agreement between Israel and Lebanon",
+       "url": "https://www.aljazeera.com/news/2026/6/26/us-announces-framework-agreement-between-israel-and-lebanon",
+       "published": "2026-06-26",
+       "verified": "Signed at State Department; Rubio statement; Hezbollah rejection; Netanyahu security zone"
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "Full text of Israel-Lebanon 'framework' deal that includes minor IDF pullback",
+       "url": "https://www.timesofisrael.com/full-text-of-israel-lebanon-framework-deal-that-includes-slight-idf-pullback/",
+       "published": "2026-06-27",
+       "verified": "Signed 26 June in Washington; pilot zones; disarmament; coordination group"
+      }
+     ]
+    },
+    {
+     "date": "2026-07-20",
+     "title": "Lebanese army begins deploying to pilot-zone villages under the framework",
+     "summary": "The US State Department said pilot-zone operations began in Froun, Srifa and Zawtar al-Gharbiya, with the Lebanese army deploying (Times of Israel). Israeli officials said forces would stay in a roughly 10 km security zone while Hezbollah is armed; Hezbollah rejects the framework. Both outlets left unclear whether Israel withdrew from Zawtar.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Lebanon's military starts 'pilot zone' takeover in south",
+       "url": "https://www.aljazeera.com/news/2026/7/20/lebanons-military-starts-pilot-zone-takeover-in-south",
+       "published": "2026-07-20",
+       "verified": "Army deployed to Zawtar al-Gharbiyeh; withdrawal unconfirmed; mayors skeptical"
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "US says Lebanese army deploying to 'pilot zones,' including one IDF will withdraw from",
+       "url": "https://www.timesofisrael.com/us-says-lebanese-army-deploying-to-pilot-zones-including-one-idf-will-withdraw-from/",
+       "published": "2026-07-20",
+       "verified": "State Dept announced pilot zone operations in three villages; withdrawal not confirmed"
+      }
+     ]
+    },
+    {
+     "date": "2026-09-04",
+     "title": "Israel says it controls the Ali al-Taher ridge in south Lebanon",
+     "summary": "The Israeli military said it had operational control of the Ali al-Taher ridge in south Lebanon; Defence Minister Katz said troops had cleared Hezbollah from tunnels beneath it and the mission was completed. Reuters said it could not independently verify this (France 24). Hezbollah had not formally commented (Al Jazeera).",
+     "status": "reported",
+     "sources": [
+      {
+       "outlet": "France 24",
+       "title": "Israeli army has seized Lebanon's key Ali al-Taher ridge from Hezbollah",
+       "url": "https://www.france24.com/en/middle-east/20260904-israel-says-it-has-seized-lebanon-key-ali-al-taher-ridge-from-hezbollah",
+       "published": "2026-09-04",
+       "verified": "Katz statement 4 Sept; military statement 3 Sept; Reuters could not verify"
+      },
+      {
+       "outlet": "Al Jazeera",
+       "title": "Israel claims control of Lebanon's key Ali al-Taher ridge: What that means",
+       "url": "https://www.aljazeera.com/news/2026/9/5/israel-claims-control-of-lebanons-key-ali-al-taher-ridge-what-that-means",
+       "published": "2026-09-05",
+       "verified": "Claim only from Katz statement; no independent confirmation; Hezbollah silent"
+      }
+     ]
+    },
+    {
+     "date": "2026-09-07",
+     "title": "Israeli strikes in Kfar Rumman kill at least 11 as the ceasefire frays",
+     "summary": "Times of Israel, citing Lebanon's state news agency, reported 11 killed in Kfar Rumman; France 24 reported 13 killed according to the health ministry, 12 of them in Kfar Rumman. The Israeli military said it hit Hezbollah operatives moving weapons and was looking into reports that civilians were harmed.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "France 24",
+       "title": "Israel intensifies South Lebanon strikes, killing 13 in new escalation",
+       "url": "https://www.france24.com/en/middle-east/20260907-israeli-strikes-south-lebanon-violence",
+       "published": "2026-09-07",
+       "verified": "Health ministry: 13 dead; Kfar Rumman building strike; IDF statement on drones"
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "Eleven said killed, including 2 children, in overnight IDF strikes in south Lebanon",
+       "url": "https://www.timesofisrael.com/eleven-said-killed-including-2-children-in-overnight-idf-strikes-in-south-lebanon/",
+       "published": "2026-09-07",
+       "verified": "NNA: 9 killed in building plus 2 paramedics; IDF says targeted operatives moving weapons"
+      }
+     ]
+    },
+    {
+     "date": "2026-10-14",
+     "title": "Israel holds a 10 km Yellow Line zone, keeps demolishing villages",
+     "summary": "Al Jazeera reported Israel still occupies a zone up to about 10 km deep in southern Lebanon despite the June framework, with demolitions in around 50 frontline villages, and that Defence Minister Katz has said troops will not withdraw.",
+     "status": "reported",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "How Israel's 'Yellow Line' is reshaping southern Lebanon",
+       "url": "https://www.aljazeera.com/news/2026/10/14/how-israels-yellow-line-is-reshaping-southern-lebanon",
+       "published": "2026-10-14",
+       "verified": "10 km zone, about 50 villages destroyed, Katz says no withdrawal; no casualty counts given"
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "key": "russia-ukraine",
+   "title": "Russia - Ukraine",
+   "conflicts": [
+    "russia-ukraine"
+   ],
+   "entries": [
+    {
+     "date": "2026-01-09",
+     "title": "Russia fires an Oreshnik missile at the Lviv region",
+     "summary": "Ukraine's Air Force said Russia fired an Oreshnik ballistic missile at the Lviv region overnight on 8-9 January (Kyiv Independent, Janes); Kyiv Independent called it the second known use after November 2024. Russia called it retaliation for an alleged attack, which Kyiv denied (Al Jazeera, Kyiv Independent).",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Ukraine calls on allies to raise pressure as Russia fires Oreshnik missile",
+       "url": "https://www.aljazeera.com/news/2026/1/9/ukraine-calls-on-allies-to-raise-pressure-as-russia-fires-oreshnik-missile",
+       "published": "2026-01-09",
+       "verified": "Russia says Oreshnik used overnight on Lviv; Kyiv denies Putin-residence claim."
+      },
+      {
+       "outlet": "Kyiv Independent",
+       "title": "Russia hits Lviv with rare Oreshnik missile, SBU says",
+       "url": "https://kyivindependent.com/russia-claims-oreshnik-missile-hits-lviv-ukraine/",
+       "published": "2026-01-09",
+       "verified": "SBU says fragments match Oreshnik; air force reports one medium-range missile launched."
+      },
+      {
+       "outlet": "Janes",
+       "title": "Russia fires second Oreshnik IRBM at critical infrastructure in Ukraine, say officials",
+       "url": "https://www.janes.com/osint-insights/defence-news/weapons/russia-fires-second-oreshnik-irbm-at-critical-infrastructure-in-ukraine-say-officials",
+       "published": "2026-01-09",
+       "verified": "Night of 8-9 January strike; Russian MoD confirmed; target claims differ."
+      }
+     ]
+    },
+    {
+     "date": "2026-01-23",
+     "title": "First US-Ukraine-Russia talks open in Abu Dhabi",
+     "summary": "US, Ukrainian and Russian delegations opened talks in Abu Dhabi that France 24 (AFP) called the first direct three-way talks; they ran two days without a breakthrough. Kremlin spokesman Peskov said Moscow still demanded that Ukraine leave Donbas; France 24 says Kyiv rejects that.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "France 24",
+       "title": "US, Ukraine and Russia meet in Abu Dhabi for first trilateral peace talks",
+       "url": "https://www.france24.com/en/europe/20260123-us-ukraine-and-russia-meet-in-abu-dhabi-for-first-trilateral-peace-talks",
+       "published": "2026-01-23",
+       "verified": "First direct three-way talks, UAE-hosted, Donbas the main sticking point."
+      },
+      {
+       "outlet": "Al Jazeera",
+       "title": "US-brokered Russia-Ukraine talks close with no breakthrough",
+       "url": "https://www.aljazeera.com/news/2026/1/24/us-brokered-talks-on-ukraine-close-with-no-breakthrough",
+       "published": "2026-01-24",
+       "verified": "Two-day Abu Dhabi talks ended without agreement; Kremlin keeps Donbas withdrawal demand."
+      }
+     ]
+    },
+    {
+     "date": "2026-02-03",
+     "title": "Mass Russian strike on energy ends a brief pause",
+     "summary": "Russia launched a mass strike on Ukraine's energy system after a brief pause. Kyiv Independent, citing the Air Force, reported 71 missiles and 450 drones; Al Jazeera, citing Foreign Minister Sybiha, reported 450 drones and over 60 missiles. Kyiv's mayor said over 1,100 buildings lost heating (Kyiv Independent).",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Kyiv Independent",
+       "title": "In largest missile attack of winter, Russia targets Ukraine's power plants amid brutal freeze",
+       "url": "https://kyivindependent.com/russia-launches-mass-attack-across-ukraine-signaling-end-of-energy-ceasefire/",
+       "published": "2026-02-03",
+       "verified": "Air force counts 71 missiles, 450 drones; truce dates per Zelensky and Kremlin."
+      },
+      {
+       "outlet": "Al Jazeera",
+       "title": "Russia renews attacks on frozen Ukrainian cities",
+       "url": "https://www.aljazeera.com/news/2026/2/3/russia-renews-attacks-on-frozen-ukrainian-cities",
+       "published": "2026-02-03",
+       "verified": "450 drones, over 60 missiles; Kyiv heating cut; pause lasted to Sunday."
+      }
+     ]
+    },
+    {
+     "date": "2026-05-24",
+     "title": "Oreshnik fired in a huge attack on the Kyiv area",
+     "summary": "Russia fired an Oreshnik missile in a huge attack on Ukraine. Kyiv Independent, citing Zelensky, said it hit Bila Tserkva, its third known use. France 24 (AFP), citing the Air Force, reported 600 drones and 90 missiles, with local officials reporting four dead and over 100 wounded in Kyiv and its region; Russia said it hit command posts.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Kyiv Independent",
+       "title": "Russia launched Oreshnik missile at Kyiv Oblast in overnight attack, Zelensky confirms",
+       "url": "https://kyivindependent.com/russia-launched-oreshnik-missile-at-ukraine-zelensky-says/",
+       "published": "2026-05-24",
+       "verified": "Zelensky says Oreshnik hit Bila Tserkva; third known use against Ukraine."
+      },
+      {
+       "outlet": "France 24 (AFP)",
+       "title": "Russia kills 4 in massive Ukraine attack using nuclear-capable missile",
+       "url": "https://www.france24.com/en/live-news/20260524-missile-strikes-pound-kyiv-after-russia-vows-retaliation",
+       "published": "2026-05-24",
+       "verified": "600 drones, 90 missiles per air force; 4 killed, over 100 wounded."
+      }
+     ]
+    },
+    {
+     "date": "2026-07-02",
+     "title": "Record ballistic barrage on Kyiv kills at least 30",
+     "summary": "Russia struck Kyiv with a record ballistic barrage. Al Jazeera, citing authorities, reported at least 30 dead; Kyiv Independent reported a final toll of 31 dead and 102 injured per the State Emergency Service, with an Air Force spokesman saying 28 missiles were ballistic. Mayor Klitschko declared 3 July a day of mourning.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Five killed in Ukraine a day after deadliest Russian attacks this year",
+       "url": "https://www.aljazeera.com/news/2026/7/3/four-killed-in-ukraine-a-day-after-deadliest-russian-attacks-this-year",
+       "published": "2026-07-03",
+       "verified": "At least 30 dead per Ukrainian authorities; 496 drones, 74 missiles; mourning day."
+      },
+      {
+       "outlet": "Kyiv Independent",
+       "title": "'Serious destruction' - massive Russian missile, drone attack on Kyiv kills at least 31, injures over 100",
+       "url": "https://kyivindependent.com/explosions-rock-kyiv-as-ukraine-braces-for-russias-next-bombardment/",
+       "published": "2026-07-02",
+       "verified": "DSNS toll 31 dead, 102 injured after search ended 4 July; 28 ballistic missiles."
+      }
+     ]
+    },
+    {
+     "date": "2026-07-03",
+     "title": "Russia claims Kostiantynivka; Ukraine denies it has fallen",
+     "summary": "Al Jazeera reported Russia's defence ministry said on 3 July it had taken Kostiantynivka. Kyiv Independent reported that Gerasimov claimed full control while the ministry told TASS fighting continued; Ukraine's General Staff said the city stayed under Ukrainian control and DeepState said Russian forces had reached its outskirts.",
+     "status": "disputed",
+     "sources": [
+      {
+       "outlet": "Kyiv Independent",
+       "title": "Kremlin proposes temporary Kostiantynivka ceasefire and handover of bodies to Ukraine, calls for talks in Moscow",
+       "url": "https://kyivindependent.com/kremlin-proposes-temporary-kostiantynivka-ceasefire-and-handover-of-bodies-to-ukraine-calls-for-talks-in-moscow/",
+       "published": "2026-07-04",
+       "verified": "Gerasimov claim, later TASS walk-back, Zelensky and General Staff denials, DeepState view."
+      },
+      {
+       "outlet": "Al Jazeera",
+       "title": "Russia says Ukraine rejects local ceasefire in dispute over Kostiantynivka",
+       "url": "https://www.aljazeera.com/news/2026/7/5/russia-says-ukraine-rejects-local-ceasefire-in-dispute-over-kostiantynivka",
+       "published": "2026-07-05",
+       "verified": "Defence ministry claim dated 3 July; Zelensky calls it a lie; Peskov response."
+      }
+     ]
+    },
+    {
+     "date": "2026-09-05",
+     "title": "US envoys meet Putin, then visit Kyiv; capitals spared for three days",
+     "summary": "US envoys Witkoff and Kushner met Putin in Moscow on 5 September and reached Kyiv on 6 September. Al Jazeera: Russia and Ukraine pledged not to strike each other's capitals for three days. Kyiv Independent: the main result was agreement to resume trilateral talks, while Moscow still insisted Ukraine leave Donbas.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera (AFP)",
+       "title": "US envoys arrive in Kyiv for Ukraine war talks after meeting Putin",
+       "url": "https://www.aljazeera.com/news/2026/9/5/russias-putin-meets-us-envoys-to-discuss-trump-proposal-to-end-ukraine-war",
+       "published": "2026-09-05",
+       "verified": "Three-hour Kremlin meeting, no breakthrough, three-day halt on strikes on capitals."
+      },
+      {
+       "outlet": "Kyiv Independent",
+       "title": "Exclusive: Trump envoys find Putin still unwilling to compromise on Ukraine",
+       "url": "https://kyivindependent.com/exclusive-trump-envoys-find-putin-still-unwilling-to-compromise-on-ukraine/",
+       "published": "2026-09-07",
+       "verified": "Agreement to resume trilateral talks; Russia insists on Donbas withdrawal, rejects air truce."
+      }
+     ]
+    },
+    {
+     "date": "2026-09-15",
+     "title": "Ukraine announces a counteroffensive near Lyman; territorial claims differ",
+     "summary": "Ukraine's 3rd Army Corps announced a counteroffensive north of Lyman and claimed about 85 sq km (Kyiv Independent); Al Jazeera cited 175 sq km without a source. DeepState saw no changes there. Putin claimed 1,300 sq km of Russian gains in September; ISW, per Al Jazeera, saw Russia lose about 80.",
+     "status": "reported",
+     "sources": [
+      {
+       "outlet": "Kyiv Independent",
+       "title": "Analysis: Through the fog of war, Ukraine reveals 'Operation Vivaldi' counterattack near Lyman",
+       "url": "https://kyivindependent.com/analysis-through-the-fog-of-war-ukraine-goes-on-operation-vivaldi-counterattack-near-lyman/",
+       "published": "2026-09-15",
+       "verified": "Announced 15 Sept by Biletskyi; DeepState had recorded no changes yet."
+      },
+      {
+       "outlet": "Al Jazeera",
+       "title": "Ukraine pushes Russia back in Donetsk as military, civilian casualties soar",
+       "url": "https://www.aljazeera.com/amp/news/2026/10/9/ukraine-pushes-russia-back-in-donetsk-as-military-civilian-casualties-soar",
+       "published": "2026-10-09",
+       "verified": "175 sq km claim; Putin 1,300 sq km claim versus ISW net loss estimate."
+      }
+     ]
+    },
+    {
+     "date": "2026-09-20",
+     "title": "Huge Ukrainian drone attack on the Moscow area hits a refinery on election day",
+     "summary": "Ukraine launched a large drone attack on the Moscow area on Duma election day. The mayor said over 1,600 drones were shot down (unverified, Kyiv Independent); the governor reported two deaths and Al Jazeera added a third later died. Ukraine's General Staff and Zelensky said the Kapotnya refinery was hit and set ablaze (Kyiv Independent).",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "At least three killed in Ukrainian drone attack on Moscow, says Russia",
+       "url": "https://www.aljazeera.com/news/2026/9/20/mass-ukrainian-drone-attack-on-moscow-kills-two-russia-says",
+       "published": "2026-09-20",
+       "verified": "Sobyanin's 1,600 interceptions, three deaths per Russian officials, refinery damaged."
+      },
+      {
+       "outlet": "Kyiv Independent",
+       "title": "Moscow Oil Refinery ablaze after 'largest-ever' Ukraine missile, drone blitz on Russian capital",
+       "url": "https://kyivindependent.com/russia-says-dozens-of-ukrainian-drones-targeted-moscow-as-broader-attack-hit-multiple-regions/",
+       "published": "2026-09-20",
+       "verified": "General Staff and Zelensky confirm Moscow refinery hit and set on fire."
+      }
+     ]
+    },
+    {
+     "date": "2026-10-08",
+     "title": "Glide bomb strike on minibuses in Kramatorsk kills at least 30",
+     "summary": "A glide bomb struck minibuses in Kramatorsk. Ukraine's State Emergency Service reported 33 dead (Kyiv Independent); Al Jazeera, citing regional authorities, reported at least 30.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Kyiv Independent",
+       "title": "Ukraine war latest: Russian glide bomb strikes in Kramatorsk kill at least 33",
+       "url": "https://kyivindependent.com/ukraine-war-latest-russian-glide-bomb-strikes-in-kramatorsk-kill-at-least-33/",
+       "published": "2026-10-08",
+       "verified": "DSNS reports at least 33 killed; governor reports 22 more injured."
+      },
+      {
+       "outlet": "Al Jazeera",
+       "title": "More killed in Kramatorsk as Russia targets Ukraine's transportation system",
+       "url": "https://www.aljazeera.com/news/2026/10/8/more-killed-in-kramatorsk-as-russia-targets-ukraines-transportation-system",
+       "published": "2026-10-08",
+       "verified": "Governor Filashkin: at least 30 killed, 18 wounded in glide-bomb strike on buses."
+      }
+     ]
+    },
+    {
+     "date": "2026-10-11",
+     "title": "Trump announces energy ceasefire; Ukraine ends refinery-strike pause",
+     "summary": "Trump announced an energy ceasefire on 11 October; a senior Ukrainian official said Kyiv had no prior information (Kyiv Independent). Ukraine held off refinery strikes for about three days at US request while Russia kept hitting the grid; Zelensky lifted the pause on 15 October. Russia's defence ministry said Ukraine attacked a Ryazan refinery (Al Jazeera).",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Kyiv Independent",
+       "title": "Zelensky lifts pause on Ukraine's strikes against Russian oil refineries",
+       "url": "https://kyivindependent.com/zelensky-lifts-pause-on-ukraines-strikes-against-russian-oil-refineries/",
+       "published": "2026-10-15",
+       "verified": "Trump announcement 11 Oct; Kremlin unclear 14 Oct; Zelensky says block is out."
+      },
+      {
+       "outlet": "Al Jazeera",
+       "title": "Trump slams Zelenskyy as Ukraine resumes strikes on Russian oil refineries",
+       "url": "https://www.aljazeera.com/news/2026/10/15/russia-says-ukraine-resumes-attacks-on-oil-refineries",
+       "published": "2026-10-15",
+       "verified": "Unconfirmed ceasefire; Ukraine says done; Russia reports Ryazan refinery attack."
+      }
+     ]
+    },
+    {
+     "date": "2026-10-16",
+     "title": "Trump waives the penalties of the Russia sanctions act he signed a month earlier",
+     "summary": "A White House order dated 16 October waives sanctions and duties under the Graham Russia sanctions act, which Trump signed on 18 September, with no fixed end date. Rubio called it a 60-day pause (Kyiv Independent). Al Jazeera reports bipartisan criticism of the waiver.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "White House",
+       "title": "Implementing the Lindsey O. Graham Sanctioning Russia and Iran Act of 2026",
+       "url": "https://www.whitehouse.gov/presidential-actions/2026/10/implementing-the-lindsey-o-graham-sanctioning-russia-and-iran-act-of-2026/",
+       "published": "2026-10-16",
+       "verified": "Order dated 16 Oct with waiver section; Act signed 18 Sept."
+      },
+      {
+       "outlet": "Al Jazeera",
+       "title": "Trump faces bipartisan backlash over Russia sanctions waiver",
+       "url": "https://www.aljazeera.com/news/2026/10/17/trump-faces-bipartisan-backlash-over-russia-sanctions-waiver",
+       "published": "2026-10-17",
+       "verified": "Order suspends sanctions; Tillis, Cornyn, Warren, Zelensky reactions."
+      },
+      {
+       "outlet": "Kyiv Independent",
+       "title": "Marco Rubio says Trump's Russian oil sanctions waiver is a '60-day pause'",
+       "url": "https://kyivindependent.com/marco-rubio-says-trumps-russian-oil-sanctions-waiver-is-a-60-day-pause-denies-restricting-starlink-access/",
+       "published": "2026-10-18",
+       "verified": "Rubio's 60-day framing, tied to high energy prices and Iran war."
+      }
+     ]
+    }
+   ],
+   "note": "Front-line changes such as Pokrovsk, Myrnohrad, Huliaipole and Kupiansk are not listed: two readable independent sources could not be found for 2026."
+  },
+  {
+   "key": "israel-gaza",
+   "title": "Israel - Gaza and Palestine",
+   "conflicts": [
+    "israel-palestine"
+   ],
+   "entries": [
+    {
+     "date": "2026-01-14",
+     "title": "US declares phase two of Gaza plan, technocratic committee named",
+     "summary": "US envoy Witkoff announced phase two of Trump's plan and a Palestinian technocratic committee led by Ali Shaath, which Times of Israel said Egypt, Qatar and Turkey had named. Disarmament and Israeli withdrawal were unresolved; Times of Israel reported Israel wanted Hamas disarmed and the last hostage's body returned first.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Times of Israel",
+       "title": "US launches Gaza plan's 2nd phase as Palestinian technocratic government unveiled",
+       "url": "https://www.timesofisrael.com/us-launches-gaza-plans-2nd-phase-as-palestinian-technocratic-government-unveiled/",
+       "published": "2026-01-14",
+       "verified": "Witkoff announcement Wednesday; NCAG led by Shaath; Israeli objections noted."
+      },
+      {
+       "outlet": "Al Jazeera",
+       "title": "Israel kills 10 in Gaza as US declares phase two of ceasefire deal launched",
+       "url": "https://www.aljazeera.com/news/2026/1/15/israel-kills-six-in-gaza-as-us-declares-phase-two-of-peace-plan-launched",
+       "published": "2026-01-15",
+       "verified": "Phase two contents, Hamas reaction, at least 10 killed that day."
+      }
+     ]
+    },
+    {
+     "date": "2026-01-26",
+     "title": "Last hostage's remains recovered; no captives left in Gaza",
+     "summary": "Israel said it recovered the remains of Ran Gvili, the last hostage in Gaza, so no captives remain there. Times of Israel placed it in a Gaza City cemetery and reported Netanyahu said the next phase is disarming Hamas; Hamas said it had met its ceasefire obligations.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Times of Israel",
+       "title": "All of them home now: Body of last hostage Ran Gvili found in Gaza, returned to Israel",
+       "url": "https://www.timesofisrael.com/all-of-them-home-now-body-of-last-hostage-ran-gvili-found-in-gaza-returned-to-israel/",
+       "published": "2026-01-26",
+       "verified": "Gvili found in Gaza City cemetery, identified by dental match; Netanyahu quoted."
+      },
+      {
+       "outlet": "Al Jazeera",
+       "title": "Remains of last Israeli captive Ran Gvili recovered from Gaza, says Israel",
+       "url": "https://www.aljazeera.com/news/2026/1/26/remains-of-last-israeli-captive-in-gaza-retrieved-says-israel",
+       "published": "2026-01-26",
+       "verified": "IDF says all hostages repatriated; Hamas and Rafah crossing comments."
+      }
+     ]
+    },
+    {
+     "date": "2026-01-31",
+     "title": "Wave of Israeli strikes kills over 30 after Rafah tunnel incident",
+     "summary": "Strikes across Gaza killed at least 31 (Al Jazeera) to 32 (Hamas civil defence, per Times of Israel). The IDF said it targeted commanders after eight fighters emerged from a Rafah tunnel in a ceasefire breach, which Al Jazeera noted is unconfirmed; Hamas rejected Israel's claims.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Times of Israel",
+       "title": "32 Gazans said killed in wave of strikes as IDF responds to truce violation",
+       "url": "https://www.timesofisrael.com/at-least-28-gazans-said-killed-in-wave-of-strikes-as-idf-responds-to-truce-violation/",
+       "published": "2026-01-31",
+       "verified": "32 bodies per Hamas civil defence; IDF cites Rafah tunnel breach."
+      },
+      {
+       "outlet": "Al Jazeera",
+       "title": "Children among 31 Palestinians killed by Israeli forces across Gaza",
+       "url": "https://www.aljazeera.com/news/2026/1/31/israeli-forces-kill-12-palestinians-across-gaza-attacks-reported-in-rafah",
+       "published": "2026-01-31",
+       "verified": "At least 31 killed; IDF retaliation explanation; Hamas rejects claims."
+      }
+     ]
+    },
+    {
+     "date": "2026-02-02",
+     "title": "Rafah crossing reopens for limited movement of people",
+     "summary": "The Rafah crossing reopened for Palestinians with EU monitors and Israeli screening; an Egyptian official expected about 50 people each way. Al Jazeera said it was after almost two years, Times of Israel after almost a year since March 2025. Al Jazeera reported only five patients left on day one.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Gaza's Rafah crossing reopens for limited traffic",
+       "url": "https://www.aljazeera.com/news/2026/2/2/gazas-rafah-crossing-reopens-for-limited-traffic",
+       "published": "2026-02-02",
+       "verified": "Five patients left day one; EUBAM and Israeli checkpoint arrangements."
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "'A lifeline': Gazans rejoice as Rafah Crossing opens for limited pedestrian passage",
+       "url": "https://www.timesofisrael.com/rafah-crossing-opens-for-limited-pedestrian-passage-of-gazans-for-1st-time-in-a-year/",
+       "published": "2026-02-02",
+       "verified": "Reopened 2 Feb, people only, Shin Bet vetting; goods stay on Israeli crossings."
+      }
+     ]
+    },
+    {
+     "date": "2026-02-19",
+     "title": "Board of Peace holds first meeting, announces pledges and troops",
+     "summary": "At the Board of Peace's first meeting in Washington, Trump announced $10 billion from the US and about $7 billion from nine other states (announced pledges, not transfers). Indonesia, Morocco, Kazakhstan, Kosovo and Albania pledged troops for a stabilisation force.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Trump announces billions of dollars in Gaza aid at Board of Peace meeting",
+       "url": "https://www.aljazeera.com/news/2026/2/19/trump-announces-billions-of-dollars-in-gaza-aid-at-board-of-peace-meeting",
+       "published": "2026-02-19",
+       "verified": "$7bn from nine states, $10bn US, five troop contributors listed."
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "Trump announces $17 billion in pledges for Gaza at Board of Peace's inaugural confab",
+       "url": "https://www.timesofisrael.com/trump-announces-17-billion-in-pledges-for-gaza-at-board-of-peaces-inaugural-confab/",
+       "published": "2026-02-20",
+       "verified": "Same pledges and five troop contributors; meeting held 19 February."
+      }
+     ]
+    },
+    {
+     "date": "2026-02-28",
+     "title": "Israel closes Gaza crossings as Iran war begins",
+     "summary": "Israel shut Gaza's crossings on 28 February as the Iran war began, halting aid and evacuations (Al Jazeera). Kerem Shalom later reopened gradually; Times of Israel reported Rafah reopened for limited medical exits on 19 March. In early March WHO's regional director said about 200 trucks a day entered against 600 needed (Al Jazeera).",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Gaza food prices soar as crossing closures deepen shortages amid Iran war",
+       "url": "https://www.aljazeera.com/news/2026/3/10/gaza-food-prices-soar-as-border-closures-deepen-shortages-amid-iran-war",
+       "published": "2026-03-10",
+       "verified": "Crossings closed 28 Feb; prices up; WHO truck figures."
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "Rafah Crossing between Gaza and Egypt reopens for first time since start of Iran war",
+       "url": "https://www.timesofisrael.com/rafah-crossing-between-gaza-and-egypt-reopens-for-first-time-since-start-of-iran-war/",
+       "published": "2026-03-19",
+       "verified": "Rafah shut after 28 Feb, reopened 19 March for wounded and relatives."
+      }
+     ]
+    },
+    {
+     "date": "2026-07-06",
+     "title": "Hamas dissolves its Gaza governing committee",
+     "summary": "Hamas said it dissolved the committee that has run Gaza, to ease a handover to the technocratic NCAG. Al Jazeera noted Hamas has not given up its political or military role; disarmament is unresolved and the NCAG remains outside Gaza, reportedly over Israeli objections. France 24's report is AFP-based.",
+     "status": "reported",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Hamas announces dissolution of Gaza governing body",
+       "url": "https://www.aljazeera.com/news/2026/7/6/hamas-announces-dissolution-of-gaza-governing-body",
+       "published": "2026-07-06",
+       "verified": "Announcement 6 July; Mladenov, Shaath reactions; disarmament unresolved."
+      },
+      {
+       "outlet": "France 24",
+       "title": "Hamas dissolves Gaza governing body, clearing way for technocratic committee",
+       "url": "https://www.france24.com/en/middle-east/20260706-hamas-dissolves-gaza-governing-body-clearing-way-for-technocratic-committee",
+       "published": "2026-07-06",
+       "verified": "Dissolution of emergency committee; NCAG outside Gaza; Israel rejects Hamas return."
+      }
+     ]
+    },
+    {
+     "date": "2026-07-30",
+     "title": "Board of Peace announces Hamas disarmament deal; Israel disputes it",
+     "summary": "Trump and the Board of Peace announced that Hamas and other factions agreed a phased disarmament plan tied to Israeli withdrawal; Palestinian Islamic Jihad voiced reservations (Al Jazeera). On 4 August Netanyahu said Israel had not agreed and would not pull back until Hamas is fully disarmed (Times of Israel).",
+     "status": "disputed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Hamas reaches Gaza disarmament agreement with Board of Peace",
+       "url": "https://www.aljazeera.com/news/2026/7/30/trump-says-board-of-peace-reaches-agreement-on-disarmament-of-hamas-in-gaza",
+       "published": "2026-07-30",
+       "verified": "Announced 30 July; 14-day roadmap; Hamas conditions; Islamic Jihad reservations."
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "Netanyahu says Israel 'didn't agree' to Board of Peace's terms for disarming Hamas",
+       "url": "https://www.timesofisrael.com/netanyahu-announces-israel-didnt-agree-to-board-of-peaces-plan-to-disarm-hamas/",
+       "published": "2026-08-05",
+       "verified": "Netanyahu video 4 August: Israel did not agree; Hamas accepted the plan."
+      }
+     ]
+    },
+    {
+     "date": "2026-09-23",
+     "title": "Board of Peace unveils a Gaza recovery plan of about $2.4 billion",
+     "summary": "The Board of Peace presented a 66-project recovery programme costing about $2.4 billion (Al Jazeera) or $2.45 billion for a six-month first phase (Times of Israel), dependent on Hamas disarmament; no start date was set. Times of Israel said only $280 million of roughly $17 billion pledged had been transferred.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Board of Peace plans $2.4bn Gaza reconstruction as Israel kills seven",
+       "url": "https://www.aljazeera.com/news/2026/9/23/board-of-peace-plans-2-4bn-gaza-reconstruction-as-israel-kills-seven",
+       "published": "2026-09-23",
+       "verified": "66-project plan unveiled at UNGA sidelines; depends on Hamas disarmament."
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "Board of Peace unveils $2.4B Gaza recovery plan, but hurdles remain before implementation",
+       "url": "https://www.timesofisrael.com/board-of-peace-unveils-2-4b-gaza-recovery-plan-but-hurdles-remain-before-implementation",
+       "published": "2026-09-23",
+       "verified": "Cost $2.45bn, no start date, only $280m of pledges transferred."
+      }
+     ]
+    },
+    {
+     "date": "2026-09-29",
+     "title": "Settlers torch homes in Jalud as displaced family tries to return",
+     "summary": "The Israeli military said over 100 settlers rioted in Jalud near Nablus, blocking a displaced family's court-ordered return; Al Jazeera, citing local sources, reported homes burned. Times of Israel quoted Defence Minister Katz condemning it. Al Jazeera, citing UN OCHA, reported over 1,330 settler attacks from January to late July.",
+     "status": "confirmed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Israeli settlers attack Jalud village in occupied West Bank, torch homes",
+       "url": "https://www.aljazeera.com/news/2026/9/29/israeli-settlers-attack-jalud-village-in-occupied-west-bank-torch-homes",
+       "published": "2026-09-29",
+       "verified": "Two Tubasi homes burned; army says 100+ settlers; OCHA 1,330 attacks figure."
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "PM blames 'small number' of West Bank rioters as mass settler attack draws wide condemnation",
+       "url": "https://www.timesofisrael.com/netanyahu-blames-small-number-of-west-bank-rioters-as-mass-settler-attack-draws-wide-condemnation/",
+       "published": "2026-09-29",
+       "verified": "100+ settlers, three Border Police hurt, arrests, Netanyahu and Sa'ar condemnations."
+      }
+     ]
+    },
+    {
+     "date": "2026-10-14",
+     "title": "Israel halts commercial goods into Gaza, blaming Hamas fees",
+     "summary": "Israel's COGAT said no commercial goods entered Gaza for two days, citing merchants' reaction to a 10,000-shekel fee per truck that it attributed to Hamas. Hamas denied imposing taxes; Times of Israel reported the truckers' union head said Hamas's Economy Ministry asked merchants for the amount, which the ministry called a donation.",
+     "status": "disputed",
+     "sources": [
+      {
+       "outlet": "Al Jazeera",
+       "title": "Israel halts commercial goods from entering Gaza; Hamas denies tax claims",
+       "url": "https://www.aljazeera.com/news/2026/10/15/israel-halts-commercial-goods-from-entering-gaza-hamas-denies-tax-claims",
+       "published": "2026-10-15",
+       "verified": "COGAT announced 14 Oct; Gaza media office denies; truckers' union disputes."
+      },
+      {
+       "outlet": "Times of Israel",
+       "title": "Israel cites Gazan merchants angered by Hamas taxes as commercial goods stop entering Strip",
+       "url": "https://www.timesofisrael.com/israel-cites-merchants-angered-by-hamas-taxes-as-commercial-goods-stop-entering-gaza/",
+       "published": "2026-10-16",
+       "verified": "Private sector about half of weekly trucks; Hamas letter to mediators denies fees."
+      }
+     ]
+    }
+   ],
+   "note": "The ceasefire in effect since 10 October 2025 is fragile; phase two was declared on 14 January 2026 but disarmament versus withdrawal is unresolved."
+  }
+ ]
+}

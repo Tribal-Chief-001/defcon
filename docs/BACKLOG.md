@@ -145,3 +145,12 @@ The owner liked World Monitor's Country Instability Index and asked for it to be
 - Plan deviations: list rows have no sparkline or kind chips; `conflicts.json` is not in `scripts/check-budgets.ts`.
 - Clamped ranges understate uncertainty when UCDP's `high` is below `best` (Iran 13,280 shows 13,280-13,280); candidate-month lag may make the newest weeks look low and the chart does not say so.
 
+## Plan 9 deferred (sourced timeline, 2026-10-18)
+
+- **Keeping it fresh:** the timeline is hand-curated; nobody updates it automatically. A repeatable refresh (research agents plus the same second-pass check, monthly) is a process, not code; an automatic or scheduled version is not built and the page only says "checked <date>".
+- More theatres (Sudan, Yemen and the Red Sea, Myanmar, Sahel) and the front-line changes that lacked two readable sources (Pokrovsk, Myrnohrad, Huliaipole, Kupiansk).
+- Sources the tools could not reach: Reuters, AP, BBC, Guardian, ISW; add them when a human can read them.
+- Show a timeline entry's place on the globe; link an entry to the UCDP events of that week.
+- Per-theatre `note` (data limits) is stored in the file but not displayed yet.
+- A shared "independence" check beyond registrable domains (two AFP-based pieces count as two).
+
