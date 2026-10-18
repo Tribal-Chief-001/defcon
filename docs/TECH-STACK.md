@@ -42,3 +42,4 @@ Versions actually installed (2026-10-18, from `node_modules`). Choices D-006 (cu
 - Machine rule: run one vitest/vite/build process at a time (7.4 GB RAM).
 - Plan 3 sizes: dossier index 9.1 KB gzip (budget 40 KB); 248 dossiers, largest ZAF 4.2 KB raw (budget 6 KB). With 35 capital labels on screen the globe held 60 fps (same in-app browser, 474 px wide).
 - Plan 4: relations.json 1.1 KB gzip (budget 8 KB). In the in-app browser (Intel UHD, 474 px) with grain, terminator, arcs, reticle, pulse and 35 labels active: 60 fps average over 5 s, worst frame 33 ms (one drop); 60 fps with 180 synthetic pointer moves a second and during Play.
+- Dev dependency `axe-core` 4.14.0 (MPL-2.0, used only in tests; not shipped) for `tests/a11y/axe.test.tsx`: jsdom runs every rule except colour contrast, which `tests/a11y/contrast.test.ts` checks on the design tokens.

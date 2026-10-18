@@ -29,6 +29,10 @@ Syne 700/800 (display: tight, `line-height` about .85, outline variant for backg
 - Missing data is shown as a redaction bar and says "unavailable"; every field shows source and date.
 - `prefers-reduced-motion` disables the boot and auto-rotation; sound is off by default.
 
+## Text colours (Plan 6)
+
+`--text` #EDEDE9, `--text-muted` 68 % and `--text-faint` 55 % of it on true black: all reach WCAG AA (4.5:1), checked by `tests/a11y/contrast.test.ts`. The earlier 50 % / 25 % values did not (faint was 1.9:1) and carried real field labels.
+
 ## Signature features as built (Plan 4)
 
 - **Arcs:** cyan solid to formal allies, orange dashed to active disputes, lifted off the surface, drawn in over 400 ms.

@@ -1,5 +1,6 @@
 import { useEffect, useRef } from 'react';
 import type { Detail, Kind } from '../events/types';
+import { prefersReducedMotion } from '../lib/motion';
 import { useTime } from '../time/store';
 import { redactionFor } from './redaction';
 
@@ -18,7 +19,7 @@ const isHttp = (u?: string) => !!u && /^https?:\/\//i.test(u);
 
 // Cosmetic bar under a value: it shrinks as the file is "declassified". The value itself is always real, readable text.
 const Bar = ({ progress }: { progress: number }) => (
-  <span data-bar aria-hidden="true" className="mt-1 block h-[3px] bg-[var(--text-muted)]" style={{ width: `${Math.round((1 - progress) * 100)}%`, transition: 'width 600ms cubic-bezier(0.16, 1, 0.3, 1)' }} />
+  <span data-bar aria-hidden="true" className="mt-1 block h-[3px] bg-[var(--text-muted)]" style={{ width: `${Math.round((1 - progress) * 100)}%`, transition: prefersReducedMotion() ? 'none' : 'width 600ms cubic-bezier(0.16, 1, 0.3, 1)' }} />
 );
 
 export function EventCard({ detail, info, nowS = Math.floor(Date.now() / 1000), onClose }: { detail: Detail | null; info: EventInfo; nowS?: number; onClose: () => void }) {
