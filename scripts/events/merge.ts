@@ -14,14 +14,10 @@ const cmp = (a: string, b: string) => (a < b ? -1 : a > b ? 1 : 0);
 const violent = (k: Ev['kind']) => k === 'armed' || k === 'civilian';
 
 // host + path of a source URL, without query or fragment, so the same article under different tracking parameters matches.
+const URL_RE = /^https?:\/\/(?:www\.)?([^/?#:]+)(?::\d+)?([^?#]*)/i;
 const articleKey = (url?: string): string | null => {
-  if (!url) return null;
-  try {
-    const u = new URL(url);
-    return (u.hostname.replace(/^www\./, '') + u.pathname).toLowerCase();
-  } catch {
-    return null;
-  }
+  const m = url ? URL_RE.exec(url) : null;
+  return m ? (m[1]! + m[2]!).toLowerCase() : null;
 };
 
 const uniqSources = (list: EventSource[], max: number): EventSource[] => {
