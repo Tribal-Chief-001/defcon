@@ -26,7 +26,9 @@ export function DossierPanel({ countryId, onClose, nowS: fixedNowS }: { countryI
     const opener = document.activeElement as HTMLElement | null;
     panel.current?.focus();
     return () => {
-      if (opener && opener.isConnected) opener.focus?.();
+      // the opener may be a rail row that unmounted meanwhile: fall back to the globe rather than the page body
+      if (opener && opener.isConnected && opener !== document.body) opener.focus?.();
+      else document.getElementById('globe-canvas')?.focus({ preventScroll: true });
     };
   }, []);
   const [names, setNames] = useState<Map<string, string>>(new Map());

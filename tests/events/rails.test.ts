@@ -69,4 +69,9 @@ describe('latestEvents', () => {
     expect(typeof r[0]!.index).toBe('number');
     expect(latestEvents(snap([]), NOW)).toEqual([]);
   });
+  // review finding: the count shown must be of events that score (kind "other" weighs nothing)
+  it('counts only events that count towards the score', () => {
+    const s = snap([ev({ country: 'AAA' }), ev({ country: 'AAA', kind: 'other' }), ev({ country: 'AAA', kind: 'other' })]);
+    expect(hotspots(s, NOW)[0]).toMatchObject({ country: 'AAA', events: 1 });
+  });
 });

@@ -60,7 +60,7 @@ export function CommandPalette({ onPick, index: given }: { onPick: (id: string) 
         aria-keyshortcuts="Control+K Meta+K"
         className="flex items-center gap-2 rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)] focus-visible:text-[var(--lime)]"
       >
-        Search <span className="text-[var(--text-faint)]">Ctrl K</span>
+        Search <span className="hidden text-[var(--text-faint)] sm:inline">Ctrl K</span>
       </button>
       {open ? (
         <div className="fixed inset-0 z-50 flex items-start justify-center bg-black/70 p-[5vw] pt-[14vh] backdrop-blur-sm" onMouseDown={(e) => e.target === e.currentTarget && hide()}>

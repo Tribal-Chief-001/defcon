@@ -1,5 +1,6 @@
 import type { Snapshot } from './snapshot';
 import { tension } from './tension';
+import { TENSION } from './tension';
 import { KINDS, type Kind } from './types';
 
 const DAY = 86400;
@@ -11,7 +12,8 @@ export function hotspots(s: Snapshot, nowS: number, n = 6): { country: string; e
   for (let i = 0; i < s.n; i++) {
     const t = s.timeS[i]!;
     const c = s.countries[s.country[i]!];
-    if (!c || !Number.isFinite(t) || t > nowS || t < nowS - 7 * DAY) continue;
+    const kind = KINDS[s.kind[i]!];
+    if (!c || !kind || TENSION.weights[kind] === 0 || !Number.isFinite(t) || t > nowS || t < nowS - 7 * DAY) continue; // only events that count towards the score
     counts.set(c, (counts.get(c) ?? 0) + 1);
   }
   const rows: { country: string; events: number; score: number }[] = [];

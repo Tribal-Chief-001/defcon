@@ -4,7 +4,7 @@ const tick = 'absolute h-[18px] w-[18px] border-[var(--border-strong)]';
 
 export function HudFrame() {
   return (
-    <div aria-hidden="true" className="pointer-events-none absolute inset-0 z-[1] hidden overflow-hidden sm:block">
+    <div aria-hidden="true" className="pointer-events-none absolute inset-0 hidden overflow-hidden sm:block">
       <span data-tick className={`${tick} left-2 top-[4.9rem] border-l border-t`} />
       <span data-tick className={`${tick} right-2 top-[4.9rem] border-r border-t`} />
       <span data-tick className={`${tick} bottom-2 left-2 border-b border-l`} />

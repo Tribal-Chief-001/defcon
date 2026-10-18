@@ -17,9 +17,12 @@ describe('scrollbar (hairline, on-brand)', () => {
     expect(css).toMatch(/::-webkit-scrollbar-thumb:hover\s*\{/);
     expect(css).toMatch(/::-webkit-scrollbar-thumb:active\s*\{[^}]*var\(--lime\)/);
   });
-  it('supports Firefox with thin scrollbars and a colour', () => {
-    expect(css).toMatch(/scrollbar-width:\s*thin/);
-    expect(css).toMatch(/scrollbar-color:\s*[^;]+transparent/);
+  it('supports Firefox with thin scrollbars and a colour, but only where ::-webkit-scrollbar is unsupported', () => {
+    // Chrome 121+ ignores ::-webkit-scrollbar on any element that sets the standard properties, so they must not apply there
+    expect(css).toMatch(/@supports not selector\(::-webkit-scrollbar\)\s*\{[^@]*scrollbar-width:\s*thin[^@]*scrollbar-color:\s*[^;]+transparent/);
+    const outside = css.replace(/@supports not selector\(::-webkit-scrollbar\)\s*\{[\s\S]*?\}\s*\}/, '');
+    expect(outside).not.toMatch(/scrollbar-width/);
+    expect(outside).not.toMatch(/scrollbar-color/);
   });
   it('uses no shadow', () => {
     const block = css.slice(css.indexOf('::-webkit-scrollbar'));

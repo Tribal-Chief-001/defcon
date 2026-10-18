@@ -26,4 +26,8 @@ describe('HudFrame', () => {
     expect(html).not.toMatch(/shadow/);
     expect(html).toMatch(/text-transparent/);
   });
+  it('does not create its own stacking layer above the interface (review: it painted over the rails)', () => {
+    const { container } = render(<HudFrame />);
+    expect((container.firstElementChild as HTMLElement).className).not.toMatch(/\bz-/);
+  });
 });

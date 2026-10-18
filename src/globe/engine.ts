@@ -520,7 +520,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     const boxes: [number, number, number, number][] = [];
     const out: { id: string; name: string; x: number; y: number }[] = [];
     for (const { c, x, y } of shown) {
-      const box: [number, number, number, number] = [x + 7, y - 8, x + 13 + c.name.length * 7.6, y + 10];
+      const box: [number, number, number, number] = [x + 7, y - 8, x + 13 + c.name.length * 8.4, y + 10];
       if (boxes.some((b) => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) continue;
       boxes.push(box);
       out.push({ id: `${c.country}:${c.name}`, name: c.name, x, y });

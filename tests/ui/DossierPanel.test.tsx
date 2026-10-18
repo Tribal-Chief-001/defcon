@@ -122,6 +122,22 @@ describe('DossierPanel', () => {
     expect(document.activeElement).toBe(opener);
     opener.remove();
   });
+  // review finding: when the opener was a rail button that has since unmounted, focus must land on the globe, not on the page body
+  it('returns focus to the globe when the opener no longer exists', async () => {
+    stubFetch({ IND: base });
+    const canvas = document.createElement('canvas');
+    canvas.id = 'globe-canvas';
+    canvas.tabIndex = 0;
+    const opener = document.createElement('button');
+    document.body.append(canvas, opener);
+    opener.focus();
+    const { unmount } = render(<DossierPanel countryId="IND" onClose={() => {}} nowS={NOW} />);
+    await screen.findByRole('heading', { name: 'India' });
+    opener.remove(); // the rail row that opened it is gone
+    unmount();
+    expect(document.activeElement).toBe(canvas);
+    canvas.remove();
+  });
   it('says "auto-coded data only" instead of a tension level when the window is not comparable', async () => {
     stubFetch({ IND: base });
     useEvents.setState({ recent: snap([ev({ human: false, kind: 'protest' }), ev({ human: false, kind: 'armed', lat: 11 })]), status: 'ready' });

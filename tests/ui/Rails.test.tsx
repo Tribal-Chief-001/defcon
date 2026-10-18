@@ -82,4 +82,25 @@ describe('Rails', () => {
     render(<Rails {...props()} />);
     expect(screen.getAllByText(/no events in the last 7 days/i).length).toBe(2);
   });
+  // review findings
+  it('tells screen readers whether a latest event is human-coded or auto-coded', async () => {
+    useEvents.setState({ recent: snap([ev({ country: 'AAA', human: true }), ev({ country: 'BBB', human: false, timeS: NOW - 100 })]) });
+    render(<Rails {...props()} />);
+    const labels = screen.getAllByRole('button', { name: /show on the globe/i }).map((b) => b.getAttribute('aria-label'));
+    expect(labels.some((l) => /human-coded/.test(l!))).toBe(true);
+    expect(labels.some((l) => /auto-coded/.test(l!))).toBe(true);
+  });
+  it('keeps both rails inside short screens (own scroll) and the right rail clear of an open dossier below 1500 px', () => {
+    const a = render(<Rails {...props()} />);
+    for (const el of screen.getAllByRole('complementary')) expect(el.className).toMatch(/max-h-\[calc\(100vh-/);
+    expect(screen.getByRole('complementary', { name: /latest events/i }).className).toContain('min-[1100px]:flex');
+    a.unmount();
+    render(<Rails {...props({ dossierOpen: true })} />);
+    expect(screen.getByRole('complementary', { name: /latest events/i }).className).toContain('min-[1500px]:flex');
+  });
+  it('explains that the order uses the score while the number is the event count, in readable text', () => {
+    render(<Rails {...props()} />);
+    const note = screen.getByText(/order and bars use/i);
+    expect(note.className).toContain('text-[var(--text-muted)]');
+  });
 });

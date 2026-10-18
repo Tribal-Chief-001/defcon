@@ -28,7 +28,10 @@ canvas:focus-visible { outline-offset: -4px; }
 [tabindex="-1"]:focus, [tabindex="-1"]:focus-visible { outline: none; }
 
 /* Scrollbar: a hairline pill that belongs to the dossier look; wide enough to grab, brighter on hover, lime while dragged */
-* { scrollbar-width: thin; scrollbar-color: rgba(237, 237, 233, 0.35) transparent; }
+/* Chrome 121+ ignores ::-webkit-scrollbar on elements that set the standard properties, so only browsers without it (Firefox) get them */
+@supports not selector(::-webkit-scrollbar) {
+  * { scrollbar-width: thin; scrollbar-color: rgba(237, 237, 233, 0.35) transparent; }
+}
 ::-webkit-scrollbar { width: 10px; height: 10px; }
 ::-webkit-scrollbar-track { background: transparent; }
 ::-webkit-scrollbar-button { display: none; }

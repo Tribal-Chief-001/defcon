@@ -118,3 +118,4 @@ Open items found during Plan 1 that were deliberately not fixed. Each is graded 
 - Hotspots rank GDELT-heavy countries (the US, UK) first because GDELT over-reports them; a per-capita or per-source-normalised ranking would be fairer but needs a decision on method.
 - "Human-coded" shows 0 % for the last 30 days because UCDP's data ends 31 Aug 2026 (true, labelled); a newer human-coded source (ACLED, UCDP candidate releases) would fix the number itself.
 - The faint DEFCON word and corner ticks have no reduced-motion concern (static) but were not tuned for very bright event clusters; the rails are hidden on tablets under 1100 px (no tablet layout yet).
+- Plan 7 review minors left: `backdrop-blur` over the live canvas on integrated GPUs is unmeasured (reduced from xl to md/sm); the rails use `max-height` with their own scroll on short screens; the top-bar stats hide below 1200 px (no compact stats on tablets or phones yet).

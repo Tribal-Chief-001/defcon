@@ -19,6 +19,7 @@ import { LiveCapitalLabels, setLabels } from './ui/CapitalLabels';
 import { Coverage } from './ui/Coverage';
 import { EventCard, type EventInfo } from './ui/EventCard';
 import { HudFrame } from './ui/HudFrame';
+import type { Snapshot } from './events/snapshot';
 import { Rails } from './ui/Rails';
 import type { LatestEvent } from './events/rails';
 import { NightWatch } from './ui/NightWatch';
@@ -139,16 +140,9 @@ export function App() {
     return () => window.removeEventListener('hashchange', apply);
   }, [startDive, exitDive]);
 
-  // opens the event nearest to (lat, lon) in the event card; used by clicks on the globe and by the Latest rail
-  const openEvent = useCallback((lat: number, lon: number, kmPerPx: number) => {
+  // shows one specific event in the event card (its text loads from the per-day shard)
+  const showEvent = useCallback((name: 'recent' | 'archive', s: Snapshot, i: number) => {
     const token = latest.current.next();
-    const { recent, archive } = useEvents.getState();
-    const hit = pickEvent(recent, archive, lat, lon, PICK_RADIUS_PX * kmPerPx, { nowS: Date.now() / 1000, backS: useTime.getState().backS });
-    if (!hit) {
-      setSel(null);
-      return;
-    }
-    const { snapshot: s, index: i, name } = hit;
     const info: EventInfo = {
       kind: KINDS[s.kind[i]!] ?? 'other',
       severity: s.severity[i]!,
@@ -157,24 +151,40 @@ export function App() {
       precision: s.precision[i]!,
       country: s.countries[s.country[i]!] || null,
     };
-    const at = { lat: s.lat[i]!, lon: s.lon[i]! };
-    setSel({ info, detail: null, ...at });
+    setSel({ info, detail: null, lat: s.lat[i]!, lon: s.lon[i]! });
     void fetchDetail(BASE, name, s, i).then((detail) => {
       if (latest.current.isLatest(token)) setSel((cur) => (cur ? { ...cur, detail } : cur));
     });
   }, []);
+  // opens the event nearest to (lat, lon); used by clicks on the globe
+  const openEvent = useCallback((lat: number, lon: number, kmPerPx: number) => {
+    latest.current.next();
+    const { recent, archive } = useEvents.getState();
+    const hit = pickEvent(recent, archive, lat, lon, PICK_RADIUS_PX * kmPerPx, { nowS: Date.now() / 1000, backS: useTime.getState().backS });
+    if (!hit) {
+      setSel(null);
+      return;
+    }
+    showEvent(hit.name, hit.snapshot, hit.index);
+  }, [showEvent]);
   const onPick = useCallback((id: string | null, lat: number, lon: number, kmPerPx: number) => {
     setR({ id, lat, lon });
     if (id && id !== dossierIdRef.current) void startDive(id);
     openEvent(lat, lon, kmPerPx);
   }, [startDive, openEvent]);
-  // the Latest rail: fly the camera to the event and open its card (the focus target is cleared once the flight is over)
+  // the Latest rail: fly the camera to the event and open exactly that event (not whichever event is nearest to its coordinates: GDELT
+  // events share places and times); the focus target is cleared once the flight is over
   const [railFocus, setRailFocus] = useState<{ lat: number; lon: number; distance: number } | null>(null);
+  const railTimer = useRef<number | undefined>(undefined);
+  useEffect(() => () => window.clearTimeout(railTimer.current), []);
   const onRailEvent = useCallback((e: LatestEvent) => {
+    const s = useEvents.getState().recent;
+    if (!s || e.index >= s.n || s.timeS[e.index] !== e.timeS) return; // the snapshot was replaced since the row was drawn
     setRailFocus({ lat: e.lat, lon: e.lon, distance: 1.9 });
-    openEvent(e.lat, e.lon, 1);
-    window.setTimeout(() => setRailFocus(null), 1600);
-  }, [openEvent]);
+    showEvent('recent', s, e.index);
+    window.clearTimeout(railTimer.current);
+    railTimer.current = window.setTimeout(() => setRailFocus(null), 1600);
+  }, [showEvent]);
 
   return (
     <main className="relative h-full w-full bg-black">

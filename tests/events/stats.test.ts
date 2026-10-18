@@ -21,7 +21,7 @@ describe('globalStats (last 30 days)', () => {
     expect(globalStats(undefined, NOW)).toBeNull();
   });
   it('is zero events, no share and no countries for an empty snapshot (never NaN)', () => {
-    expect(globalStats(snap([]), NOW)).toEqual({ events: 0, humanShare: null, countries: 0 });
+    expect(globalStats(snap([]), NOW)).toEqual({ events: 0, humanShare: null, countries: 0, spanDays: 0 });
   });
   it('counts events, the human-coded share and the distinct countries', () => {
     const s = snap([ev({ country: 'AAA' }), ev({ country: 'AAA', human: false }), ev({ country: 'BBB', human: false }), ev({ country: null, human: false })]);
@@ -36,5 +36,12 @@ describe('globalStats (last 30 days)', () => {
   it('ignores events older than 30 days, in the future, and with a non-finite time or place', () => {
     const s = snap([ev({ timeS: NOW - 31 * DAY }), ev({ timeS: NOW + 3 * DAY }), ev({ lat: NaN }), ev({})]);
     expect(globalStats(s, NOW)).toMatchObject({ events: 1, countries: 1 });
+  });
+  // review finding: the window shown must be the data's real span, not a hard-coded 30 days
+  it('reports the real span of the counted events in whole days (at most 30)', () => {
+    expect(globalStats(snap([ev({ timeS: NOW - 3 * DAY }), ev({})]), NOW)).toMatchObject({ spanDays: 3 });
+    expect(globalStats(snap([ev({ timeS: NOW - 29.5 * DAY })]), NOW)).toMatchObject({ spanDays: 30 });
+    expect(globalStats(snap([ev({ timeS: NOW - 100 })]), NOW)).toMatchObject({ spanDays: 1 });
+    expect(globalStats(snap([]), NOW)).toMatchObject({ spanDays: 0 });
   });
 });

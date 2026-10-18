@@ -144,4 +144,25 @@ describe('App deep links and dive state', () => {
     expect(await screen.findByRole('heading', { name: 'Country IND' }, { timeout: 4000 })).toBeTruthy();
     useEvents.setState({ recent: undefined });
   });
+
+  // review finding: a Latest row must open exactly the event it shows, even when several share a place and time
+  it('a Latest row opens its own event, not a neighbour at the same place and time', async () => {
+    const NOW = Math.floor(Date.now() / 1000);
+    const same = { source: 'gdelt' as const, alsoIds: [], timeS: NOW - 600, lat: 10, lon: 20, precision: 3 as const, country: 'IND', kind: 'armed' as const, deaths: null, human: false, place: '', headline: '', actors: '', sources: [], firstSeenS: NOW, updatedS: NOW };
+    const e = encodeSnapshot([{ ...same, id: 'a', severity: 1 }, { ...same, id: 'b', severity: 3 }], { asOfS: NOW, generatedS: NOW, sources: [] });
+    const snap = decodeSnapshot(e.bin.buffer.slice(e.bin.byteOffset, e.bin.byteOffset + e.bin.byteLength) as ArrayBuffer, e.meta);
+    useEvents.setState({ recent: snap, status: 'ready' });
+    const shown = [...Array(snap.n).keys()].map((i) => snap.severity[i]!);
+    const wanted = Math.max(...shown); // the row shows one of them; whichever it is, the card must agree
+    vi.stubGlobal('fetch', vi.fn(async () => ({ ok: true, status: 200, json: async () => [{ place: 'P0', headline: '', actors: '', deaths: null, sources: [], alsoIds: [] }, { place: 'P1', headline: '', actors: '', deaths: null, sources: [], alsoIds: [] }] }) as Response));
+    render(<App />);
+    const row = (await screen.findAllByRole('button', { name: /show on the globe/i }, { timeout: 4000 }))[0]!;
+    const rowSeverity = Number(/severity (\d) of 5/.exec(row.getAttribute('aria-label')!)![1]);
+    fireEvent.click(row);
+    const card = await screen.findByLabelText('Event details', undefined, { timeout: 4000 });
+    await waitFor(() => expect(card.textContent).toMatch(new RegExp(`SEV ${rowSeverity}/5`)), { timeout: 4000 });
+    expect(wanted).toBeGreaterThanOrEqual(rowSeverity);
+    vi.unstubAllGlobals();
+    useEvents.setState({ recent: undefined });
+  });
 });

@@ -29,7 +29,9 @@ export function EventCard({ detail, info, nowS = Math.floor(Date.now() / 1000), 
     const opener = document.activeElement as HTMLElement | null;
     card.current?.focus({ preventScroll: true });
     return () => {
-      if (opener && opener.isConnected) opener.focus?.();
+      // the opener may be a rail row that unmounted meanwhile: fall back to the globe rather than the page body
+      if (opener && opener.isConnected && opener !== document.body) opener.focus?.();
+      else document.getElementById('globe-canvas')?.focus({ preventScroll: true });
     };
   }, []);
   // rewinding the scrubber declassifies: the effective age grows with how far back the playhead is

@@ -65,4 +65,17 @@ describe('EventCard', () => {
     expect(barWidth(scrubbed.container)).toBe(0);
     useTime.setState({ backS: 0 });
   });
+  it('returns focus to the globe when the opener no longer exists', () => {
+    const canvas = document.createElement('canvas');
+    canvas.id = 'globe-canvas';
+    canvas.tabIndex = 0;
+    const opener = document.createElement('button');
+    document.body.append(canvas, opener);
+    opener.focus();
+    const { unmount } = render(<EventCard detail={detail} info={info} nowS={NOW} onClose={() => {}} />);
+    opener.remove();
+    unmount();
+    expect(document.activeElement).toBe(canvas);
+    canvas.remove();
+  });
 });
