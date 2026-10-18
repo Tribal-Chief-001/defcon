@@ -23,6 +23,8 @@ export type GlobeHandle = {
   dive(id: string | null, target?: { lat: number; lon: number; distance: number }): void;
   setFraming(x: number, y: number): void;
   setTimeBack(backS: number): void;
+  project(lat: number, lon: number): { x: number; y: number; visible: boolean } | null;
+  onCursor(cb: (c: { x: number; y: number; lat: number; lon: number } | null, kmPerPx: number, dragging: boolean) => void): () => void;
   setCapitals(caps: Capital[]): void;
   setRelations(rel: Relations | null, points: Record<string, { lat: number; lon: number }>): void;
   onLabels(cb: (labels: { id: string; name: string; x: number; y: number }[]) => void): () => void;
@@ -316,6 +318,26 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   };
 
   const listeners = new Set<(id: string | null, lat: number, lon: number, kmPerPx: number) => void>();
+  // Cursor = Radar: while someone listens (and the pointer is a mouse), the system cursor is hidden and the reticle takes over
+  const cursorListeners = new Set<(c: { x: number; y: number; lat: number; lon: number } | null, kmPerPx: number, dragging: boolean) => void>();
+  const finePointer = !!window.matchMedia?.('(hover: hover) and (pointer: fine)').matches;
+  const setCursor = (c: string) => void (canvas.style.cursor = cursorListeners.size > 0 && finePointer ? 'none' : c);
+  // ground distance one screen pixel covers at the front of the globe (6,371 km radius)
+  const kmPerPxNow = () => ((2 * Math.max(0.05, camera.position.z - 1) * Math.tan((camera.fov * Math.PI) / 360)) / Math.max(1, canvas.clientHeight)) * 6371;
+  let cursorQueued = false;
+  const queueCursor = (clientX: number, clientY: number) => {
+    if (cursorQueued || cursorListeners.size === 0) return;
+    cursorQueued = true;
+    requestAnimationFrame(() => {
+      cursorQueued = false;
+      if (disposed) return;
+      const r = canvas.getBoundingClientRect();
+      const ll = latLonAt(clientX, clientY);
+      const c = ll ? { x: clientX - r.left, y: clientY - r.top, lat: ll.lat, lon: ll.lon } : null;
+      cursorListeners.forEach((cb) => cb(c, kmPerPxNow(), dragging));
+    });
+  };
+  const onLeave = () => cursorListeners.forEach((cb) => cb(null, kmPerPxNow(), false));
   let hoverId: string | null = null;
   let hoverQueued = false;
 
@@ -330,10 +352,11 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     vYaw = vPitch = 0;
     lastInput = performance.now();
     canvas.setPointerCapture(e.pointerId);
-    canvas.style.cursor = 'grabbing';
+    setCursor('grabbing');
   };
   const onMove = (e: PointerEvent) => {
     lastInput = performance.now();
+    if (e.pointerType !== 'touch') queueCursor(e.clientX, e.clientY);
     if (dragging) {
       const dx = e.clientX - lastX;
       const dy = e.clientY - lastY;
@@ -361,20 +384,19 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
         setOutline(hover, id);
         refreshArcs();
       }
-      canvas.style.cursor = id ? 'pointer' : 'grab';
+      setCursor(id ? 'pointer' : 'grab');
     });
   };
   const onCancel = () => {
     dragging = false;
-    canvas.style.cursor = 'grab';
+    setCursor('grab');
     click.cancel();
   };
   const onUp = (e: PointerEvent) => {
     dragging = false;
-    canvas.style.cursor = 'grab';
+    setCursor('grab');
     if (click.up()) {
-      // ground distance one screen pixel covers at the front of the globe (6,371 km radius), used to size the event pick radius
-      const kmPerPx = ((2 * Math.max(0.05, camera.position.z - 1) * Math.tan((camera.fov * Math.PI) / 360)) / Math.max(1, canvas.clientHeight)) * 6371;
+      const kmPerPx = kmPerPxNow(); // sizes the event pick radius
       const r = canvas.getBoundingClientRect();
       const mx = e.clientX - r.left;
       const my = e.clientY - r.top;
@@ -408,6 +430,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   canvas.addEventListener('pointermove', onMove);
   canvas.addEventListener('pointerup', onUp);
   canvas.addEventListener('pointercancel', onCancel);
+  canvas.addEventListener('pointerleave', onLeave);
   canvas.addEventListener('wheel', onWheel, { passive: false });
   const onLost = (e: Event) => {
     e.preventDefault();
@@ -554,6 +577,25 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       relPoints = points;
       refreshArcs(true);
     },
+    project(lat, lon) {
+      if (![lat, lon].every(Number.isFinite)) return null;
+      globe.updateMatrixWorld();
+      camera.updateMatrixWorld();
+      v3.set(...latLonToVec3(lat, lon, 1.0)).applyMatrix4(globe.matrixWorld);
+      const visible = v3.dot(camera.position) > 1; // in front of the horizon: dot(normal, camera) > |normal|^2
+      v3.project(camera);
+      const w = canvas.clientWidth || 1;
+      const h = canvas.clientHeight || 1;
+      return { x: (v3.x * 0.5 + 0.5) * w, y: (-v3.y * 0.5 + 0.5) * h, visible };
+    },
+    onCursor(cb) {
+      cursorListeners.add(cb);
+      setCursor('grab');
+      return () => {
+        cursorListeners.delete(cb);
+        setCursor('grab');
+      };
+    },
     setCapitals(caps) {
       allCaps = caps;
       capSig = '';
@@ -577,6 +619,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       canvas.removeEventListener('pointermove', onMove);
       canvas.removeEventListener('pointerup', onUp);
       canvas.removeEventListener('pointercancel', onCancel);
+      canvas.removeEventListener('pointerleave', onLeave);
       canvas.removeEventListener('wheel', onWheel);
       canvas.removeEventListener('webglcontextlost', onLost);
       scene.traverse((o) => {

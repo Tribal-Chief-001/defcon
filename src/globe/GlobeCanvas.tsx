@@ -11,6 +11,7 @@ import type { Capital } from './labels';
 import { loadCountries } from '../dossier/load';
 import { useTime } from '../time/store';
 import { loadRelations } from '../relations/load';
+import { makeRadarHandler } from './radarPipeline';
 import { Unsupported } from './Unsupported';
 
 const getJson = async (url: string) => {
@@ -50,6 +51,7 @@ export function GlobeCanvas({
     let unsubscribe: (() => void) | undefined;
     let offLabels: (() => void) | undefined;
     let offTime: (() => void) | undefined;
+    let offCursor: (() => void) | undefined;
     (async () => {
       const low = await getJson('/data/borders.low.topo.json');
       if (cancelled || !ref.current) return;
@@ -65,6 +67,7 @@ export function GlobeCanvas({
       if (diveRef.current) handle.dive(diveRef.current.id, diveRef.current.target); // a deep link opened before the globe existed
       if (onPick) off = handle.onPick(onPick);
       if (onLabels) offLabels = handle.onLabels(onLabels);
+      offCursor = handle.onCursor(makeRadarHandler((lat, lon) => handle!.project(lat, lon), () => useEvents.getState()));
       // capital markers are an extra: a failed fetch leaves the globe without them rather than failing it
       void fetch('/data/capitals.json')
         .then((r) => (r.ok ? (r.json() as Promise<Capital[]>) : []))
@@ -96,6 +99,7 @@ export function GlobeCanvas({
       off?.();
       offLabels?.();
       offTime?.();
+      offCursor?.();
       unsubscribe?.();
       handleRef.current = undefined;
       handle?.dispose();

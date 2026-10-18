@@ -17,6 +17,7 @@ import { DossierPanel } from './ui/DossierPanel';
 import { LiveCapitalLabels, setLabels } from './ui/CapitalLabels';
 import { Coverage } from './ui/Coverage';
 import { EventCard, type EventInfo } from './ui/EventCard';
+import { Reticle } from './ui/Reticle';
 import { Scrubber } from './ui/Scrubber';
 
 const BASE = '/data/events';
@@ -123,6 +124,7 @@ export function App() {
     <main className="relative h-full w-full bg-black">
       <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : null} dive={dive} framing={framing} onLabels={setLabels} />
       <LiveCapitalLabels />
+      <Reticle />
       <p className="pointer-events-none absolute left-[4vw] top-6 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
         <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-[var(--lime)]" />
         Defcon // globe core
