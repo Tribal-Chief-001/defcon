@@ -92,7 +92,7 @@ describe('bootstrapInterval', () => {
       expect(a[i]!.lo).toBeLessThanOrEqual(predictOne(m.rise, x) + 0.05);
       expect(a[i]!.hi).toBeGreaterThanOrEqual(predictOne(m.rise, x) - 0.05);
     });
-  });
+  }, 30_000); // two 12-replicate bootstraps: slow when the whole suite runs in parallel on this laptop
 });
 
 describe('confidenceOf (a heuristic: the lowest of three checks)', () => {

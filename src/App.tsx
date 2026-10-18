@@ -314,7 +314,7 @@ export function App() {
       )}
       {dossierId ? (
         <ErrorBoundary key={dossierId} where="dossier" onReset={exitDive}>
-          <DossierPanel countryId={dossierId} onClose={exitDive} />
+          <DossierPanel countryId={dossierId} onClose={exitDive} onMethod={() => setAbout(true)} />
         </ErrorBoundary>
       ) : null}
       {sel ? (

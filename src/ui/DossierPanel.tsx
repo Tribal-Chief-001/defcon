@@ -5,7 +5,10 @@ import type { Dossier } from '../dossier/types';
 import { createLatest } from '../events/latest';
 import { useEvents } from '../events/store';
 import { KINDS } from '../events/types';
+import { indexFor, loadIndices } from '../indices/load';
+import type { IndicesFile } from '../indices/types';
 import { Field } from './Field';
+import { IndexCard } from './IndexCard';
 import { RelationsBlock } from './RelationsBlock';
 import { Sparkline } from './Sparkline';
 
@@ -16,7 +19,7 @@ const KIND_LABEL: Record<string, string> = { armed: 'Armed', civilian: 'Civilian
 const latest = createLatest();
 type Loaded = { id: string; dossier: Dossier | null };
 
-export function DossierPanel({ countryId, onClose, nowS: fixedNowS }: { countryId: string; onClose: () => void; nowS?: number }) {
+export function DossierPanel({ countryId, onClose, nowS: fixedNowS, onMethod }: { countryId: string; onClose: () => void; nowS?: number; onMethod?: () => void }) {
   // fixed per country: a clock read on every render would re-run the summary each second
   const nowS = useMemo(() => fixedNowS ?? Math.floor(Date.now() / 1000), [fixedNowS, countryId]);
   const [loaded, setLoaded] = useState<Loaded | null>(null);
@@ -32,6 +35,14 @@ export function DossierPanel({ countryId, onClose, nowS: fixedNowS }: { countryI
     };
   }, []);
   const [names, setNames] = useState<Map<string, string>>(new Map());
+  const [indices, setIndices] = useState<IndicesFile | null>(null); // null until loaded; a failed load simply shows no indices
+  useEffect(() => {
+    let live = true;
+    void loadIndices().then((f) => live && setIndices(f));
+    return () => {
+      live = false;
+    };
+  }, []);
   const { recent, archive } = useEvents();
 
   useEffect(() => {
@@ -82,6 +93,8 @@ export function DossierPanel({ countryId, onClose, nowS: fixedNowS }: { countryI
         <span className="rounded-full border border-[var(--border-strong)] px-2.5 py-1">{d.type}</span>
         {d.continent ? <span className="rounded-full border border-[var(--border-strong)] px-2.5 py-1">{d.continent}</span> : null}
       </div>
+
+      {indices ? <IndexCard index={indexFor(indices, d.id)} model={indices.model} dataEnd={indices.dataEnd} rankedTotal={indices.countries.filter((c) => c.fatality.rank !== null).length} onMethod={onMethod ?? (() => {})} /> : null}
 
       <div className="mt-4 border-t border-[var(--border)]">
         <div className="grid grid-cols-[92px_1fr] gap-3 border-b border-[var(--border)] py-2 text-[13px]">

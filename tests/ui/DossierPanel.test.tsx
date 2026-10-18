@@ -11,6 +11,8 @@ import { useEvents } from '../../src/events/store';
 import { encodeSnapshot } from '../../scripts/events/encode';
 import type { Dossier } from '../../src/dossier/types';
 import type { Ev } from '../../src/events/types';
+import { resetIndicesCache } from '../../src/indices/load';
+import { indicesFixture } from '../indices/fixture';
 
 const NOW = Date.UTC(2026, 9, 18, 5, 0, 0) / 1000;
 const prov = (source: string, asOf: string) => ({ source, asOf });
@@ -187,3 +189,45 @@ describe('DossierPanel', () => {
     expect(screen.getByRole('heading').textContent).toBe('<img src=x onerror=alert(1)>');
   });
 });
+
+describe('DossierPanel: indices', () => {
+  const withIndices = (body: unknown) => {
+    const inner = globalThis.fetch;
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => (url.endsWith('/data/indices.json') ? (body ? res(body) : res({}, 404)) : inner(url, init))));
+  };
+  const indiaFile = () => {
+    const f = indicesFixture();
+    f.countries[0]!.id = 'IND';
+    return f;
+  };
+  beforeEach(() => resetIndicesCache());
+
+  it('shows the Fatality Index and the Instability Index of the country, and the method button calls onMethod', async () => {
+    stubFetch({ IND: base });
+    withIndices(indiaFile());
+    const onMethod = vi.fn();
+    render(<DossierPanel countryId="IND" onClose={() => {}} nowS={NOW} onMethod={onMethod} />);
+    const card = await screen.findByRole('region', { name: /indices/i });
+    expect(card.textContent).toMatch(/Fatality Index/);
+    expect(card.textContent).toMatch(/Instability Index/);
+    expect(card.textContent).toMatch(/Rank 1 of 2/); // two countries in the fixture have deaths
+    fireEvent.click(screen.getByRole('button', { name: /how computed/i }));
+    expect(onMethod).toHaveBeenCalled();
+    expect(screen.getByRole('heading', { name: 'India' })).toBeTruthy(); // the dossier itself is unchanged
+  });
+  it('says the country is not in the data when the file has no entry for it, and shows nothing when the file cannot be loaded', async () => {
+    stubFetch({ IND: base });
+    const f = indicesFixture(); // no IND entry
+    withIndices(f);
+    render(<DossierPanel countryId="IND" onClose={() => {}} nowS={NOW} />);
+    expect((await screen.findByRole('region', { name: /indices/i })).textContent).toMatch(/UCDP has recorded no organised violence here/);
+    cleanup();
+    resetIndicesCache();
+    stubFetch({ IND: base });
+    withIndices(null);
+    render(<DossierPanel countryId="IND" onClose={() => {}} nowS={NOW} />);
+    expect(await screen.findByRole('heading', { name: 'India' })).toBeTruthy();
+    expect(screen.queryByRole('region', { name: /indices/i })).toBeNull();
+  });
+});
+
