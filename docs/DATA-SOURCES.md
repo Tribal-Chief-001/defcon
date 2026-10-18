@@ -171,6 +171,19 @@ Cadence: the scheduled ingest runs every 3 hours (D-047), so "live" means at mos
 | Geography (`geo`) | Per conflict: a death-weighted centroid (mean of 3-D unit vectors, right across the antimeridian), the death-weighted 75th-percentile spread (40-2500 km) and the top 40 hotspots on a 0.5-degree grid. Only events UCDP located to a province or better (`where_prec` <= 4: 1 exact, 2 within 25 km, 3 district, 4 province) are used, because events it can only place in a region or the whole country share one geocode (in Russia - Ukraine one point, 49.0 / 32.0, holds about 74,000 of the deaths); `locatedShare` is the share of deaths that could be placed (Russia - Ukraine 12%, Israel: Palestine 100%). World `weeklyByKind`: the 52 weeks split by kind. |
 | Not included | Anything after the data end, GDELT events (auto-coded), any claim not in UCDP |
 
+## Indices (Fatality Index and Instability Index, built, committed)
+
+| Item | Value |
+|------|-------|
+| File | `public/data/indices.json` (182 KB, 22.6 KB gzipped; loaded only by the dossier, the War room and About) |
+| Built by | `npm run data:indices` (`scripts/index/build-indices.ts`, about 3 minutes with the bootstrap) after `npm run data:ucdp` and `npm run index:fetch` (World Bank WGI and WDI files, aggregates only) |
+| Content | per country of UCDP GED (130): the Fatality Index (score and range, deaths for 90 and 365 days with ranges, per 100,000, band, trend, rank, 120 monthly values) and, for the modelled countries, the Instability Index (probabilities of continuing and of a sharp rise with 90% intervals, momentum, confidence and its reason, the feature contributions); the world's monthly deaths; the model's backtest metrics and calibration bins |
+| Training | final UCDP GED only, country-months from 1998 up to 2025-09 (labels need three observed future months); predicted at the data end (2026-08-31) using provisional candidate rows; WGI values are the latest year before the prediction year |
+| Backtest | fit up to 2015-12, evaluate 2021-01 to 2025-09; regenerated into [INDEX-BACKTEST.md](INDEX-BACKTEST.md); `tests/index/indices-data.test.ts` fails if the model degrades (AUC floors, Brier skill, calibration) |
+| Refresh | by hand (`npm run data:indices`), not in CI; the file carries its data end date |
+| Licence | derived from CC BY 4.0 data (UCDP, World Bank WGI and WDI); attribution on the About page |
+| Not included | countries without a UCDP record (shown as "not modelled", never "low"), protests, onset forecasts |
+
 ## Key-events timeline (curated, committed)
 
 | Item | Value |

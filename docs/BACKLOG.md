@@ -181,3 +181,11 @@ The owner liked World Monitor's Country Instability Index and asked for it to be
 - Keyboard: about 75 tab stops before the next section (31 stream dots, 30 bubbles, 12 league rows): consider `tabIndex=-1` on the bubbles now that the full list exists.
 - The total JS budget (275 KB) leaves 23 KB of headroom for lazy chunks; revisit if it is used up.
 
+## Plan 11 deferred (Fatality and Instability indices, 2026-10-19)
+
+- A globe choropleth of the two indices (colour the countries by band or risk); a country-list sort by index in the search palette.
+- Refresh in CI: `indices.json`, `conflicts.json` and the UCDP candidate files are rebuilt by hand (`npm run data:ucdp`, `data:conflicts`, `data:indices`); auto-discovering newer UCDP monthly files and rebuilding in the workflow is not done.
+- The 90% intervals cover training uncertainty only; a conformal or walk-forward interval would cover model error too. One time split only: a rolling-origin backtest would show stability.
+- The interval of a near-certain probability reads "100.0 to 100.0%" next to ">99.9%": word it as "above 99.9%".
+- No independent review of the model by a person who does conflict forecasting; protests (ACLED) are not available, so unrest is not in the index.
+

@@ -128,3 +128,4 @@ No endpoint, licence or rate limit in section 3 was tested; they come from readi
 
 **Status (2026-10-19):** the War tracker became the **War room** (Plan 10, D-058): docked dashboard, chart kit and a presence on the globe. Next: the VRI build plan.
 
+**Status (2026-10-19):** the Fatality Index and the Instability Index (Violence Risk Index) are built (Plan 11, D-059): dossier card, War room Index board, method on the About page, backtest in [INDEX-BACKTEST.md](INDEX-BACKTEST.md). Still open: a globe choropleth, CI refresh of the indices, an unrest component (needs protest data).

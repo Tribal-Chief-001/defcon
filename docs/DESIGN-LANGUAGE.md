@@ -52,6 +52,13 @@ The popup became a **dashboard docked beside the globe**: a 46 vw (max 720 px) g
 - **On the globe:** every conflict with deaths in the last 90 days has a double sonar ring at its death-weighted centroid (orange when rising, bone otherwise, size from log deaths) and the top six carry a mono name and their 90-day deaths; ordinary event dots recede to 45%. The selected conflict gets a lime halo, a hairline zone ring, a lime additive glow on its top 40 death cells (the shape of the front) and diamond pins for its timeline events (bone confirmed, muted reported, orange disputed, lime and pulsing on hover). The camera flies to it and stays. The lowest quality tier draws halos only; reduced motion keeps rings static and numerals immediate.
 - **Charts** are hand-rolled SVG in the hairline language (`src/viz`): 1 px strokes, no shadows, bone with lime and orange only, every chart with a text alternative, status never by colour alone. Honesty is part of the design: windows and units on every chart, ranges as whiskers, protest deaths named as not counted, news reports tagged "auto-coded, not verified", the timeline's limits and omissions shown.
 
+## Indices (Plan 11)
+
+- **Gauge** (`src/viz/Gauge.tsx`): a 270-degree hairline ring, the score as a numeral in the middle (the number is always text), the low-high range as a lime arc on the ring and the value as a bone tick. Never colour alone: the band is a word beside it.
+- **Index card** (dossier, after the chips): Fatality Index first (gauge, band in words, rank, deaths with ranges, ten-year sparkline), then Instability Index (two probability bars with the 90% interval drawn as a lime segment and written out, momentum, confidence in words with its reason, the five biggest "why" terms), a one-line honesty note and a "How computed" link. A country with no UCDP record says so in a sentence; a country outside the model says "not modelled" and that this is not a low rating.
+- **Index board** (War room, after the hero): two ranked lists of 15 (hairline rows, mono rank, name, number, range bar on a shared scale, a line of words) that are buttons into the dossier, and the world's monthly deaths over ten years.
+- **Probabilities** read `>99.9%` and `<0.1%` at the extremes, never 100% or 0%; wording is "risk estimate", never "will".
+
 ## Text colours (Plan 6)
 
 `--text` #EDEDE9, `--text-muted` 68 % and `--text-faint` 55 % of it on true black: all reach WCAG AA (4.5:1), checked by `tests/a11y/contrast.test.ts`. The earlier 50 % / 25 % values did not (faint was 1.9:1) and carried real field labels.
