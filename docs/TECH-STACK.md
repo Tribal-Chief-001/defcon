@@ -30,11 +30,14 @@ Versions actually installed (2026-10-18, from `node_modules`). Choices D-006 (cu
 | `npm run data:gdelt` | cache GDELT 2.0 events (`-- --days N`, default 7) |
 | `npm run data:build` | merge sources, write `public/data/events/` snapshots and detail shards |
 | `npm run data:refresh` | newest 2 days of GDELT, then build |
+| `npm run data:wb` / `data:factbook` / `data:memberships` | fetch dossier sources into `data/raw/` (gitignored; memberships into `data/relations/`) |
+| `npm run data:dossiers` | build `public/data/dossiers/` (committed) |
 | `npm run map:pin-india` | re-pin India's outline hash (owner-approved ledger entry first) |
 
 ## Measured (2026-10-18)
 
-- JS gzip total **204.2 KB** (budget 250 KB). Borders gzip: low **158 KB** (budget 300 KB), high **775 KB** (budget 1 MB). Capitals 15 KB. Budgets are gzip transfer size.
+- JS gzip total **216.2 KB** (2026-10-18, after Plan 3) (budget 250 KB). Borders gzip: low **158 KB** (budget 300 KB), high **775 KB** (budget 1 MB). Capitals 15 KB. Budgets are gzip transfer size.
 - Globe in the in-app browser on Intel UHD (CML GT2), 465x868, DPR 1: **60.2 fps, worst frame 16.8 ms** over 3 s. Not yet measured at full-screen desktop size or on HiDPI.
 - Dev only: press the backtick key to show a frame-time overlay (`src/dev/`); it is tree-shaken from production builds.
 - Machine rule: run one vitest/vite/build process at a time (7.4 GB RAM).
+- Plan 3 sizes: dossier index 9.1 KB gzip (budget 40 KB); 248 dossiers, largest ZAF 4.2 KB raw (budget 6 KB). With 35 capital labels on screen the globe held 60 fps (same in-app browser, 474 px wide).

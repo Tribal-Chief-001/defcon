@@ -2,7 +2,7 @@
 
 A real-time 3D world monitor of armed conflict and civil unrest, and a frontend design showcase: true-black, hairline, sonar-lit globe; every border drawn from **India's official map**; every event labelled human-coded or auto-coded; missing data shown as missing.
 
-Status: Plans 1 (map and globe core) and 2 (events and live data) are done; Plans 3-6 (dossiers and navigation, signature interactions, data pipeline and hosting, hardening and launch) are in progress. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
+Status: Plans 1 (map and globe core), 2 (events and live data) and 3 (dossiers, Country Dive, Ctrl/Cmd-K, capital labels) are built; Plans 4-6 (signature interactions, data pipeline and hosting, hardening and launch) are next. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Quick start
 
@@ -21,6 +21,17 @@ npm run data:build           # merge, dedupe, write public/data/events/
 ```
 
 Without event data the app shows the globe with a "NO DATA" label.
+
+Country dossiers are committed (`public/data/dossiers/`). To refresh them (monthly, or when a source changes):
+
+```bash
+npm run data:wb          # World Bank WDI indicators (CC BY 4.0)
+npm run data:factbook    # archived CIA Factbook mirror (4 whitelisted fields)
+npm run data:memberships # UN and NATO official lists
+npm run data:dossiers    # build one JSON per country + search index
+```
+
+Try it: press Ctrl/Cmd-K to jump to a country or capital, click a country or a capital marker to dive in, Esc to leave. `#c=IND` in the URL opens a country directly.
 
 ## Checks
 

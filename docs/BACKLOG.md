@@ -40,3 +40,11 @@ Open items found during Plan 1 that were deliberately not fixed. Each is graded 
 - GDELT-only recent window: the recent snapshot has no UCDP data after 2026-08-31 and GDELT is US-centric and noisy (see `docs/TENSION-INDEX.md`); human-coded coverage (ACLED, newer UCDP) is the real fix.
 - No scheduled 15-minute ingest yet (Plan 5): "live" means the age of the last manual build, shown honestly by the pill.
 
+## Plan 3 deferred minors (2026-10-18)
+
+- An unknown id in the URL (`#c=XXX`) leaves the hash in place while no dossier opens; it should be cleared.
+- Clicking a capital marker that has an event under it opens the event card as well as the dive.
+- Capital labels are not culled against the open dossier panel; no hover cursor over markers; no keyboard route to markers (the palette is the accessible route).
+- The dive framing shift (0.17 / 0.2 of the canvas) is a fixed guess; desktop-width framing was not checked visually.
+- Factbook fields are archived (data date 2026-01-22, D-038): replace them (Wikidata or national sources) in a later plan; 61 Factbook files did not match a country by capital coordinates (see DATA-SOURCES.md).
+- `GlobeCanvas` rebuilds the whole globe when `onPick` or `onLabels` changes identity (both are stable today; keep them in refs if that changes).

@@ -183,7 +183,9 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       g.lineTo(29, 16);
       g.stroke();
     }
-    return new THREE.CanvasTexture(c);
+    const tex = new THREE.CanvasTexture(c);
+    tex.flipY = false; // the crosshair is symmetric; leaving FLIP_Y on made the browser warn about later 3D texture uploads
+    return tex;
   })();
   const capGeo = new THREE.BufferGeometry();
   const capPos = new Float32Array(MAX_MARKERS * 3);
