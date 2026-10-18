@@ -114,3 +114,15 @@ Measured 2026-10-18 (UCDP to 2026-08-31 + 7 days of GDELT, after the review fixe
 | Imported fields only | `Government.Government type`, `People and Society.Languages.Languages`, `Government.Independence`, `Government.International organization participation` (free text, shown as the Factbook states it, not interpreted), and the capital name and coordinates (used only to match files to our countries). **No other section is read** (disputes, geography, maps) so the Factbook's cartography cannot reach India's dossier (tests assert it). |
 | Matching | Factbook files use FIPS codes, we use ADM0_A3: files are matched by capital coordinates (within 80 km of one of the country's Natural Earth capitals, closest pair wins, one file per country). Real run 2026-10-18: 255 files, **194 countries matched**, 61 unmatched (territories and others); government type for 194, independence for 193, languages for 125. Known source quirk: the Wallis and Futuna file carries coordinates next to Apia, so Samoa (closer) wins and Wallis and Futuna stays unmatched; Burundi's file lists Gitega first (62 km from Natural Earth's Bujumbura). |
 | Why not membership flags | A text search for "NATO" finds 34 countries (Jordan and Malta are partners); UN and NATO membership come from the official lists (Task 4), not from this text. |
+
+## UN and NATO membership (official lists)
+
+| Item | Value |
+|------|-------|
+| File | `data/relations/memberships.json` (committed; ids are our ADM0_A3), rebuilt by hand with `npm run data:memberships` a few times a year |
+| UN members | 193, parsed from `https://www.un.org/en/about-us/member-states` (193 "Date of Admission" entries; the site returns 403 to a bare client, so a browser-like User-Agent is sent) |
+| UN observers | Holy See (`VAT`) and State of Palestine (`PSX`; ISO3 PSE) from `https://www.un.org/en/about-us/non-member-states` |
+| NATO members | 32, `https://www.nato.int/cps/en/natohq/nato_countries.htm`. The member list is prose on that page, so the 32 names are written down in `scripts/dossiers/memberships.ts` and the builder **checks them against the page**: it must say "NATO has 32 member countries" and mention every name, otherwise the build fails. |
+| As of | 2026-10-18 |
+| Independent cross-check (2026-10-18) | Against the archived Factbook organisation text: UN differs only by Nauru (not in the Factbook match) and the Holy See (observer); NATO differs only by Jordan and Malta, which the Factbook text lists as partners. |
+| Not covered | Other alliances and groupings (CSTO, SCO, EU, ...): the dossier shows the Factbook's organisation text as stated; alliance arcs are Plan 4. |

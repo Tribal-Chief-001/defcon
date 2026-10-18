@@ -17,7 +17,8 @@
     "data:build": "tsx scripts/events/build-snapshot.ts",
     "data:refresh": "tsx scripts/events/fetch-gdelt.ts --days 2 && tsx scripts/events/build-snapshot.ts",
     "data:wb": "tsx scripts/dossiers/fetch-worldbank.ts",
-    "data:factbook": "tsx scripts/dossiers/fetch-factbook.ts"
+    "data:factbook": "tsx scripts/dossiers/fetch-factbook.ts",
+    "data:memberships": "tsx scripts/dossiers/build-memberships.ts"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
