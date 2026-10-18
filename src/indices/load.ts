@@ -23,6 +23,8 @@ const target = (t: unknown) => {
   return !!x && [x.auc, x.ap, x.brierSkill, x.baseRate, x.testRows, x.positives, x.persistenceAuc].every(num) && Array.isArray(x.bins) && x.bins.length === 5 && x.bins.every(calib) && calib(x.tail);
 };
 
+const rollingOk = (r: unknown) => Array.isArray(r) && r.every((y) => !!y && Number.isInteger(y.year) && num(y.testRows) && num(y.positives) && [y.riseAuc, y.risePersistenceAuc, y.continueAuc, y.continuePersistenceAuc].every((v) => within(v, 0, 1)));
+
 function country(c: CountryIndex | null | undefined): boolean {
   if (!c || typeof c.id !== 'string' || !c.fatality) return false;
   const f = c.fatality;
@@ -71,6 +73,7 @@ function valid(f: unknown): f is IndicesFile {
     typeof x.model.trainedThrough === 'string' &&
     typeof x.model.testPeriod === 'string' &&
     num(x.model.bootstrapReps) &&
+    rollingOk(x.model.rolling) &&
     !!x.world &&
     months(x.world.monthly, 120) &&
     Array.isArray(x.countries) &&

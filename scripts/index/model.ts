@@ -72,6 +72,21 @@ export function backtest(rows: TrainRow[], split: { trainEnd: number; testStart:
   return { rise: metricsFor(train, test, 'rise', m.rise), continue: metricsFor(train, test, 'continue', m.continue) };
 }
 
+// Rolling origin: for each year, fit on everything up to September of the year before (the label windows of those rows end by December)
+// and test on that year. A year with no test months or fewer than 10 "rise" positives is skipped: its AUC would say nothing.
+export function rollingBacktest(rows: TrainRow[], years: number[]): { year: number; testRows: number; positives: number; rise: TargetMetrics; continue: TargetMetrics }[] {
+  const out: { year: number; testRows: number; positives: number; rise: TargetMetrics; continue: TargetMetrics }[] = [];
+  for (const year of years) {
+    const test = rows.filter((r) => r.ym >= year * 12 && r.ym <= year * 12 + 11);
+    const train = rows.filter((r) => r.ym <= year * 12 - 4); // September of the year before
+    const positives = test.reduce((t, r) => t + r.yRise, 0);
+    if (test.length === 0 || train.length === 0 || positives < 10) continue;
+    const m = fitTwo(train);
+    out.push({ year, testRows: test.length, positives, rise: metricsFor(train, test, 'rise', m.rise), continue: metricsFor(train, test, 'continue', m.continue) });
+  }
+  return out;
+}
+
 // 5th-95th percentile of the predicted probability over `reps` cluster-bootstrap refits (countries resampled with replacement).
 // It covers training-sample uncertainty only.
 export function bootstrapInterval(rows: TrainRow[], target: Target, xs: number[][], reps: number, seed: number): { lo: number; hi: number }[] {

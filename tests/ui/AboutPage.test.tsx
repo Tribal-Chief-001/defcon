@@ -129,7 +129,7 @@ describe('AboutPage: the method of the indices', () => {
     resetIndicesCache();
     vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(indicesFixture()), { status: 200 })));
     render(<AboutPage onClose={() => {}} />);
-    expect(await screen.findByRole('table', { name: /backtest/i })).toBeTruthy();
+    expect(await screen.findByRole('table', { name: /backtest results/i })).toBeTruthy();
     expect(screen.getByRole('heading', { name: /fatality and instability indices/i })).toBeTruthy();
   });
 });

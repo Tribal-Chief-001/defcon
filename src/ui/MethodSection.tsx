@@ -131,6 +131,31 @@ function Body({ f }: { f: IndicesFile }) {
             </tbody>
           </table>
         </div>
+        <p>Year by year: for each year the models are fitted on everything up to September of the year before and tested on that year.</p>
+        <div className="overflow-x-auto">
+          <table aria-label="Backtest by year" className="font-[var(--font-mono)] text-[12px]">
+            <thead>
+              <tr>
+                <th className={th}>year</th>
+                <th className={th}>sharp rise AUC</th>
+                <th className={th}>recent deaths alone</th>
+                <th className={th}>continues AUC</th>
+                <th className={th}>recent deaths alone</th>
+              </tr>
+            </thead>
+            <tbody>
+              {m.rolling.map((y) => (
+                <tr key={y.year} className="border-t border-[var(--border)]">
+                  <td className="py-1 pr-3">{y.year}</td>
+                  <td className="pr-3">{f3(y.riseAuc)}</td>
+                  <td className="pr-3">{f3(y.risePersistenceAuc)}</td>
+                  <td className="pr-3">{f3(y.continueAuc)}</td>
+                  <td>{f3(y.continuePersistenceAuc)}</td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
         <p className="text-[var(--text-muted)]">"Violence continues" is mostly persistence, which the baseline already captures. A sharp rise is where history alone is weak and governance adds a small gain.</p>
         {rows.map(({ name, t }) => (
           <CalibrationBlock key={name} name={name.toLowerCase()} m={t} />
@@ -147,7 +172,7 @@ function Body({ f }: { f: IndicesFile }) {
           <li>The backtest is one time split, not many; the intervals cover training uncertainty only, not model error or a change in the world.</li>
           <li>The model does not forecast the onset of violence in peaceful places (tested: it is not forecastable from these inputs).</li>
           <li>UCDP files the events of Gaza and the West Bank under Israel, so Palestine has no separate figure and Israel's indices include them.</li>
-          <li>Some 2026 candidate events carry only a month and are dated the 1st, so a 30 or 90-day window can miss or double a month (Ukraine's last 90 days are lower than its calendar quarter). Momentum then shows "low data".</li>
+          <li>An event that covers several days (UCDP candidate rows often cover a month) has its deaths spread evenly over those days, so the 30, 90 and 365-day windows and the monthly series follow the calendar. Event counts, places and the model's training months use the start date.</li>
           <li>Rows of 2026 are provisional (candidate events) and can be revised. The estimate is not a forecast, not advice for travel and not the official US DEFCON level.</li>
         </ul>
       </section>

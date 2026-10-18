@@ -32,6 +32,23 @@ Predictions of 30% or more (the tail, where a score can mislead): predicted 81.0
 
 Predictions of 30% or more (the tail, where a score can mislead): predicted 37.6%, observed 34.6% over 205 country-months.
 
+## Year by year (rolling origin)
+
+For each year the models are fitted on everything up to September of the year before and tested on that year, so a lucky split cannot hide a bad year. AUC of the model against the persistence baseline (deaths in the last 3 months).
+
+| test year | country-months | "rise" positives | "rise" AUC | baseline | "continue" AUC | baseline |
+|---|---|---|---|---|---|---|
+| 2016 | 1560 | 96 | 0.8573 | 0.7052 | 0.9637 | 0.946 |
+| 2017 | 1560 | 68 | 0.916 | 0.8156 | 0.9929 | 0.9862 |
+| 2018 | 1560 | 88 | 0.8887 | 0.793 | 0.9898 | 0.9809 |
+| 2019 | 1560 | 69 | 0.8572 | 0.7271 | 0.9864 | 0.9741 |
+| 2020 | 1560 | 75 | 0.8506 | 0.7519 | 0.9828 | 0.9695 |
+| 2021 | 1560 | 85 | 0.8029 | 0.7663 | 0.9802 | 0.9682 |
+| 2022 | 1560 | 82 | 0.8521 | 0.7174 | 0.9785 | 0.9643 |
+| 2023 | 1560 | 92 | 0.8584 | 0.729 | 0.9796 | 0.9653 |
+| 2024 | 1560 | 72 | 0.8988 | 0.7699 | 0.9922 | 0.9843 |
+| 2025 | 1170 | 49 | 0.8118 | 0.7296 | 0.984 | 0.9766 |
+
 ## Reading it
 
 "Continue" is mostly persistence (the baseline is already close); the model adds a little. "Rise" is where history alone is weak and governance adds a small gain. Neither is a forecast of an outbreak in a peaceful country (see docs/VRI-STUDY-2.md: onset is not forecastable from these inputs). Calibration bins that stay close to the diagonal are what the guard test in tests/index/indices-data.test.ts enforces.

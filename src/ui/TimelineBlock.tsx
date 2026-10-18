@@ -8,6 +8,7 @@ export type TimelineRow = { entry: TimelineEntry; theatre?: string; pinIndex?: n
 export type TimelineProps = {
   rows: TimelineRow[];
   checkedAt: string;
+  nowS?: number; // for tests: the age of the check is read against this instead of the clock
   showTheatre?: boolean;
   limit?: number;
   limits?: string;
@@ -24,13 +25,15 @@ export { rowKey } from '../timeline/key';
 // Key events curated from news sources as an editorial timeline, newest first: a big date, a spine with a status node, the title, the
 // attributed summary and the linked sources. Entries with a place can be shown on the globe; hovering one pulses its pin. The legend
 // says when the list was checked and what the statuses mean, so it is never read as live.
-export function TimelineBlock({ rows, checkedAt, showTheatre = false, limit, limits, notes = [], highlight, onShowOnMap, onHoverPin }: TimelineProps) {
+export function TimelineBlock({ rows, checkedAt, showTheatre = false, limit, limits, notes = [], highlight, onShowOnMap, onHoverPin, nowS }: TimelineProps) {
   const refs = useRef(new Map<string, HTMLLIElement>());
   useEffect(() => {
     if (!highlight) return;
     refs.current.get(highlight)?.scrollIntoView?.({ block: 'nearest', behavior: prefersReducedMotion() ? 'auto' : 'smooth' });
   }, [highlight]);
   if (rows.length === 0) return null;
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(checkedAt);
+  const age = m ? Math.floor(((nowS ?? Date.now() / 1000) - Date.UTC(+m[1]!, +m[2]! - 1, +m[3]!) / 1000) / 86400) : Number.NaN;
   const sorted = rows
     .map((r, i) => ({ r, i }))
     .sort((a, b) => b.r.entry.date.localeCompare(a.r.entry.date) || a.i - b.i)
@@ -40,7 +43,7 @@ export function TimelineBlock({ rows, checkedAt, showTheatre = false, limit, lim
     <section role="region" aria-label="Key events, sourced">
       <h4 className={`${label} mb-1`}>Key events (sourced)</h4>
       <p className="mb-2 text-[13px] text-[var(--text-muted)]">
-        Checked {fmtDate(checkedAt)}. Confirmed: two independent outlets report the event. Reported: one source. Disputed: sources or parties differ. Figures and claims are attributed to whoever made them and are not verified. Curated from news reports, not from UCDP.
+        Checked {fmtDate(checkedAt)}{age > 30 ? ` (${age} days ago: events after that date are not listed)` : ''}. Confirmed: two independent outlets report the event. Reported: one source. Disputed: sources or parties differ. Figures and claims are attributed to whoever made them and are not verified. Curated from news reports, not from UCDP.
       </p>
       {limits ? <p className="mb-2 text-[13px] text-[var(--text-muted)]">{limits}</p> : null}
       {notes.map((n) => (

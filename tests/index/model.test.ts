@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { backtest, bootstrapInterval, bootstrapPair, confidenceOf, contributions, featureVector, FEATURES, fitTwo, predictOne, type TrainRow } from '../../scripts/index/model';
+import { backtest, bootstrapInterval, bootstrapPair, rollingBacktest, confidenceOf, contributions, featureVector, FEATURES, fitTwo, predictOne, type TrainRow } from '../../scripts/index/model';
 import { ym } from '../../scripts/index/panel';
 
 // a deterministic synthetic panel: 60 countries x months; deaths drive the labels, governance adds a little
@@ -76,6 +76,23 @@ describe('backtest', () => {
       expect(t.positives).toBeGreaterThan(0);
     }
     expect(r.continue.brierSkill).toBeGreaterThan(0);
+  });
+});
+
+describe('rollingBacktest (one split is not enough: the model is tested year by year)', () => {
+  const data = rows();
+  it('fits on everything up to September of the year before and tests on that year, so no label window crosses', () => {
+    const r = rollingBacktest(data, [2014, 2015, 2016]);
+    expect(r.map((x) => x.year)).toEqual([2014, 2015, 2016]);
+    for (const x of r) {
+      expect(x.testRows).toBe(60 * 12);
+      expect(x.rise.auc).toBeGreaterThan(0.5);
+      expect(x.continue.auc).toBeGreaterThan(0.5);
+      expect(x.rise.persistenceAuc).toBeGreaterThan(0.5);
+    }
+  }, 60_000);
+  it('skips a year whose test months do not exist and one without enough positives to rank', () => {
+    expect(rollingBacktest(data, [1990, 2040]).map((x) => x.year)).toEqual([]);
   });
 });
 

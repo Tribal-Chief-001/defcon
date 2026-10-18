@@ -9,6 +9,23 @@ afterEach(cleanup);
 const rows = (): TimelineRow[] => timelineFixture().theatres.flatMap((t) => t.entries.map((entry) => ({ entry, theatre: t.title })));
 const pinned = (): TimelineRow[] => rows().map((r, i) => ({ ...r, pinIndex: r.entry.at ? i : undefined }));
 
+describe('TimelineBlock: age (finding: a hand-curated list must say when it is getting old)', () => {
+  const NOW = Date.UTC(2026, 11, 1, 12) / 1000; // 1 Dec 2026
+  const text = () => screen.getByRole('region', { name: /key events/i }).textContent ?? '';
+  it('says how old the check is and that newer events are not listed once it is over 30 days old, and still lists every entry', () => {
+    render(<TimelineBlock rows={rows()} checkedAt="2026-10-18" nowS={NOW} />);
+    expect(text()).toMatch(/Checked 18 Oct 2026 \(44 days ago: events after that date are not listed\)/);
+    expect(within(screen.getByRole('list', { name: /key events/i })).getAllByRole('listitem')).toHaveLength(3);
+  });
+  it('says nothing about age while the check is recent, or when the date is malformed', () => {
+    render(<TimelineBlock rows={rows()} checkedAt="2026-11-20" nowS={NOW} />);
+    expect(text()).not.toMatch(/days ago/);
+    cleanup();
+    render(<TimelineBlock rows={rows()} checkedAt="soon" nowS={NOW} />);
+    expect(text()).not.toMatch(/days ago|NaN/);
+  });
+});
+
 describe('TimelineBlock', () => {
   it('lists entries newest first with date, title, status word and summary', () => {
     render(<TimelineBlock rows={rows()} checkedAt="2026-10-18" />);

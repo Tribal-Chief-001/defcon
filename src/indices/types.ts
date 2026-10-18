@@ -30,6 +30,7 @@ export type CountryIndex = { id: string; fatality: Fatality; risk: Risk | null }
 
 export type Calibration = { predicted: number; observed: number; n: number };
 export type TargetMetrics = { auc: number; ap: number; brierSkill: number; baseRate: number; testRows: number; positives: number; persistenceAuc: number; bins: Calibration[]; tail: Calibration /* predictions of 30% or more */ };
+export type YearBacktest = { year: number; testRows: number; positives: number; riseAuc: number; risePersistenceAuc: number; continueAuc: number; continuePersistenceAuc: number };
 export type ModelMeta = {
   trainedThrough: string; // YYYY-MM, the last country-month whose label window is fully observed
   testPeriod: string;
@@ -37,5 +38,6 @@ export type ModelMeta = {
   bootstrapReps: number;
   rise: TargetMetrics;
   continue: TargetMetrics;
+  rolling: YearBacktest[]; // fit up to September of the year before, test on the year, one row per year
 };
 export type IndicesFile = { generated: string; dataEnd: string; seriesEnd: string; model: ModelMeta; world: { monthly: number[] }; countries: CountryIndex[] };

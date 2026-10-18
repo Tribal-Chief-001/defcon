@@ -92,8 +92,12 @@ describe('public/data/indices.json', () => {
       expect(c.risk.rise.hi, c.id).toBeLessThanOrEqual(c.risk.continue.hi + 1e-9);
     }
   });
-  it('gives no momentum reading to a country whose recent deaths are mostly dated the 1st of a month (Ukraine in the 2026 candidate files)', () => {
-    expect(by.get('UKR')!.risk!.momentum.direction).toBe('low data');
+  it('reads the last 90 days of Ukraine from the days its month-long events cover, not from their start dates (finding)', () => {
+    const u = by.get('UKR')!;
+    const m = u.fatality.monthly; // the last three months of the series are the calendar months up to the data end
+    const quarter = m[119]! + m[118]! + m[117]!;
+    expect(Math.abs(u.fatality.deaths90.best - quarter) / quarter).toBeLessThan(0.08); // 90 days against three calendar months (about 92 days)
+    expect(u.risk!.momentum.direction).not.toBe('low data');
   });
 
   it('does not model a country UCDP has never recorded: it is absent or has no risk numbers, never a fake "low"', () => {
@@ -122,6 +126,13 @@ describe('public/data/indices.json', () => {
     // the published document carries the numbers of the data file (the document is generated, so a stale one means a forgotten rebuild)
     const doc = readFileSync('docs/INDEX-BACKTEST.md', 'utf8');
     for (const v of [m.rise.auc, m.continue.auc, m.rise.persistenceAuc]) expect(doc, String(v)).toContain(v.toFixed(4));
+    // stability: the model is also tested year by year; the floors are set below what the data showed when they were written
+    expect(m.rolling.length).toBeGreaterThanOrEqual(8);
+    for (const y of m.rolling) {
+      expect(y.riseAuc, `rise AUC ${y.year}`).toBeGreaterThanOrEqual(0.75);
+      expect(y.riseAuc, `rise AUC against recent deaths alone ${y.year}`).toBeGreaterThan(y.risePersistenceAuc); // in every year, not only on average
+      expect(y.continueAuc, `continue AUC ${y.year}`).toBeGreaterThanOrEqual(0.95);
+    }
     expect(m.features).toEqual(FEATURES);
     expect(m.trainedThrough).toBe('2025-09');
     expect(m.bootstrapReps).toBeGreaterThanOrEqual(100);

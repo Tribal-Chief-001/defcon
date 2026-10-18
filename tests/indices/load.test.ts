@@ -27,6 +27,8 @@ describe('loadIndices', () => {
     ['a feature list that is not text', (f) => ((f.model.features = [1, 2] as unknown as string[]), f)],
     ['no test period', (f) => (((f.model as unknown as { testPeriod: unknown }).testPeriod = undefined), f)],
     ['a non-numeric bootstrap count', (f) => (((f.model as unknown as { bootstrapReps: unknown }).bootstrapReps = 'many'), f)],
+    ['a rolling backtest that is not a list', (f) => (((f.model as unknown as { rolling: unknown }).rolling = 'many'), f)],
+    ['a rolling backtest AUC above 1', (f) => ((f.model.rolling[0]!.riseAuc = 1.4), f)],
     ['no model section', (f) => ({ ...f, model: undefined })],
     ['a score above 100', (f) => ((f.countries[0]!.fatality.score = 140), f)],
     ['a non-finite score', (f) => ((f.countries[0]!.fatality as unknown as { score: unknown }).score = null, f)],

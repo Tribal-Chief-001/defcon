@@ -12,7 +12,7 @@ afterEach(cleanup);
 beforeEach(() => mocks.loadIndices.mockReset().mockResolvedValue(indicesFixture()));
 const shown = async () => {
   const r = render(<MethodSection />);
-  await screen.findByRole('table', { name: /backtest/i });
+  await screen.findByRole('table', { name: /backtest results/i });
   return r;
 };
 
@@ -36,7 +36,7 @@ describe('MethodSection', () => {
 
   it('prints the backtest numbers of the data file, with the persistence baseline', async () => {
     await shown();
-    const t = screen.getByRole('table', { name: /backtest/i }).textContent ?? '';
+    const t = screen.getByRole('table', { name: /backtest results/i }).textContent ?? '';
     expect(t).toMatch(/0\.846/); // rise AUC
     expect(t).toMatch(/0\.742/); // persistence AUC for rise
     expect(t).toMatch(/0\.983/);
@@ -45,6 +45,13 @@ describe('MethodSection', () => {
     expect(document.body.textContent).toMatch(/2021-01 to 2025-09/);
   });
 
+  it('shows the backtest year by year, from the data file', async () => {
+    await shown();
+    const t = screen.getByRole('table', { name: /backtest by year/i });
+    expect(within(t).getAllByRole('row')).toHaveLength(1 + indicesFixture().model.rolling.length);
+    expect(t.textContent).toMatch(/2024/);
+    expect(t.textContent).toMatch(/0\.810/); // the rise AUC of 2024
+  });
   it('gives the calibration as a table (predicted against observed per bin and the 30%+ bucket) next to the chart', async () => {
     await shown();
     const t = screen.getByRole('table', { name: /calibration.*sharp rise/i });
@@ -57,7 +64,7 @@ describe('MethodSection', () => {
   it('states the limits, including the ones that are specific to this model', async () => {
     await shown();
     const t = screen.getByRole('list', { name: /limits/i }).textContent ?? '';
-    for (const re of [new RegExp(`${indicesFixture().countries.length} countries`), /estimates/, /perceptions/, /one time split/, /training/i, /onset/i, /provisional/i, /not modelled/i, /dated the 1st/i, /extrapolat/i, /a year after/i, /Gaza and the West Bank/i, /not the official US DEFCON level/i]) expect(t).toMatch(re);
+    for (const re of [new RegExp(`${indicesFixture().countries.length} countries`), /estimates/, /perceptions/, /one time split/, /training/i, /onset/i, /provisional/i, /not modelled/i, /spread evenly/i, /extrapolat/i, /a year after/i, /Gaza and the West Bank/i, /not the official US DEFCON level/i]) expect(t).toMatch(re);
   });
 
   it('cites UCDP and the World Bank with their licences, as links', async () => {

@@ -29,7 +29,7 @@ export const indicesFixture = (): IndicesFile => ({
   generated: '2026-10-19',
   dataEnd: '2026-08-31',
   seriesEnd: '2026-08',
-  model: { trainedThrough: '2025-09', testPeriod: '2021-01 to 2025-09', features: FEATURES, bootstrapReps: 100, rise: metrics(0.846, 0.742), continue: metrics(0.983, 0.972) },
+  model: { trainedThrough: '2025-09', testPeriod: '2021-01 to 2025-09', features: FEATURES, bootstrapReps: 100, rise: metrics(0.846, 0.742), continue: metrics(0.983, 0.972), rolling: [2023, 2024, 2025].map((year, i) => ({ year, testRows: 1500, positives: 70 + i, riseAuc: 0.8 + i * 0.01, risePersistenceAuc: 0.7, continueAuc: 0.98, continuePersistenceAuc: 0.97 })) },
   world: { monthly: monthly(8000) },
   countries: [ukraine(), ecuador(), iceland()],
 });
