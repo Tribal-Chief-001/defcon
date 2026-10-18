@@ -219,4 +219,75 @@ describe('conflictsFromRows', () => {
     const [c] = one(hs.map((h, i) => row({ ago: i, best: 100, source_headline: h })));
     expect(c!.latest.map((e) => e.headline).sort()).toEqual(['', '', '', 'Shelling hits a market']);
   });
+
+  describe('geography', () => {
+    const geo = (rows: ReturnType<typeof row>[]) => one(rows)[0]!.geo;
+
+    it('puts the centroid on the sphere, correct across the antimeridian', () => {
+      const g = geo([row({ ago: 1, best: 60, latitude: '0', longitude: '179.9' }), row({ ago: 2, best: 60, latitude: '0', longitude: '-179.9' })])!;
+      expect(Math.abs(g.lon)).toBeGreaterThan(179.8);
+      expect(Math.abs(g.lat)).toBeLessThan(0.1);
+    });
+
+    it('weights the centroid by deaths', () => {
+      const g = geo([row({ ago: 1, best: 90, latitude: '0', longitude: '0' }), row({ ago: 2, best: 10, latitude: '0', longitude: '10' })])!;
+      expect(g.lon).toBeGreaterThan(0.8);
+      expect(g.lon).toBeLessThan(1.2);
+    });
+
+    it('still places a conflict whose located events have no deaths (they count 1)', () => {
+      const g = geo([row({ ago: 1, best: 200, latitude: '', longitude: '' }), row({ ago: 2, best: 0, latitude: '12', longitude: '34' })])!;
+      expect(g.lat).toBeCloseTo(12, 1);
+      expect(g.lon).toBeCloseTo(34, 1);
+    });
+
+    it('places a conflict only from events located to a district or better, and says how much could not be placed', () => {
+      const g = geo([
+        row({ ago: 1, best: 100, latitude: '48', longitude: '37', where_prec: '1' }),
+        row({ ago: 2, best: 100, latitude: '49', longitude: '32', where_prec: '6' }), // a whole-country geocode: no place
+        row({ ago: 3, best: 50, latitude: '48', longitude: '37', where_prec: '4' }),
+      ])!;
+      expect(g.lat).toBeCloseTo(48, 1);
+      expect(g.lon).toBeCloseTo(37, 1);
+      expect(g.cells).toEqual([[48.25, 37.25, 150]]);
+      expect(g.locatedShare).toBeCloseTo(150 / 250);
+    });
+
+    it('falls back to every located event when none is placed to a district or better (located share 0)', () => {
+      const g = geo([row({ ago: 1, best: 100, latitude: '49', longitude: '32', where_prec: '6' })])!;
+      expect(g.lat).toBeCloseTo(49, 1);
+      expect(g.locatedShare).toBe(0);
+    });
+
+    it('is null when no event has a usable location', () => {
+      expect(geo([row({ ago: 1, best: 200, latitude: '', longitude: '' })])).toBeNull();
+    });
+
+    it('clamps the spread between 40 and 2500 km', () => {
+      expect(geo([row({ ago: 1, best: 200, latitude: '10', longitude: '10' })])!.spreadKm).toBe(40);
+      const wide = geo([row({ ago: 1, best: 100, latitude: '0', longitude: '-30' }), row({ ago: 2, best: 100, latitude: '0', longitude: '30' })])!;
+      expect(wide.spreadKm).toBe(2500); // 3300 km from the centroid, clamped
+    });
+
+    it('bins deaths into 0.5-degree cells, drops cells under 3 deaths, orders by deaths and keeps at most 40', () => {
+      const g = geo([row({ ago: 1, best: 40, latitude: '10.1', longitude: '20.1' }), row({ ago: 2, best: 60, latitude: '10.2', longitude: '20.2' }), row({ ago: 3, best: 2, latitude: '30.1', longitude: '30.1' }), row({ ago: 4, best: 150, latitude: '-5.1', longitude: '99.9' })])!;
+      expect(g.cells[0]).toEqual([-5.25, 99.75, 150]);
+      expect(g.cells[1]).toEqual([10.25, 20.25, 100]); // the two events share a cell
+      expect(g.cells).toHaveLength(2); // the 2-death cell is dropped
+      const many = geo(Array.from({ length: 45 }, (_, i) => row({ ago: 1, best: 5 + i, latitude: String(i), longitude: '10.1' })))!;
+      expect(many.cells).toHaveLength(40);
+      expect(many.cells.map((c) => c[2])).toEqual([...many.cells.map((c) => c[2])].sort((a, b) => b - a));
+    });
+  });
+
+  it('world weeklyByKind has 3 x 52 weeks and its weeks add up to the weekly total', () => {
+    const f = conflictsFromRows([row({ ago: 0, best: 5, type_of_violence: '1' }), row({ ago: 1, best: 7, type_of_violence: '3' }), row({ ago: 8, best: 100, type_of_violence: '2' })], opts);
+    const w = f.world.weeklyByKind;
+    for (const k of ['state', 'non-state', 'one-sided'] as const) expect(w[k]).toHaveLength(52);
+    expect(w.state[51]).toBe(5);
+    expect(w['one-sided'][51]).toBe(7);
+    expect(w['non-state'][50]).toBe(100);
+    for (let i = 0; i < 52; i++) expect(w.state[i]! + w['non-state'][i]! + w['one-sided'][i]!).toBe(f.world.weekly[i]);
+  });
 });
+

@@ -36,4 +36,11 @@ describe('public/data/timeline.json', () => {
     expect(file.limits).toMatch(/Reuters/);
     for (const t of file.theatres) expect(t.note?.length ?? 0, t.key).toBeGreaterThan(20);
   });
+
+  it('places most entries on the map with a readable place name', () => {
+    const all = file.theatres.flatMap((t) => t.entries);
+    const placed = all.filter((e) => e.at);
+    expect(placed.length).toBeGreaterThanOrEqual(34);
+    for (const e of placed) expect(e.at!.place.length).toBeGreaterThan(2);
+  });
 });

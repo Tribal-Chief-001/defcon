@@ -168,6 +168,7 @@ Cadence: the scheduled ingest runs every 3 hours (D-047), so "live" means at mos
 | Provisional | Rows from candidate files are provisional (UCDP revises them); each event and each conflict carries that flag or share |
 | Unnamed | UCDP candidate files anonymise some actors as `XXX<number>`; those conflicts keep the code in their name next to the main country |
 | Licence | CC BY 4.0 (UCDP); citation text as in the UCDP section above |
+| Geography (`geo`) | Per conflict: a death-weighted centroid (mean of 3-D unit vectors, right across the antimeridian), the death-weighted 75th-percentile spread (40-2500 km) and the top 40 hotspots on a 0.5-degree grid. Only events UCDP located to a district or better (`where_prec` <= 4) are used, because events it can only place in a region or the whole country share one geocode (in Russia - Ukraine one point, 49.0 / 32.0, holds about 74,000 of the deaths); `locatedShare` is the share of deaths that could be placed (Russia - Ukraine 12%, Israel: Palestine 100%). World `weeklyByKind`: the 52 weeks split by kind. |
 | Not included | Anything after the data end, GDELT events (auto-coded), any claim not in UCDP |
 
 ## Key-events timeline (curated, committed)
@@ -180,4 +181,6 @@ Cadence: the scheduled ingest runs every 3 hours (D-047), so "live" means at mos
 | Statuses | confirmed: two independent outlets report the event (figures and claims stay attributed, not verified); reported: one reliable source or one claimant; disputed: sources or parties differ |
 | Limits | Reuters, AP, BBC and Guardian were not reachable by the research tools, so sources are mainly Al Jazeera, Times of Israel, Kyiv Independent, France 24 (AFP), CBS News and official statements. France 24 and AFP-based pieces are not fully independent of other wire reports. Front-line changes (Pokrovsk, Myrnohrad, Huliaipole, Kupiansk) are not listed: two readable independent sources were not found. The list ages: the page shows "checked <date>". |
 | Licence | Facts, summarised in our own words with attribution; each entry links its sources. No article text is copied. |
+
+**Timeline places:** `npm run data:timeline-places` (`scripts/timeline/places.ts`) adds an approximate `at` (city, area or strait a reader would look for, not the exact site) to 44 of the 46 timeline entries so they can be pinned on the globe.
 

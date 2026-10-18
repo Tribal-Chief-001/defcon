@@ -19,8 +19,8 @@ vi.mock('../src/events/service', () => ({ startEventService: () => () => {} }));
 vi.mock('../src/timeline/load', () => ({ loadTimeline: async () => null, resetTimelineCache: () => {} }));
 vi.mock('../src/conflicts/load', () => {
   const r = { best: 5, low: 4, high: 9 };
-  const c = (id: string, name: string, cid: string | null) => ({ id, name, kinds: ['state'], countries: [{ id: cid, name: 'Indialand', deaths365: 50 }], deaths: { d30: r, d90: r, d365: r }, events: { d30: 1, d90: 1, d365: 1 }, trend: 'steady', lastDate: '2026-08-30', weekly: new Array(52).fill(0), latest: [], provisionalShare: 0 });
-  const file = { generated: '2026-10-18', dataEnd: '2026-08-31', sources: ['t'], world: { deaths: { d30: r, d90: r, d365: r }, byKind: { state: { d90: r, d365: r }, 'non-state': { d90: r, d365: r }, 'one-sided': { d90: r, d365: r } }, weekly: new Array(52).fill(0), countries: [], conflictsListed: 2, latest: [] }, conflicts: [c('alpha-war', 'Alpha war', 'IND'), c('beta-war', 'Beta war', null)] };
+  const c = (id: string, name: string, cid: string | null) => ({ id, name, kinds: ['state'], countries: [{ id: cid, name: 'Indialand', deaths365: 50 }], deaths: { d30: r, d90: r, d365: r }, events: { d30: 1, d90: 1, d365: 1 }, trend: 'steady', lastDate: '2026-08-30', weekly: new Array(52).fill(0), latest: [], provisionalShare: 0, geo: null });
+  const file = { generated: '2026-10-18', dataEnd: '2026-08-31', sources: ['t'], world: { deaths: { d30: r, d90: r, d365: r }, byKind: { state: { d90: r, d365: r }, 'non-state': { d90: r, d365: r }, 'one-sided': { d90: r, d365: r } }, weekly: new Array(52).fill(0), weeklyByKind: { state: new Array(52).fill(0), 'non-state': new Array(52).fill(0), 'one-sided': new Array(52).fill(0) }, countries: [], conflictsListed: 2, latest: [] }, conflicts: [c('alpha-war', 'Alpha war', 'IND'), c('beta-war', 'Beta war', null)] };
   return { loadConflicts: async () => file, resetConflictsCache: () => {} };
 });
 vi.mock('../src/dossier/load', async (orig) => ({

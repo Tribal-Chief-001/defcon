@@ -49,6 +49,11 @@ export function validateTimeline(f: TimelineFile, opts: { conflictIds: Set<strin
       if (!e.title?.trim() || e.title.length > 100) bad(`${at}: title must be 1-100 characters`);
       if (!e.summary?.trim() || e.summary.length > 450 || words(e.summary) > 60) bad(`${at}: summary must be 1-60 words and at most 450 characters`);
       if (!STATUS.includes(e.status)) bad(`${at}: unknown status ${e.status}`);
+      if (e.at !== undefined) {
+        if (!Number.isFinite(e.at.lat) || Math.abs(e.at.lat) > 90) bad(`${at}: at.lat must be within -90..90`);
+        if (!Number.isFinite(e.at.lon) || Math.abs(e.at.lon) > 180) bad(`${at}: at.lon must be within -180..180`);
+        if (!e.at.place?.trim()) bad(`${at}: at.place is empty`);
+      }
       if (!Array.isArray(e.sources) || e.sources.length === 0) {
         bad(`${at}: no sources`);
         return;

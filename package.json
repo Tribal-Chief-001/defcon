@@ -25,6 +25,7 @@
     "data:dossiers": "tsx scripts/dossiers/build-dossiers.ts",
     "data:relations": "tsx scripts/relations/build-relations.ts",
     "data:conflicts": "tsx scripts/conflicts/build-conflicts.ts",
+    "data:timeline-places": "tsx scripts/timeline/places.ts",
     "index:fetch": "tsx scripts/index/fetch-structural.ts",
     "index:study": "tsx scripts/index/study.ts",
     "index:study2": "tsx scripts/index/study2.ts"

@@ -30,7 +30,12 @@
        "published": "2026-01-21",
        "verified": "Blackout from 8 Jan; Iran Human Rights says most killed 8-12 Jan; toll estimates"
       }
-     ]
+     ],
+     "at": {
+      "lat": 35.69,
+      "lon": 51.39,
+      "place": "Tehran"
+     }
     },
     {
      "date": "2026-02-28",
@@ -52,7 +57,12 @@
        "published": "2026-02-28",
        "verified": "Opening strikes killed Khamenei; Trump announced; state TV confirmed; IRGC retaliation"
       }
-     ]
+     ],
+     "at": {
+      "lat": 35.69,
+      "lon": 51.39,
+      "place": "Tehran"
+     }
     },
     {
      "date": "2026-03-02",
@@ -74,7 +84,12 @@
        "published": "2026-03-20",
        "verified": "Analyst calls strait de facto closed; tanker passage nearly stopped; no physical blockade"
       }
-     ]
+     ],
+     "at": {
+      "lat": 26.57,
+      "lon": 56.25,
+      "place": "Strait of Hormuz"
+     }
     },
     {
      "date": "2026-03-08",
@@ -96,7 +111,12 @@
        "published": "2026-03-09",
        "verified": "Named Sunday 8 March, virtual meeting; IRGC pledged allegiance"
       }
-     ]
+     ],
+     "at": {
+      "lat": 35.69,
+      "lon": 51.39,
+      "place": "Tehran"
+     }
     },
     {
      "date": "2026-04-07",
@@ -125,7 +145,12 @@
        "published": "2026-04-08",
        "verified": "Pakistan brokered; Pakistan said Lebanon covered, Netanyahu said not"
       }
-     ]
+     ],
+     "at": {
+      "lat": 33.68,
+      "lon": 73.05,
+      "place": "Islamabad"
+     }
     },
     {
      "date": "2026-04-12",
@@ -154,7 +179,12 @@
        "published": "2026-04-14",
        "verified": "Blockade announced Sunday 12 April; effective 10am EDT 13 April"
       }
-     ]
+     ],
+     "at": {
+      "lat": 33.68,
+      "lon": 73.05,
+      "place": "Islamabad"
+     }
     },
     {
      "date": "2026-06-07",
@@ -205,7 +235,12 @@
        "published": "2026-06-18",
        "verified": "Digital signing 14 June; presidential signing 17 June; 60-day talks on nuclear and sanctions"
       }
-     ]
+     ],
+     "at": {
+      "lat": 33.68,
+      "lon": 73.05,
+      "place": "Islamabad"
+     }
     },
     {
      "date": "2026-07-08",
@@ -227,7 +262,12 @@
        "published": "2026-07-08",
        "verified": "US struck overnight 7-8 July; Trump said MOU over; Iran hit Bahrain and Kuwait"
       }
-     ]
+     ],
+     "at": {
+      "lat": 26.57,
+      "lon": 56.25,
+      "place": "Strait of Hormuz"
+     }
     },
     {
      "date": "2026-09-10",
@@ -249,7 +289,12 @@
        "published": "2026-09-11",
        "verified": "AFP-sourced island takeover; Axios-sourced Saudi request and Trump refusal"
       }
-     ]
+     ],
+     "at": {
+      "lat": 13.32,
+      "lon": 43.25,
+      "place": "Mocha, Yemen"
+     }
     },
     {
      "date": "2026-09-26",
@@ -271,7 +316,12 @@
        "published": "2026-09-28",
        "verified": "Seven-day truce plan rejected; talks expected; France 24 says Sunday rather than Saturday"
       }
-     ]
+     ],
+     "at": {
+      "lat": 26.57,
+      "lon": 56.25,
+      "place": "Strait of Hormuz"
+     }
     },
     {
      "date": "2026-10-14",
@@ -293,7 +343,12 @@
        "published": "2026-10-18",
        "verified": "UKMTO 10+ vessels attacked in a week; Araghchi conditions; Guards say tanker hit mine"
       }
-     ]
+     ],
+     "at": {
+      "lat": 26.57,
+      "lon": 56.25,
+      "place": "Strait of Hormuz"
+     }
     }
    ],
    "note": "Includes the Houthi advance on the Red Sea coast, which is not part of the UCDP Iran conflict shown here."
@@ -325,7 +380,12 @@
        "published": "2026-03-02",
        "verified": "First Hezbollah fire since Nov 2024; IDF says intel chief killed; Salam's ban"
       }
-     ]
+     ],
+     "at": {
+      "lat": 33.89,
+      "lon": 35.5,
+      "place": "Beirut"
+     }
     },
     {
      "date": "2026-03-16",
@@ -347,7 +407,12 @@
        "published": "2026-03-16",
        "verified": "Army said it began limited targeted ground operations in south Lebanon"
       }
-     ]
+     ],
+     "at": {
+      "lat": 33.3,
+      "lon": 35.45,
+      "place": "Southern Lebanon"
+     }
     },
     {
      "date": "2026-04-08",
@@ -369,7 +434,12 @@
        "published": "2026-04-08",
        "verified": "IDF: 100 targets in 10 minutes; Beirut hit; Pakistan versus Netanyahu on Lebanon"
       }
-     ]
+     ],
+     "at": {
+      "lat": 33.89,
+      "lon": 35.5,
+      "place": "Beirut"
+     }
     },
     {
      "date": "2026-04-16",
@@ -391,7 +461,12 @@
        "published": "2026-04-16",
        "verified": "Trump post after calls with Aoun and Netanyahu; 10 days; start time"
       }
-     ]
+     ],
+     "at": {
+      "lat": 33.3,
+      "lon": 35.45,
+      "place": "Southern Lebanon"
+     }
     },
     {
      "date": "2026-06-01",
@@ -420,7 +495,12 @@
        "published": "2026-06-02",
        "verified": "Israeli source: Beirut strikes postponed at US request; IDF says no troops heading to Beirut"
       }
-     ]
+     ],
+     "at": {
+      "lat": 33.32,
+      "lon": 35.53,
+      "place": "Beaufort Castle"
+     }
     },
     {
      "date": "2026-06-19",
@@ -442,7 +522,12 @@
        "published": "2026-06-19",
        "verified": "US official announced; Leiter said offensive operations halted; US-Qatar mediation via Iran"
       }
-     ]
+     ],
+     "at": {
+      "lat": 33.3,
+      "lon": 35.45,
+      "place": "Southern Lebanon"
+     }
     },
     {
      "date": "2026-06-26",
@@ -464,7 +549,12 @@
        "published": "2026-06-27",
        "verified": "Signed 26 June in Washington; pilot zones; disarmament; coordination group"
       }
-     ]
+     ],
+     "at": {
+      "lat": 38.9,
+      "lon": -77.04,
+      "place": "Washington"
+     }
     },
     {
      "date": "2026-07-20",
@@ -486,7 +576,12 @@
        "published": "2026-07-20",
        "verified": "State Dept announced pilot zone operations in three villages; withdrawal not confirmed"
       }
-     ]
+     ],
+     "at": {
+      "lat": 33.3,
+      "lon": 35.45,
+      "place": "Southern Lebanon"
+     }
     },
     {
      "date": "2026-09-04",
@@ -508,7 +603,12 @@
        "published": "2026-09-05",
        "verified": "Claim only from Katz statement; no independent confirmation; Hezbollah silent"
       }
-     ]
+     ],
+     "at": {
+      "lat": 33.37,
+      "lon": 35.48,
+      "place": "Nabatieh area"
+     }
     },
     {
      "date": "2026-09-07",
@@ -530,7 +630,12 @@
        "published": "2026-09-07",
        "verified": "NNA: 9 killed in building plus 2 paramedics; IDF says targeted operatives moving weapons"
       }
-     ]
+     ],
+     "at": {
+      "lat": 33.37,
+      "lon": 35.48,
+      "place": "Nabatieh area"
+     }
     },
     {
      "date": "2026-10-14",
@@ -545,7 +650,12 @@
        "published": "2026-10-14",
        "verified": "10 km zone, about 50 villages destroyed, Katz says no withdrawal; no casualty counts given"
       }
-     ]
+     ],
+     "at": {
+      "lat": 33.3,
+      "lon": 35.45,
+      "place": "Southern Lebanon"
+     }
     }
    ],
    "note": "Strikes on Beirut in 2026 are in the March, April and June entries; no verified Beirut strikes were found for September and October."
@@ -584,7 +694,12 @@
        "published": "2026-01-09",
        "verified": "Night of 8-9 January strike; Russian MoD confirmed; target claims differ."
       }
-     ]
+     ],
+     "at": {
+      "lat": 49.84,
+      "lon": 24.03,
+      "place": "Lviv"
+     }
     },
     {
      "date": "2026-01-23",
@@ -606,7 +721,12 @@
        "published": "2026-01-24",
        "verified": "Two-day Abu Dhabi talks ended without agreement; Kremlin keeps Donbas withdrawal demand."
       }
-     ]
+     ],
+     "at": {
+      "lat": 24.45,
+      "lon": 54.37,
+      "place": "Abu Dhabi"
+     }
     },
     {
      "date": "2026-02-03",
@@ -628,7 +748,12 @@
        "published": "2026-02-03",
        "verified": "450 drones, over 60 missiles; Kyiv heating cut; pause lasted to Sunday."
       }
-     ]
+     ],
+     "at": {
+      "lat": 50.45,
+      "lon": 30.52,
+      "place": "Kyiv"
+     }
     },
     {
      "date": "2026-05-24",
@@ -650,7 +775,12 @@
        "published": "2026-05-24",
        "verified": "600 drones, 90 missiles per air force; 4 killed, over 100 wounded."
       }
-     ]
+     ],
+     "at": {
+      "lat": 49.8,
+      "lon": 30.12,
+      "place": "Bila Tserkva"
+     }
     },
     {
      "date": "2026-07-02",
@@ -672,7 +802,12 @@
        "published": "2026-07-02",
        "verified": "DSNS toll 31 dead, 102 injured after search ended 4 July; 28 ballistic missiles."
       }
-     ]
+     ],
+     "at": {
+      "lat": 50.45,
+      "lon": 30.52,
+      "place": "Kyiv"
+     }
     },
     {
      "date": "2026-07-03",
@@ -694,7 +829,12 @@
        "published": "2026-07-05",
        "verified": "Defence ministry claim dated 3 July; Zelensky calls it a lie; Peskov response."
       }
-     ]
+     ],
+     "at": {
+      "lat": 48.53,
+      "lon": 37.71,
+      "place": "Kostiantynivka"
+     }
     },
     {
      "date": "2026-09-05",
@@ -716,7 +856,12 @@
        "published": "2026-09-07",
        "verified": "Agreement to resume trilateral talks; Russia insists on Donbas withdrawal, rejects air truce."
       }
-     ]
+     ],
+     "at": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "place": "Moscow"
+     }
     },
     {
      "date": "2026-09-15",
@@ -738,7 +883,12 @@
        "published": "2026-10-09",
        "verified": "175 sq km claim; Putin 1,300 sq km claim versus ISW net loss estimate."
       }
-     ]
+     ],
+     "at": {
+      "lat": 48.99,
+      "lon": 37.81,
+      "place": "Lyman"
+     }
     },
     {
      "date": "2026-09-20",
@@ -760,7 +910,12 @@
        "published": "2026-09-20",
        "verified": "General Staff and Zelensky confirm Moscow refinery hit and set on fire."
       }
-     ]
+     ],
+     "at": {
+      "lat": 55.76,
+      "lon": 37.62,
+      "place": "Moscow"
+     }
     },
     {
      "date": "2026-10-08",
@@ -782,7 +937,12 @@
        "published": "2026-10-08",
        "verified": "Governor Filashkin: at least 30 killed, 18 wounded in glide-bomb strike on buses."
       }
-     ]
+     ],
+     "at": {
+      "lat": 48.72,
+      "lon": 37.56,
+      "place": "Kramatorsk"
+     }
     },
     {
      "date": "2026-10-11",
@@ -833,7 +993,12 @@
        "published": "2026-10-18",
        "verified": "Rubio's 60-day framing, tied to high energy prices and Iran war."
       }
-     ]
+     ],
+     "at": {
+      "lat": 38.9,
+      "lon": -77.04,
+      "place": "Washington"
+     }
     }
    ],
    "note": "Front-line changes such as Pokrovsk, Myrnohrad, Huliaipole and Kupiansk are not listed, so this is not the full picture of the front: two readable independent sources could not be found for 2026."
@@ -865,7 +1030,12 @@
        "published": "2026-01-15",
        "verified": "Phase two contents, Hamas reaction, at least 10 killed that day."
       }
-     ]
+     ],
+     "at": {
+      "lat": 31.5,
+      "lon": 34.47,
+      "place": "Gaza City"
+     }
     },
     {
      "date": "2026-01-26",
@@ -887,7 +1057,12 @@
        "published": "2026-01-26",
        "verified": "IDF says all hostages repatriated; Hamas and Rafah crossing comments."
       }
-     ]
+     ],
+     "at": {
+      "lat": 31.5,
+      "lon": 34.47,
+      "place": "Gaza City"
+     }
     },
     {
      "date": "2026-01-31",
@@ -909,7 +1084,12 @@
        "published": "2026-01-31",
        "verified": "At least 31 killed; IDF retaliation explanation; Hamas rejects claims."
       }
-     ]
+     ],
+     "at": {
+      "lat": 31.3,
+      "lon": 34.25,
+      "place": "Rafah"
+     }
     },
     {
      "date": "2026-02-02",
@@ -931,7 +1111,12 @@
        "published": "2026-02-02",
        "verified": "Reopened 2 Feb, people only, Shin Bet vetting; goods stay on Israeli crossings."
       }
-     ]
+     ],
+     "at": {
+      "lat": 31.3,
+      "lon": 34.25,
+      "place": "Rafah"
+     }
     },
     {
      "date": "2026-02-19",
@@ -953,7 +1138,12 @@
        "published": "2026-02-20",
        "verified": "Same pledges and five troop contributors; meeting held 19 February."
       }
-     ]
+     ],
+     "at": {
+      "lat": 38.9,
+      "lon": -77.04,
+      "place": "Washington"
+     }
     },
     {
      "date": "2026-02-28",
@@ -975,7 +1165,12 @@
        "published": "2026-03-19",
        "verified": "Rafah shut after 28 Feb, reopened 19 March for wounded and relatives."
       }
-     ]
+     ],
+     "at": {
+      "lat": 31.22,
+      "lon": 34.28,
+      "place": "Kerem Shalom crossing"
+     }
     },
     {
      "date": "2026-07-06",
@@ -997,7 +1192,12 @@
        "published": "2026-07-06",
        "verified": "Dissolution of emergency committee; NCAG outside Gaza; Israel rejects Hamas return."
       }
-     ]
+     ],
+     "at": {
+      "lat": 31.5,
+      "lon": 34.47,
+      "place": "Gaza City"
+     }
     },
     {
      "date": "2026-07-30",
@@ -1019,7 +1219,12 @@
        "published": "2026-08-05",
        "verified": "Netanyahu video 4 August: Israel did not agree; Hamas accepted the plan."
       }
-     ]
+     ],
+     "at": {
+      "lat": 31.5,
+      "lon": 34.47,
+      "place": "Gaza City"
+     }
     },
     {
      "date": "2026-09-23",
@@ -1041,7 +1246,12 @@
        "published": "2026-09-23",
        "verified": "Cost $2.45bn, no start date, only $280m of pledges transferred."
       }
-     ]
+     ],
+     "at": {
+      "lat": 31.5,
+      "lon": 34.47,
+      "place": "Gaza City"
+     }
     },
     {
      "date": "2026-09-29",
@@ -1063,7 +1273,12 @@
        "published": "2026-09-29",
        "verified": "100+ settlers, three Border Police hurt, arrests, Netanyahu and Sa'ar condemnations."
       }
-     ]
+     ],
+     "at": {
+      "lat": 32.06,
+      "lon": 35.31,
+      "place": "Jalud, near Nablus"
+     }
     },
     {
      "date": "2026-10-14",
@@ -1085,7 +1300,12 @@
        "published": "2026-10-16",
        "verified": "Private sector about half of weekly trucks; Hamas letter to mediators denies fees."
       }
-     ]
+     ],
+     "at": {
+      "lat": 31.22,
+      "lon": 34.28,
+      "place": "Kerem Shalom crossing"
+     }
     }
    ],
    "note": "Covers 2026 only. The ceasefire reportedly in effect since 10 October 2025 is not an entry, and the entries show it was repeatedly violated."

@@ -28,6 +28,7 @@ const conflict = (o: Partial<Conflict> & { id: string; name: string }): Conflict
     { id: 'e1', date: '2026-08-31', place: 'Kherson, Kherson oblast', country: 'Ukraine', lat: 46.6, lon: 32.6, precision: 1, kind: 'state', deaths: R(7, 5, 12), headline: 'Shelling <img src=x onerror=alert(1)> hits a market', sources: ['Agency A', 'Agency B'], provisional: true },
   ],
   provisionalShare: 0.3,
+  geo: { lat: 48, lon: 37, spreadKm: 200, locatedShare: 0.8, cells: [[48.25, 37.25, 100]] },
   ...o,
 });
 const file: ConflictsFile = {

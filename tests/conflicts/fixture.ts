@@ -10,6 +10,7 @@ export const worldFixture = (): World => ({
     'one-sided': { d90: R(200), d365: R(800) },
   },
   weekly: Array.from({ length: 52 }, (_, i) => i * 10),
+  weeklyByKind: { state: Array.from({ length: 52 }, (_, i) => i * 7), 'non-state': Array.from({ length: 52 }, (_, i) => i * 2), 'one-sided': Array.from({ length: 52 }, (_, i) => i) },
   countries: [
     { id: 'UKR', name: 'Ukraine', deaths90: 1200, deaths365: 5000 },
     { id: null, name: 'Atlantis', deaths90: 50, deaths365: 80 },

@@ -72,4 +72,39 @@ describe('public/data/conflicts.json', () => {
     expect(w.latest.map((e) => e.date)).toEqual([...w.latest.map((e) => e.date)].sort().reverse());
     expect(file.conflicts.some((c) => c.id === 'world')).toBe(false);
   });
+
+  it('has geography for every conflict with a located event, inside valid ranges', () => {
+    let withGeo = 0;
+    for (const c of file.conflicts) {
+      if (!c.geo) continue;
+      withGeo++;
+      expect(Math.abs(c.geo.lat), c.id).toBeLessThanOrEqual(90);
+      expect(Math.abs(c.geo.lon), c.id).toBeLessThanOrEqual(180);
+      expect(c.geo.spreadKm).toBeGreaterThanOrEqual(40);
+      expect(c.geo.spreadKm).toBeLessThanOrEqual(2500);
+      expect(c.geo.cells.length).toBeLessThanOrEqual(40);
+      expect(c.geo.locatedShare).toBeGreaterThanOrEqual(0);
+      expect(c.geo.locatedShare).toBeLessThanOrEqual(1);
+      const d = c.geo.cells.map((x) => x[2]);
+      expect(d).toEqual([...d].sort((a, b) => b - a));
+      for (const [la, lo, dd] of c.geo.cells) {
+        expect(Math.abs(la)).toBeLessThanOrEqual(90);
+        expect(Math.abs(lo)).toBeLessThanOrEqual(180);
+        expect(dd).toBeGreaterThanOrEqual(3);
+      }
+    }
+    expect(withGeo).toBeGreaterThan(file.conflicts.length * 0.9);
+    const ukraine = file.conflicts.find((c) => c.name === 'Russia - Ukraine')!;
+    expect(ukraine.geo!.lat).toBeGreaterThan(44);
+    expect(ukraine.geo!.lat).toBeLessThan(52);
+    expect(ukraine.geo!.lon).toBeGreaterThan(30);
+    expect(ukraine.geo!.lon).toBeLessThan(42);
+    // the whole-country geocode (49.0, 32.0) holds most of the deaths in the raw data: it must not become the picture of the conflict
+    expect(ukraine.geo!.cells.every((c) => !(c[0] === 49.25 && c[1] === 32.25 && c[2] > 20000))).toBe(true);
+    expect(ukraine.geo!.locatedShare).toBeLessThan(0.5);
+  });
+  it('has weekly-by-kind series that add up to the weekly total', () => {
+    const w = file.world;
+    for (let i = 0; i < 52; i++) expect(w.weeklyByKind.state[i]! + w.weeklyByKind['non-state'][i]! + w.weeklyByKind['one-sided'][i]!).toBe(w.weekly[i]);
+  });
 });

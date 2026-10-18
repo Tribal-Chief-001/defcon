@@ -107,7 +107,7 @@ describe('axe (rules jsdom supports)', () => {
   });
   it('the War tracker: list, detail, error and loading states', async () => {
     const r = { best: 5, low: 4, high: 9 };
-    const c = { id: 'a', name: 'Alpha war', kinds: ['state' as const], countries: [{ id: 'IND', name: 'India', deaths365: 5 }], deaths: { d30: r, d90: r, d365: r }, events: { d30: 1, d90: 1, d365: 1 }, trend: 'rising' as const, lastDate: '2026-08-30', weekly: Array.from({ length: 52 }, (_, i) => i), latest: [{ id: 'e', date: '2026-08-30', place: 'Town', country: 'India', lat: 1, lon: 2, precision: 1, kind: 'state' as const, deaths: r, headline: 'Shelling', sources: ['Agency'], provisional: true }], provisionalShare: 0.5 };
+    const c = { id: 'a', name: 'Alpha war', kinds: ['state' as const], countries: [{ id: 'IND', name: 'India', deaths365: 5 }], deaths: { d30: r, d90: r, d365: r }, events: { d30: 1, d90: 1, d365: 1 }, trend: 'rising' as const, lastDate: '2026-08-30', weekly: Array.from({ length: 52 }, (_, i) => i), latest: [{ id: 'e', date: '2026-08-30', place: 'Town', country: 'India', lat: 1, lon: 2, precision: 1, kind: 'state' as const, deaths: r, headline: 'Shelling', sources: ['Agency'], provisional: true }], provisionalShare: 0.5, geo: null };
     const file = { generated: '2026-10-18', dataEnd: '2026-08-31', sources: ['t'], conflicts: [c], world: worldFixture() };
     const a = render(<ConflictsPage selected={null} onSelect={() => {}} onClose={() => {}} onDive={() => {}} load={async () => file} />);
     expect(await check(a.container)).toEqual([]); // loading

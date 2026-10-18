@@ -35,6 +35,14 @@ describe('validateTimeline', () => {
     expect(problems(file([entry({ summary: 'word '.repeat(59) })]))).toEqual([]); // attribution needs words: up to 60 are fine
     expect(problems(file([entry({ summary: '' })])).join()).toMatch(/summary/);
   });
+  it('checks the optional place of an entry', () => {
+    const at = (a: unknown) => problems(file([entry({ at: a as never })])).join();
+    expect(at({ lat: 50.45, lon: 30.52, place: 'Kyiv' })).toBe('');
+    expect(at({ lat: 91, lon: 0, place: 'x' })).toMatch(/at\.lat/);
+    expect(at({ lat: 0, lon: -181, place: 'x' })).toMatch(/at\.lon/);
+    expect(at({ lat: Number.NaN, lon: 0, place: 'x' })).toMatch(/at\.lat/);
+    expect(at({ lat: 1, lon: 1, place: ' ' })).toMatch(/at\.place/);
+  });
   it('requires a known status', () => {
     expect(problems(file([entry({ status: 'true' as never })])).join()).toMatch(/status/);
   });

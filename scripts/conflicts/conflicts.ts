@@ -1,4 +1,4 @@
-import type { Conflict, ConflictEvent, ConflictsFile, Kind, Range, World } from '../../src/conflicts/types';
+import type { Conflict, ConflictEvent, ConflictsFile, Geo, Kind, Range, World } from '../../src/conflicts/types';
 
 export type GedRow = Record<string, string | undefined>;
 const DAY = 86400;
@@ -25,6 +25,76 @@ export const WORLD_ID = 'world'; // reserved for the World overview page
 const DATE_ONLY = /^(\d{4}-\d{2}-\d{2}|\d{1,2}\s+[A-Za-z]+\s+\d{4})$/; // some UCDP candidate headlines are just the date
 
 type Ev = { id: string; date: string; ageD: number; row: GedRow; kind: Kind; deaths: Range; provisional: boolean };
+
+const R_KM = 6371;
+const D2R = Math.PI / 180;
+const CELL = 0.5; // degrees
+const MAX_CELLS = 40;
+const SPREAD_MIN = 40;
+const SPREAD_MAX = 2500;
+const LOCATED_PREC = 4; // UCDP where_prec: 1 exact, 2 within 25 km, 3 district, 4 province; 5 and above: region or country geocode
+const haversineKm = (a: { lat: number; lon: number }, b: { lat: number; lon: number }) => {
+  const dLat = (b.lat - a.lat) * D2R;
+  const dLon = (b.lon - a.lon) * D2R;
+  const h = Math.sin(dLat / 2) ** 2 + Math.cos(a.lat * D2R) * Math.cos(b.lat * D2R) * Math.sin(dLon / 2) ** 2;
+  return 2 * R_KM * Math.asin(Math.min(1, Math.sqrt(h)));
+};
+
+// Where a conflict's deaths are: weighted by deaths (an event with none counts 1), the centroid is the mean of 3-D unit vectors so it is
+// right across the antimeridian; the spread is the death-weighted 75th-percentile distance to it; the cells are the top death hotspots.
+function geoOf(evs: Ev[]): Geo | null {
+  const pts = evs.flatMap((e) => {
+    const lat = num(e.row.latitude);
+    const lon = num(e.row.longitude);
+    return lat === null || lon === null || Math.abs(lat) > 90 || Math.abs(lon) > 180 ? [] : [{ lat, lon, deaths: e.deaths.best, w: Math.max(1, e.deaths.best), located: (num(e.row.where_prec) ?? 5) <= LOCATED_PREC }];
+  });
+  if (pts.length === 0) return null;
+  // UCDP gives events it can only place in a region or the whole country a single geocode: in Russia - Ukraine one point (49.0, 32.0)
+  // holds most of the deaths. Those would be the whole picture, so the shape comes from events located to a district or better.
+  const totalDeaths = pts.reduce((s, p) => s + p.deaths, 0);
+  const located = pts.filter((p) => p.located);
+  const locatedShare = totalDeaths > 0 ? located.reduce((s, p) => s + p.deaths, 0) / totalDeaths : located.length > 0 ? 1 : 0;
+  if (located.length > 0) pts.splice(0, pts.length, ...located);
+  let x = 0;
+  let y = 0;
+  let z = 0;
+  let total = 0;
+  for (const p of pts) {
+    x += p.w * Math.cos(p.lat * D2R) * Math.cos(p.lon * D2R);
+    y += p.w * Math.cos(p.lat * D2R) * Math.sin(p.lon * D2R);
+    z += p.w * Math.sin(p.lat * D2R);
+    total += p.w;
+  }
+  const norm = Math.hypot(x, y, z);
+  const heaviest = pts.reduce((m, p) => (p.w > m.w ? p : m), pts[0]!);
+  const c = norm < 1e-9 * total ? { lat: heaviest.lat, lon: heaviest.lon } : { lat: Math.asin(z / norm) / D2R, lon: Math.atan2(y, x) / D2R };
+  const byDist = pts.map((p) => ({ d: haversineKm(c, p), w: p.w })).sort((a, b) => a.d - b.d);
+  let cum = 0;
+  let spread = byDist[byDist.length - 1]!.d;
+  for (const p of byDist) {
+    cum += p.w;
+    if (cum >= 0.75 * total) {
+      spread = p.d;
+      break;
+    }
+  }
+  const cells = new Map<string, [number, number, number]>();
+  for (const p of pts) {
+    const i = Math.floor(p.lat / CELL);
+    const j = Math.floor(p.lon / CELL);
+    const key = `${i},${j}`;
+    const cell = cells.get(key) ?? [Math.round((i + 0.5) * CELL * 100) / 100, Math.round((j + 0.5) * CELL * 100) / 100, 0];
+    cells.set(key, cell);
+    cell[2] += p.deaths;
+  }
+  return {
+    lat: Math.round(c.lat * 1000) / 1000,
+    lon: Math.round(c.lon * 1000) / 1000,
+    spreadKm: Math.round(Math.min(SPREAD_MAX, Math.max(SPREAD_MIN, spread))),
+    locatedShare: Math.round(locatedShare * 1000) / 1000,
+    cells: [...cells.values()].filter((v) => v[2] >= 3).sort((a, b) => b[2] - a[2] || a[0] - b[0] || a[1] - b[1]).slice(0, MAX_CELLS),
+  };
+}
 
 const newestFirst = (a: ConflictEvent, b: ConflictEvent) => b.date.localeCompare(a.date) || a.id.localeCompare(b.id);
 
@@ -123,6 +193,7 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
       weekly,
       latest,
       provisionalShare: provisional / evs.length,
+      geo: geoOf(evs),
     });
   }
   const world = worldOf(all, conflicts.length, opts.gwToId);
@@ -134,13 +205,17 @@ function worldOf(all: Ev[], conflictsListed: number, gwToId: Record<string, stri
   const deaths = { d30: zero(), d90: zero(), d365: zero() };
   const byKind: World['byKind'] = { state: { d90: zero(), d365: zero() }, 'non-state': { d90: zero(), d365: zero() }, 'one-sided': { d90: zero(), d365: zero() } };
   const weekly = new Array<number>(52).fill(0);
+  const weeklyByKind: World['weeklyByKind'] = { state: new Array<number>(52).fill(0), 'non-state': new Array<number>(52).fill(0), 'one-sided': new Array<number>(52).fill(0) };
   const countries = new Map<string, { id: string | null; name: string; deaths90: number; deaths365: number }>();
   for (const e of all) {
     add(deaths.d365, e.deaths);
     add(byKind[e.kind].d365, e.deaths);
     if (e.ageD < 90) (add(deaths.d90, e.deaths), add(byKind[e.kind].d90, e.deaths));
     if (e.ageD < 30) add(deaths.d30, e.deaths);
-    if (e.ageD < 364) weekly[51 - Math.floor(e.ageD / 7)]! += e.deaths.best;
+    if (e.ageD < 364) {
+      weekly[51 - Math.floor(e.ageD / 7)]! += e.deaths.best;
+      weeklyByKind[e.kind][51 - Math.floor(e.ageD / 7)]! += e.deaths.best;
+    }
     const key = e.row.country_id ?? e.row.country ?? '';
     const c = countries.get(key) ?? { id: gwToId[e.row.country_id ?? ''] ?? null, name: e.row.country ?? 'Unknown', deaths90: 0, deaths365: 0 };
     countries.set(key, c);
@@ -151,6 +226,7 @@ function worldOf(all: Ev[], conflictsListed: number, gwToId: Record<string, stri
     deaths,
     byKind,
     weekly,
+    weeklyByKind,
     countries: [...countries.values()].filter((c) => c.deaths90 > 0).sort((a, b) => b.deaths90 - a.deaths90 || a.name.localeCompare(b.name)).slice(0, 12),
     conflictsListed,
     latest: all.map(toEvent).filter((e): e is ConflictEvent => e !== null).sort(newestFirst).slice(0, 20),

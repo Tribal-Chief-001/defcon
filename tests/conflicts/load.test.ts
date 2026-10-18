@@ -9,7 +9,7 @@ const good: ConflictsFile = {
   dataEnd: '2026-08-31',
   sources: ['GED 26.1'],
   world: worldFixture(),
-  conflicts: [{ id: 'a', name: 'A', kinds: ['state'], countries: [], deaths: { d30: r, d90: r, d365: r }, events: { d30: 1, d90: 1, d365: 1 }, trend: 'steady', lastDate: '2026-08-30', weekly: new Array<number>(52).fill(0), latest: [], provisionalShare: 0 }],
+  conflicts: [{ id: 'a', name: 'A', kinds: ['state'], countries: [], deaths: { d30: r, d90: r, d365: r }, events: { d30: 1, d90: 1, d365: 1 }, trend: 'steady', lastDate: '2026-08-30', weekly: new Array<number>(52).fill(0), latest: [], provisionalShare: 0, geo: null }],
 };
 const reply = (body: unknown, ok = true) => vi.fn(async () => ({ ok, json: async () => body }) as Response);
 
@@ -31,6 +31,11 @@ describe('loadConflicts', () => {
     ['a bad data end', { ...good, dataEnd: 'soon' }, true],
     ['a conflict with a short weekly list', { ...good, conflicts: [{ ...good.conflicts[0], weekly: [1, 2] }] }, true],
     ['no world section', { ...good, world: undefined }, true],
+    ['a world without weeklyByKind', { ...good, world: { ...worldFixture(), weeklyByKind: undefined } }, true],
+    ['a world with a short weeklyByKind', { ...good, world: { ...worldFixture(), weeklyByKind: { state: [1], 'non-state': [1], 'one-sided': [1] } } }, true],
+    ['a geo with a non-finite centroid', { ...good, conflicts: [{ ...good.conflicts[0], geo: { lat: null, lon: 1, spreadKm: 50, cells: [] } }] }, true],
+    ['a geo with a located share above 1', { ...good, conflicts: [{ ...good.conflicts[0], geo: { lat: 1, lon: 1, spreadKm: 50, locatedShare: 1.5, cells: [] } }] }, true],
+    ['a geo with a malformed cell', { ...good, conflicts: [{ ...good.conflicts[0], geo: { lat: 1, lon: 1, spreadKm: 50, locatedShare: 1, cells: [[1, 2]] } }] }, true],
     ['a world with a short weekly list', { ...good, world: { ...worldFixture(), weekly: [1] } }, true],
     ['a world with a non-finite total', { ...good, world: { ...worldFixture(), deaths: { ...worldFixture().deaths, d90: { best: null, low: 0, high: 0 } } } }, true],
     ['a non-finite number', { ...good, conflicts: [{ ...good.conflicts[0], deaths: { d30: r, d90: { ...r, best: null }, d365: r } }] }, true],
@@ -43,5 +48,13 @@ describe('loadConflicts', () => {
   it('throws when the network fails', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => Promise.reject(new TypeError('offline'))));
     await expect(loadConflicts()).rejects.toThrow(/conflicts data/i);
+  });
+
+  it('accepts an older file without geo and gives those conflicts geo null', async () => {
+    const old = { ...good, conflicts: [{ ...good.conflicts[0] }] } as unknown as { conflicts: Record<string, unknown>[] };
+    delete old.conflicts[0]!.geo;
+    vi.stubGlobal('fetch', reply(old));
+    const f = await loadConflicts();
+    expect(f.conflicts[0]!.geo).toBeNull();
   });
 });
