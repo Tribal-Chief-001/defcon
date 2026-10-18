@@ -3,6 +3,7 @@ import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { decodeSnapshot } from '../../src/events/snapshot';
 import { useEvents } from '../../src/events/store';
+import { errorLog } from '../../src/lib/errorLog';
 import { AboutPage } from '../../src/ui/AboutPage';
 import { encodeSnapshot } from '../../scripts/events/encode';
 
@@ -77,5 +78,16 @@ describe('AboutPage', () => {
     const proceeded = fireEvent.keyDown(last, { key: 'Tab' });
     expect(proceeded).toBe(false); // wrapped to the first element
     expect(document.activeElement).toBe(focusables[0]);
+  });
+  it('shows local diagnostics (or says there are none) with a copy button', () => {
+    errorLog.clear();
+    const a = render(<AboutPage onClose={() => {}} />);
+    expect(a.container.querySelector('[data-diagnostics]')!.textContent).toMatch(/no errors recorded/i);
+    expect(screen.getByRole('button', { name: /copy diagnostics/i })).toBeTruthy();
+    a.unmount();
+    errorLog.record(new Error('panel exploded'), 'dossier');
+    const b = render(<AboutPage onClose={() => {}} />);
+    expect(b.container.querySelector('[data-diagnostics]')!.textContent).toMatch(/dossier: panel exploded/);
+    errorLog.clear();
   });
 });

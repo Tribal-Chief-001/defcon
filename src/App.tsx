@@ -25,6 +25,8 @@ import { useSoundTriggers } from './sound/triggers';
 import { useNightWatch } from './watch/useNightWatch';
 import { Scrubber } from './ui/Scrubber';
 import { lazy, Suspense } from 'react';
+import { ErrorBoundary } from './ui/ErrorBoundary';
+import { Unsupported } from './globe/Unsupported';
 import { SkipLink } from './ui/SkipLink';
 import { SoundToggle } from './ui/SoundToggle';
 import { StatusRegion, announce } from './ui/status';
@@ -164,7 +166,9 @@ export function App() {
     <main className="relative h-full w-full bg-black">
       <SkipLink />
       <StatusRegion />
-      <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : watch.marker} focus={watch.focus} dive={dive} framing={framing} onLabels={setLabels} />
+      <ErrorBoundary where="globe" fallback={<Unsupported reason="failed" />}>
+        <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : watch.marker} focus={watch.focus} dive={dive} framing={framing} onLabels={setLabels} />
+      </ErrorBoundary>
       <LiveCapitalLabels />
       <Reticle />
       <NightWatch active={watch.active} caption={watch.caption} />
@@ -177,16 +181,32 @@ export function App() {
       </TopBar>
       {about ? (
         <Suspense fallback={null}>
-          <AboutPage onClose={() => setAbout(false)} />
+          <ErrorBoundary where="about" onReset={() => setAbout(false)}>
+            <AboutPage onClose={() => setAbout(false)} />
+          </ErrorBoundary>
         </Suspense>
       ) : null}
       <Coverage />
-      <Scrubber />
-      {dossierId ? <DossierPanel countryId={dossierId} onClose={exitDive} /> : null}
-      {sel ? <EventCard detail={sel.detail} info={sel.info} onClose={() => {
-          latest.current.next();
-          setSel(null);
-        }} /> : null}
+      <ErrorBoundary where="scrubber" fallback={null}>
+        <Scrubber />
+      </ErrorBoundary>
+      {dossierId ? (
+        <ErrorBoundary where="dossier" onReset={exitDive}>
+          <DossierPanel countryId={dossierId} onClose={exitDive} />
+        </ErrorBoundary>
+      ) : null}
+      {sel ? (
+        <ErrorBoundary where="event-card" onReset={() => setSel(null)}>
+          <EventCard
+            detail={sel.detail}
+            info={sel.info}
+            onClose={() => {
+              latest.current.next();
+              setSel(null);
+            }}
+          />
+        </ErrorBoundary>
+      ) : null}
       <p className="pointer-events-none absolute bottom-[calc(4.5rem+var(--safe-bottom))] left-[max(4vw,var(--safe-left))] font-[var(--font-mono)] text-[11px] uppercase tracking-[0.15em] text-[var(--cyan)]">
         {r ? `${r.lat.toFixed(2)}N ${r.lon.toFixed(2)}E // ${r.id ?? 'open water'}` : 'click the globe'}
       </p>

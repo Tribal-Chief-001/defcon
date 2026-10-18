@@ -65,6 +65,10 @@ If Vercel's own Git integration is also connected, every push to `main` makes a 
 
 `VITE_EVENTS_BASE` (build-time) can point the app at `https://...` or another same-origin path; anything else is ignored. That origin must send CORS headers and cache like `/data/events/` in `vercel.json` (`max-age=0, must-revalidate`).
 
+## Freshness monitor
+
+`.github/workflows/monitor.yml` runs every 6 hours and fetches `recent.meta.json` from the live site; it fails (GitHub then emails you) when the file is missing or older than 12 hours. It only runs when the repository **variable** `SITE_URL` exists. After the first deploy: `gh variable set SITE_URL --body "https://your-domain"` (a variable, not a secret: it is a public address). Cost: about 4 short runs a day.
+
 ## Not yet verified
 
 - The Vercel steps of the workflow and the `vercel.json` headers on Vercel's infrastructure have not run (no Vercel account access from this machine). The ingest, validate, build and artifact steps ran successfully on GitHub on 2026-10-18 (first run, cold cache: 2 min 18 s total, GDELT download 72 s, snapshot build 21 s, validation passed, a 2.9 MB `events-snapshot` artifact; the three Vercel steps were skipped because no secrets exist). The Vercel steps themselves have never run.

@@ -1,5 +1,6 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useEvents } from '../events/store';
+import { errorLog } from '../lib/errorLog';
 
 const utcDate = (s: number) => (Number.isFinite(s) ? new Date(s * 1000).toISOString().slice(0, 10) : 'unknown');
 const isHttps = (u?: string) => !!u && /^https:\/\//i.test(u);
@@ -21,6 +22,8 @@ export function AboutPage({ onClose }: { onClose: () => void }) {
   const sources = (recent ?? archive)?.meta.sources ?? [];
   const box = useRef<HTMLDivElement>(null);
   const opener = useRef<Element | null>(null);
+  const [copied, setCopied] = useState(false);
+  const diagnostics = errorLog.format();
 
   useEffect(() => {
     opener.current = document.activeElement;
@@ -134,6 +137,21 @@ export function AboutPage({ onClose }: { onClose: () => void }) {
         <section className="mt-5 space-y-2 text-sm leading-relaxed">
           <p className={h}>Privacy</p>
           <p>No cookies, no analytics, no accounts and no third-party requests; fonts are served from this site. The only thing stored in your browser is the Sound on/off choice.</p>
+        </section>
+
+        <section className="mt-5 space-y-2 text-sm leading-relaxed">
+          <p className={h}>Diagnostics</p>
+          <p className="text-[var(--text-muted)]">Errors from this session, kept in memory only. Nothing is sent anywhere; copy them if you want to report a problem.</p>
+          <pre data-diagnostics className="max-h-40 overflow-auto whitespace-pre-wrap rounded-[12px] border border-[var(--border)] p-3 font-[var(--font-mono)] text-[11px]">{diagnostics}</pre>
+          <button
+            type="button"
+            onClick={() => {
+              void navigator.clipboard?.writeText(diagnostics).then(() => setCopied(true), () => setCopied(false));
+            }}
+            className="rounded-full border border-[var(--border-strong)] px-3 py-1 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.15em] text-[var(--text-muted)] hover:text-[var(--lime)]"
+          >
+            {copied ? 'Copied' : 'Copy diagnostics'}
+          </button>
         </section>
       </div>
     </div>

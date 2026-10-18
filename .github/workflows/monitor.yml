@@ -1,0 +1,31 @@
+name: Data freshness monitor
+
+# Every 6 hours: fetch the published snapshot meta from the live site and fail (GitHub emails the owner) when it is missing or older
+# than 12 hours. Runs only when the repository variable SITE_URL (an https URL, set by the owner after the first deploy) exists.
+on:
+  schedule:
+    - cron: "41 */6 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  freshness:
+    if: ${{ vars.SITE_URL != '' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Check the published snapshot
+        env:
+          SITE_URL: ${{ vars.SITE_URL }}
+        run: |
+          case "$SITE_URL" in https://*) ;; *) echo "SITE_URL must start with https://"; exit 1 ;; esac
+          curl --fail --silent --show-error --max-time 20 "${SITE_URL%/}/data/events/recent.meta.json" -o meta.json
+          asof=$(jq -r '.asOfS' meta.json)
+          now=$(date +%s)
+          max_age=43200
+          case "$asof" in ''|null|*[!0-9]*) echo "asOfS is missing or not a number"; exit 1 ;; esac
+          age=$((now - asof))
+          echo "published snapshot is $((age / 3600)) h old"
+          if [ "$age" -gt "$max_age" ]; then echo "snapshot older than 12 hours"; exit 1; fi
