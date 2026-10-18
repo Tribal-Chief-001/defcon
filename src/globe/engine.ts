@@ -26,6 +26,8 @@ export type GlobeHandle = {
   dive(id: string | null, target?: { lat: number; lon: number; distance: number }): void;
   setFraming(x: number, y: number): void;
   setQuality(t: Tier): void;
+  nudge(m: { dYaw: number; dPitch: number; dZoom: number }): void;
+  home(): void;
   setTimeBack(backS: number): void;
   focus(t: { lat: number; lon: number; distance: number } | null): void;
   setSunTime(unixS: number): void;
@@ -656,6 +658,20 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       terminator.update(unixS);
       sunSet = true;
       terminator.object.visible = tierCfg.terminator;
+    },
+    // keyboard: dYaw is eastward, dPitch northward (the globe's yaw runs the other way), dZoom a fraction of the distance
+    nudge(m) {
+      if (![m.dYaw, m.dPitch, m.dZoom].every(Number.isFinite)) return;
+      boot.skip();
+      anim = null;
+      lastInput = performance.now();
+      yaw -= m.dYaw;
+      pitch = Math.max(-1.45, Math.min(1.45, pitch + m.dPitch));
+      distance = Math.max(MIN_DIST, Math.min(MAX_DIST, distance * (1 + m.dZoom)));
+    },
+    home() {
+      boot.skip();
+      flyTo({ yaw: -(START.lon * Math.PI) / 180, pitch: (START.lat * Math.PI) / 180, distance: HOME_DISTANCE });
     },
     setQuality(t) {
       locked = true;

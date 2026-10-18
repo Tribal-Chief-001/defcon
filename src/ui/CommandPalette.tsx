@@ -83,7 +83,9 @@ export function CommandPalette({ onPick, index: given }: { onPick: (id: string) 
               onCompositionStart={() => (composing.current = true)}
               onCompositionEnd={() => (composing.current = false)}
               onKeyDown={(e) => {
-                if (e.key === 'Escape') {
+                if (e.key === 'Tab') {
+                  e.preventDefault(); // the dialog's only focusable element: keep focus inside until it closes
+                } else if (e.key === 'Escape') {
                   e.stopPropagation();
                   hide();
                 } else if (e.key === 'ArrowDown' && results.length) {

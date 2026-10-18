@@ -20,3 +20,7 @@ body {
   button, [role="button"], summary { min-height: 44px; min-width: 44px; }
   input[type="range"] { min-height: 44px; }
 }
+
+/* Keyboard focus is always visible */
+:focus-visible { outline: 2px solid var(--lime); outline-offset: 2px; }
+canvas:focus-visible { outline-offset: -4px; }

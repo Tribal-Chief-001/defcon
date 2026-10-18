@@ -109,6 +109,19 @@ describe('DossierPanel', () => {
     expect(screen.getByText(/Gitega \(alt\.\)/)).toBeTruthy();
     expect(screen.getByText('CIA World Factbook lists: Gitega')).toBeTruthy();
   });
+  // keyboard: opening moves focus into the panel, closing puts it back where it was
+  it('takes focus when it opens and returns it to the opener when it closes', async () => {
+    stubFetch({ IND: base });
+    const opener = document.createElement('button');
+    document.body.appendChild(opener);
+    opener.focus();
+    const { unmount } = render(<DossierPanel countryId="IND" onClose={() => {}} nowS={NOW} />);
+    await screen.findByRole('heading', { name: 'India' });
+    expect(document.activeElement).toBe(screen.getByLabelText('Country dossier'));
+    unmount();
+    expect(document.activeElement).toBe(opener);
+    opener.remove();
+  });
   it('says "auto-coded data only" instead of a tension level when the window is not comparable', async () => {
     stubFetch({ IND: base });
     useEvents.setState({ recent: snap([ev({ human: false, kind: 'protest' }), ev({ human: false, kind: 'armed', lat: 11 })]), status: 'ready' });

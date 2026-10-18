@@ -12,6 +12,7 @@ import { loadCountries } from '../dossier/load';
 import { playheadS, useTime } from '../time/store';
 import { loadRelations } from '../relations/load';
 import { makeRadarHandler } from './radarPipeline';
+import { globeKey } from '../lib/keyboard';
 import { detectStartTier } from '../perf/device';
 import { Unsupported } from './Unsupported';
 
@@ -139,5 +140,21 @@ export function GlobeCanvas({
 
   if (!supported) return <Unsupported />;
   if (failed) return <Unsupported reason="failed" />;
-  return <canvas ref={ref} className="block h-full w-full" />;
+  return (
+    <canvas
+      id="globe-canvas"
+      ref={ref}
+      tabIndex={0}
+      role="application"
+      aria-label="Interactive globe. Arrow keys rotate, plus and minus zoom, Home resets the view, Control K searches countries."
+      className="block h-full w-full"
+      onKeyDown={(e) => {
+        const m = globeKey(e);
+        if (!m) return;
+        e.preventDefault();
+        if (m.home) handleRef.current?.home();
+        else handleRef.current?.nudge(m);
+      }}
+    />
+  );
 }

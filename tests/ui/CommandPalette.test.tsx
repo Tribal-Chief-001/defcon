@@ -41,6 +41,17 @@ describe('CommandPalette', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(document.activeElement).toBe(b);
   });
+  // keyboard: the dialog holds one focusable element, so Tab must not escape to the page behind it
+  it('keeps focus on the search field when Tab or Shift+Tab is pressed', () => {
+    render(<CommandPalette index={index} onPick={() => {}} />);
+    open();
+    expect(document.activeElement).toBe(input());
+    const tab = fireEvent.keyDown(input(), { key: 'Tab' });
+    expect(tab).toBe(false); // preventDefault was called
+    const shiftTab = fireEvent.keyDown(input(), { key: 'Tab', shiftKey: true });
+    expect(shiftTab).toBe(false);
+    expect(document.activeElement).toBe(input());
+  });
   it('has a visible button for touch users', () => {
     render(<CommandPalette index={index} onPick={() => {}} />);
     fireEvent.click(screen.getByRole('button', { name: /search/i }));

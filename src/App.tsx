@@ -24,7 +24,9 @@ import { useTime } from './time/store';
 import { useSoundTriggers } from './sound/triggers';
 import { useNightWatch } from './watch/useNightWatch';
 import { Scrubber } from './ui/Scrubber';
+import { SkipLink } from './ui/SkipLink';
 import { SoundToggle } from './ui/SoundToggle';
+import { StatusRegion, announce } from './ui/status';
 
 const BASE = eventsBase(import.meta.env.VITE_EVENTS_BASE);
 const PICK_RADIUS_PX = 14;
@@ -55,6 +57,16 @@ export function App() {
   const latest = useRef(createLatest()); // only the newest selection may receive its detail
 
   useEffect(() => startEventService(BASE), []);
+  // time travel is announced once the slider settles, never per frame
+  useEffect(() => {
+    let timer: number | undefined;
+    const off = useTime.subscribe((st, prev) => {
+      if (st.backS === prev.backS) return;
+      window.clearTimeout(timer);
+      timer = window.setTimeout(() => announce(st.backS === 0 ? 'Time travel: live' : `Time travel: ${Math.round(st.backS / 86400)} days before now`), 600);
+    });
+    return () => (off(), window.clearTimeout(timer));
+  }, []);
 
   // Night Watch waits while anything else needs the screen: a dossier, an event card, time travel, an open dialog (the palette)
   const selRef = useRef<Selected | null>(null);
@@ -81,6 +93,7 @@ export function App() {
       return;
     }
     setDossierId(row.id);
+    announce(`Showing ${row.name}`);
     setDive({ id: row.id, target: diveTarget(row.bbox ?? null, { lat: row.lat, lon: row.lon }) });
   }, []);
   const exitDive = useCallback(() => {
@@ -91,7 +104,13 @@ export function App() {
 
   // Esc leaves the dive; the URL hash mirrors it (#c=IND) and is honoured on load and on hashchange
   useEffect(() => {
-    const onKey = (e: KeyboardEvent) => e.key === 'Escape' && dossierIdRef.current && exitDive();
+    const onKey = (e: KeyboardEvent) => {
+      if (e.key !== 'Escape' || document.querySelector('[role="dialog"]')) return; // a dialog (the palette) handles its own Esc
+      if (selRef.current) {
+        latest.current.next();
+        setSel(null); // the event card is the topmost layer
+      } else if (dossierIdRef.current) exitDive();
+    };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
   }, [exitDive]);
@@ -138,6 +157,8 @@ export function App() {
 
   return (
     <main className="relative h-full w-full bg-black">
+      <SkipLink />
+      <StatusRegion />
       <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : watch.marker} focus={watch.focus} dive={dive} framing={framing} onLabels={setLabels} />
       <LiveCapitalLabels />
       <Reticle />

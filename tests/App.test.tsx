@@ -1,5 +1,5 @@
 // @vitest-environment jsdom
-import { act, cleanup, render, screen, waitFor } from '@testing-library/react';
+import { act, cleanup, fireEvent, render, screen, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { CountryRow } from '../src/dossier/types';
 
@@ -86,5 +86,25 @@ describe('App deep links and dive state', () => {
     await act(async () => open()); // the late row must not reopen the dive
     expect(screen.getByTestId('globe').getAttribute('data-dive')).toBe('');
     expect(location.hash).toBe('');
+  });
+
+  // keyboard: Esc closes the topmost layer only
+  it('Esc inside the open palette closes the palette but leaves the dossier open', async () => {
+    history.replaceState(null, '', '/#c=IND');
+    render(<App />);
+    await screen.findByRole('heading', { name: 'Country IND' }, { timeout: 4000 });
+    fireEvent.keyDown(window, { key: 'k', ctrlKey: true });
+    const box = await screen.findByRole('combobox');
+    fireEvent.keyDown(box, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull(), { timeout: 4000 });
+    expect(screen.getByLabelText('Country dossier')).toBeTruthy();
+    expect(location.hash).toBe('#c=IND');
+  });
+  it('announces a dive in a polite live status region', async () => {
+    history.replaceState(null, '', '/#c=IND');
+    render(<App />);
+    const status = await screen.findByRole('status', undefined, { timeout: 4000 });
+    await waitFor(() => expect(status.textContent).toMatch(/Showing Country IND|Showing IND/), { timeout: 4000 });
+    expect(status.getAttribute('aria-live')).toBe('polite');
   });
 });
