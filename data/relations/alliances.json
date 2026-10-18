@@ -1,0 +1,89 @@
+{
+ "alliances": [
+  {
+   "id": "nato",
+   "name": "NATO",
+   "kind": "multilateral",
+   "members": [
+    "ALB",
+    "BEL",
+    "BGR",
+    "CAN",
+    "CZE",
+    "DEU",
+    "DNK",
+    "ESP",
+    "EST",
+    "FIN",
+    "FRA",
+    "GBR",
+    "GRC",
+    "HRV",
+    "HUN",
+    "ISL",
+    "ITA",
+    "LTU",
+    "LUX",
+    "LVA",
+    "MKD",
+    "MNE",
+    "NLD",
+    "NOR",
+    "POL",
+    "PRT",
+    "ROU",
+    "SVK",
+    "SVN",
+    "SWE",
+    "TUR",
+    "USA"
+   ],
+   "source": "NATO, member countries page",
+   "url": "https://www.nato.int/cps/en/natohq/nato_countries.htm",
+   "asOf": "2026-10-18"
+  },
+  {
+   "id": "csto",
+   "name": "CSTO",
+   "kind": "multilateral",
+   "members": [
+    "ARM",
+    "BLR",
+    "KAZ",
+    "KGZ",
+    "RUS",
+    "TJK"
+   ],
+   "source": "CSTO, 'From the Treaty to the Organization' (en.odkb-csto.org)",
+   "url": "https://en.odkb-csto.org/25years/",
+   "asOf": "2026-10-18",
+   "note": "Listed by the organisation as its six members; its own site states no suspension for Armenia (it states Uzbekistan suspended in 2012)."
+  },
+  {
+   "id": "anzus-aus-usa",
+   "name": "ANZUS (Australia-United States)",
+   "kind": "bilateral",
+   "members": [
+    "AUS",
+    "USA"
+   ],
+   "source": "US Department of State, Office of the Historian: ANZUS",
+   "url": "https://history.state.gov/milestones/1945-1952/anzus",
+   "asOf": "2026-10-18",
+   "note": "1951 tripartite security treaty."
+  },
+  {
+   "id": "anzus-aus-nzl",
+   "name": "ANZUS (Australia-New Zealand)",
+   "kind": "bilateral",
+   "members": [
+    "AUS",
+    "NZL"
+   ],
+   "source": "US Department of State, Office of the Historian: ANZUS",
+   "url": "https://history.state.gov/milestones/1945-1952/anzus",
+   "asOf": "2026-10-18",
+   "note": "The United States suspended its treaty obligations toward New Zealand in 1986, so that pair is not drawn."
+  }
+ ]
+}

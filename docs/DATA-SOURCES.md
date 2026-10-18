@@ -138,3 +138,14 @@ Built by `npm run data:dossiers` (after `data:wb` and `data:factbook`) into `pub
 | Provenance | World Bank: `World Bank WDI` (`SIPRI via World Bank WDI` for military), `asOf` = the data year; Factbook: `CIA World Factbook (archived)`, `asOf` 2026-01-22 with the sunset note; memberships: official list, `asOf` = list date |
 | Measured 2026-10-18 | 248 dossiers, 575 KB total, largest 4.2 KB, index 9.0 KB gzip. Non-null: population 220, area 220, GDP 217, military 171 (% GDP 170), government type 194, languages 125, independence 193, organisations 194; 194 have a capital, 166 have neighbours. Budgets (`check:budgets`): index <= 40 KB gzip, each dossier <= 6 KB. |
 | Text cleaning | The Factbook text contains HTML entities (`&nbsp;`, `&eacute;`, ...): decoded to real characters and whitespace collapsed (tests cover all 30 entity names present in the data). |
+
+## Relations: alliances and active disputes (derived, committed)
+
+Built by `npm run data:relations` into `public/data/relations.json` (about 2 KB gzip, budget 8 KB). Spec rule: **allies = formal treaty memberships only; "active disputes" = pairs on opposing sides in a named armed-conflict dataset, source shown; no editorial opinion.**
+
+| Item | Value |
+|------|-------|
+| Alliances (`data/relations/alliances.json`, hand-curated, each with a source URL read on 2026-10-18) | NATO (32, official list, same file as the dossiers); CSTO (Armenia, Belarus, Kazakhstan, Kyrgyzstan, Russia, Tajikistan: `en.odkb-csto.org/25years/`, which states Uzbekistan suspended in 2012 and says nothing about Armenia); ANZUS as two pairs, Australia-United States and Australia-New Zealand (US Office of the Historian page, which states the US suspended its obligations toward New Zealand in 1986, so that pair is not drawn). |
+| Not included | US bilateral mutual defense treaties with Japan, South Korea and the Philippines: state.gov and the Japanese foreign ministry answered 403/404 and no other official page stating them was found on 2026-10-18. Not added from memory; backlog. India has no formal alliance on record. |
+| Disputes | UCDP GED (the pinned CSVs in `data/events/sources.json`): rows with `type_of_violence = 1` and a Gleditsch-Ward number on both sides; coalition sides (`2;200;900`) pair every government with every government on the other side; only events from the dataset's latest year minus one count. The mapping from Gleditsch-Ward numbers to ADM0_A3 comes from the GED country names and fails the build on any unresolved number. Found 2026-10-18 (data, not editorial): AFG-PAK, BGD-MMR, COD-RWA, IND-PAK (2025), IRN-IRQ, IRN-ISR, ISR-SYR, ISR-YEM, KHM-THA, RUS-UKR, USA-VEN. UCDP's own conflict name is shown as given (one is the placeholder "XXX2"). |
+| Licence | UCDP: CC BY 4.0 (attribution in the record). NATO/CSTO/State Department: facts about membership, linked to the page. |

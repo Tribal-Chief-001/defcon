@@ -33,6 +33,8 @@ export function checkBudgets(distDir: string, dataDir: string): { ok: boolean; f
   const a = existsSync(archive) ? gz(archive) : 0;
   if (r > EVENTS_RECENT) failures.push(`events/recent.bin ${kb(r)} gzip exceeds ${kb(EVENTS_RECENT)}`);
   if (r + a > EVENTS_TOTAL) failures.push(`events total (recent + archive) ${kb(r + a)} gzip exceeds ${kb(EVENTS_TOTAL)}`);
+  const rel = join(dataDir, 'relations.json');
+  if (existsSync(rel) && gz(rel) > 8 * 1024) failures.push(`relations.json ${kb(gz(rel))} gzip exceeds 8.0 KB`);
   const dossierDir = join(dataDir, 'dossiers');
   if (existsSync(dossierDir)) {
     for (const f of readdirSync(dossierDir).filter((x) => x.endsWith('.json'))) {

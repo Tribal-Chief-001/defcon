@@ -19,7 +19,8 @@
     "data:wb": "tsx scripts/dossiers/fetch-worldbank.ts",
     "data:factbook": "tsx scripts/dossiers/fetch-factbook.ts",
     "data:memberships": "tsx scripts/dossiers/build-memberships.ts",
-    "data:dossiers": "tsx scripts/dossiers/build-dossiers.ts"
+    "data:dossiers": "tsx scripts/dossiers/build-dossiers.ts",
+    "data:relations": "tsx scripts/relations/build-relations.ts"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
