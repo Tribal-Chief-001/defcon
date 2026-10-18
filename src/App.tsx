@@ -18,6 +18,7 @@ import { DossierPanel } from './ui/DossierPanel';
 import { LiveCapitalLabels, setLabels } from './ui/CapitalLabels';
 import { Coverage } from './ui/Coverage';
 import { EventCard, type EventInfo } from './ui/EventCard';
+import { HudFrame } from './ui/HudFrame';
 import { Rails } from './ui/Rails';
 import type { LatestEvent } from './events/rails';
 import { NightWatch } from './ui/NightWatch';
@@ -182,6 +183,7 @@ export function App() {
       <ErrorBoundary where="globe" fallback={<Unsupported reason="failed" />}>
         <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : watch.marker} focus={watch.focus ?? railFocus} dive={dive} framing={framing} onLabels={setLabels} />
       </ErrorBoundary>
+      <HudFrame />
       <LiveCapitalLabels />
       <Reticle />
       <NightWatch active={watch.active} caption={watch.caption} />
