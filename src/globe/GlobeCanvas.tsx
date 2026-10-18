@@ -6,6 +6,8 @@ import { useEvents } from '../events/store';
 import { prefersReducedMotion } from '../lib/motion';
 import { hasWebGL2 } from './capabilities';
 import { createGlobe, type GlobeHandle } from './engine';
+import type { CapitalLabel } from '../ui/CapitalLabels';
+import type { Capital } from './labels';
 import { Unsupported } from './Unsupported';
 
 const getJson = async (url: string) => {
@@ -19,11 +21,13 @@ export function GlobeCanvas({
   marker,
   dive,
   framing,
+  onLabels,
 }: {
   onPick?: (id: string | null, lat: number, lon: number, kmPerPx: number) => void;
   marker?: { lat: number; lon: number } | null;
   dive?: { id: string; target: { lat: number; lon: number; distance: number } } | null;
   framing?: { x: number; y: number };
+  onLabels?: (labels: CapitalLabel[]) => void;
 }) {
   const diveRef = useRef(dive);
   diveRef.current = dive;
@@ -41,6 +45,7 @@ export function GlobeCanvas({
     let off: (() => void) | undefined;
     let tick: ((nowMs: number) => void) | undefined;
     let unsubscribe: (() => void) | undefined;
+    let offLabels: (() => void) | undefined;
     (async () => {
       const low = await getJson('/data/borders.low.topo.json');
       if (cancelled || !ref.current) return;
@@ -55,6 +60,12 @@ export function GlobeCanvas({
       handle.setFraming(framingRef.current?.x ?? 0, framingRef.current?.y ?? 0);
       if (diveRef.current) handle.dive(diveRef.current.id, diveRef.current.target); // a deep link opened before the globe existed
       if (onPick) off = handle.onPick(onPick);
+      if (onLabels) offLabels = handle.onLabels(onLabels);
+      // capital markers are an extra: a failed fetch leaves the globe without them rather than failing it
+      void fetch('/data/capitals.json')
+        .then((r) => (r.ok ? (r.json() as Promise<Capital[]>) : []))
+        .then((caps) => !cancelled && Array.isArray(caps) && handle?.setCapitals(caps))
+        .catch(() => undefined);
       const push = () => {
         const { recent, archive } = useEvents.getState();
         const now = Math.floor(Date.now() / 1000);
@@ -73,11 +84,12 @@ export function GlobeCanvas({
     return () => {
       cancelled = true;
       off?.();
+      offLabels?.();
       unsubscribe?.();
       handleRef.current = undefined;
       handle?.dispose();
     };
-  }, [supported, onPick]);
+  }, [supported, onPick, onLabels]);
 
   useEffect(() => {
     if (marker) handleRef.current?.setEventMarker(marker.lat, marker.lon);

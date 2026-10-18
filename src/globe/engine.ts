@@ -7,6 +7,7 @@ import { createEventLayer } from './eventLayer';
 import { buildBorderPositions, buildCountryPositions } from './borderGeometry';
 import { easeDive } from './dive';
 import { createClickClassifier } from './gesture';
+import { selectCapitals, type Capital } from './labels';
 import { createPicker } from './pick';
 
 export type GlobeHandle = {
@@ -17,6 +18,8 @@ export type GlobeHandle = {
   setEventMarker(lat: number | null, lon?: number): void;
   dive(id: string | null, target?: { lat: number; lon: number; distance: number }): void;
   setFraming(x: number, y: number): void;
+  setCapitals(caps: Capital[]): void;
+  onLabels(cb: (labels: { id: string; name: string; x: number; y: number }[]) => void): () => void;
   boot: BootControl;
   dispose(): void;
 };
@@ -39,6 +42,7 @@ const IDLE_BEFORE_SPIN_MS = 2500;
 const MAX_SPIN = 4; // rad/s after a flick
 const HOME_DISTANCE = 3.6;
 const DIVE_MS = 1200;
+const MARKER_HIT_PX = 14;
 const D2R = Math.PI / 180;
 const wrapPi = (a: number) => ((((a + Math.PI) % (2 * Math.PI)) + 2 * Math.PI) % (2 * Math.PI)) - Math.PI;
 
@@ -158,6 +162,44 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   const selected = lines(new Float32Array(0), LIME, 1);
   hover.visible = selected.visible = false;
   globe.add(hover, selected);
+
+  // ---- capital markers: one Points object (thin cyan crosshair), re-selected at most 15 times a second as the view changes
+  const MAX_MARKERS = 40;
+  const crosshair = (() => {
+    const c = document.createElement('canvas');
+    c.width = c.height = 32;
+    const g = c.getContext('2d');
+    if (g) {
+      g.strokeStyle = '#00FFF0';
+      g.lineWidth = 1.5;
+      g.beginPath();
+      g.moveTo(16, 3);
+      g.lineTo(16, 12);
+      g.moveTo(16, 20);
+      g.lineTo(16, 29);
+      g.moveTo(3, 16);
+      g.lineTo(12, 16);
+      g.moveTo(20, 16);
+      g.lineTo(29, 16);
+      g.stroke();
+    }
+    return new THREE.CanvasTexture(c);
+  })();
+  const capGeo = new THREE.BufferGeometry();
+  const capPos = new Float32Array(MAX_MARKERS * 3);
+  capGeo.setAttribute('position', new THREE.BufferAttribute(capPos, 3));
+  capGeo.setDrawRange(0, 0);
+  const capPoints = new THREE.Points(
+    capGeo,
+    new THREE.PointsMaterial({ map: crosshair, size: 16, sizeAttenuation: false, transparent: true, alphaTest: 0.05, depthWrite: false }),
+  );
+  capPoints.frustumCulled = false; // the points move with the globe; the bounding sphere of an empty geometry would cull them
+  globe.add(capPoints);
+  let allCaps: Capital[] = [];
+  let shown: { c: Capital; x: number; y: number }[] = [];
+  let capSig = '';
+  let capLastT = 0;
+  const labelListeners = new Set<(l: { id: string; name: string; x: number; y: number }[]) => void>();
 
   let topo: Topology = opts.low;
   let pick = createPicker(opts.low);
@@ -301,11 +343,26 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     dragging = false;
     canvas.style.cursor = 'grab';
     if (click.up()) {
+      // ground distance one screen pixel covers at the front of the globe (6,371 km radius), used to size the event pick radius
+      const kmPerPx = ((2 * Math.max(0.05, camera.position.z - 1) * Math.tan((camera.fov * Math.PI) / 360)) / Math.max(1, canvas.clientHeight)) * 6371;
+      const r = canvas.getBoundingClientRect();
+      const mx = e.clientX - r.left;
+      const my = e.clientY - r.top;
+      let near: (typeof shown)[number] | undefined;
+      let best = MARKER_HIT_PX;
+      for (const m of shown) {
+        const d = Math.hypot(m.x - mx, m.y - my);
+        if (d <= best) [best, near] = [d, m];
+      }
+      if (near) {
+        // a marker wins over the country underneath: this is also the only way to reach micro-states with no polygon
+        if (!diveId) setOutline(selected, near.c.country);
+        listeners.forEach((cb) => cb(near.c.country, near.c.lat, near.c.lon, kmPerPx));
+        return;
+      }
       const ll = latLonAt(e.clientX, e.clientY);
       const id = ll ? pick(ll.lat, ll.lon) : null;
       if (!diveId) setOutline(selected, id); // during a dive the outline belongs to the dived country
-      // ground distance one screen pixel covers at the front of the globe (6,371 km radius), used to size the event pick radius
-      const kmPerPx = ((2 * Math.max(0.05, camera.position.z - 1) * Math.tan((camera.fov * Math.PI) / 360)) / Math.max(1, canvas.clientHeight)) * 6371;
       if (ll) listeners.forEach((cb) => cb(id, ll.lat, ll.lon, kmPerPx));
     }
   };
@@ -327,6 +384,36 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     opts.onContextLost?.();
   };
   canvas.addEventListener('webglcontextlost', onLost);
+
+  const v3 = new THREE.Vector3();
+  // Called after the frame is rendered so the matrices are current. Selection is throttled; screen positions follow the view.
+  const updateCapitals = (now: number) => {
+    if (!allCaps.length) return;
+    const w = canvas.clientWidth || 1;
+    const h = canvas.clientHeight || 1;
+    const sig = [pitch, yaw, distance, frame.x, frame.y, w, h, diveId].join('|');
+    if (sig === capSig || now - capLastT < 66) return;
+    capSig = sig;
+    capLastT = now;
+    const chosen = selectCapitals(allCaps, { lat: pitch / D2R, lon: -yaw / D2R, distance }, diveId, MAX_MARKERS);
+    shown = chosen.map((c) => {
+      v3.set(...latLonToVec3(c.lat, c.lon, 1.004)).applyMatrix4(globe.matrixWorld).project(camera);
+      return { c, x: (v3.x * 0.5 + 0.5) * w, y: (-v3.y * 0.5 + 0.5) * h };
+    });
+    chosen.forEach((c, i) => capPos.set(latLonToVec3(c.lat, c.lon, 1.004), i * 3));
+    capGeo.setDrawRange(0, chosen.length);
+    capGeo.getAttribute('position').needsUpdate = true;
+    // greedy by rank: a label that would overlap one already placed is dropped (its marker stays and stays clickable)
+    const boxes: [number, number, number, number][] = [];
+    const out: { id: string; name: string; x: number; y: number }[] = [];
+    for (const { c, x, y } of shown) {
+      const box: [number, number, number, number] = [x + 7, y - 8, x + 13 + c.name.length * 7.6, y + 10];
+      if (boxes.some((b) => box[0] < b[2] && box[2] > b[0] && box[1] < b[3] && box[3] > b[1])) continue;
+      boxes.push(box);
+      out.push({ id: `${c.country}:${c.name}`, name: c.name, x, y });
+    }
+    labelListeners.forEach((cb) => cb(out));
+  };
 
   // ---- render loop (paused while the tab is hidden)
   let prev = performance.now();
@@ -374,6 +461,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     if (boot.done) fade = Math.min(1, fade + dt / 1.5); // events fade in over 1.5 s once the boot is done
     eventLayer.update(fade, renderer.getPixelRatio());
     renderer.render(scene, camera);
+    updateCapitals(now);
     opts.onFrame?.(now);
   };
   const start = () => {
@@ -413,6 +501,14 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     },
     setFraming(x, y) {
       frameTarget = { x, y };
+    },
+    setCapitals(caps) {
+      allCaps = caps;
+      capSig = '';
+    },
+    onLabels(cb) {
+      labelListeners.add(cb);
+      return () => void labelListeners.delete(cb);
     },
     dive(id, target) {
       pendingDive = { id, target }; // applied in the frame loop once the Sonar Boot is done

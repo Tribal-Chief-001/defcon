@@ -14,6 +14,7 @@ import { GlobeCanvas } from './globe/GlobeCanvas';
 import { AsOf } from './ui/AsOf';
 import { CommandPalette } from './ui/CommandPalette';
 import { DossierPanel } from './ui/DossierPanel';
+import { CapitalLabels, type CapitalLabel } from './ui/CapitalLabels';
 import { Coverage } from './ui/Coverage';
 import { EventCard, type EventInfo } from './ui/EventCard';
 
@@ -28,6 +29,7 @@ export function App() {
   const [r, setR] = useState<Readout | null>(null);
   const [sel, setSel] = useState<Selected | null>(null);
   const [dossierId, setDossierId] = useState<string | null>(null);
+  const [labels, setLabels] = useState<CapitalLabel[]>([]);
   const [dive, setDive] = useState<Dive | null>(null);
   const diveIdRef = useRef<string | null>(null);
   diveIdRef.current = dive?.id ?? null;
@@ -46,6 +48,8 @@ export function App() {
 
   const startDive = useCallback(async (id: string) => {
     const token = diveToken.current.next();
+    latest.current.next(); // a new dive closes any open event card; a click's own event card is set after this
+    setSel(null);
     setDossierId(id);
     const row = (await loadCountries()).find((r) => r.id === id);
     if (!diveToken.current.isLatest(token)) return;
@@ -106,7 +110,8 @@ export function App() {
 
   return (
     <main className="relative h-full w-full bg-black">
-      <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : null} dive={dive} framing={framing} />
+      <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : null} dive={dive} framing={framing} onLabels={setLabels} />
+      <CapitalLabels labels={labels} />
       <p className="pointer-events-none absolute left-[4vw] top-6 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
         <span className="mr-2 inline-block h-1.5 w-1.5 rounded-full bg-[var(--lime)]" />
         Defcon // globe core
