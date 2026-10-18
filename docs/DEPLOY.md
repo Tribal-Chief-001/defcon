@@ -69,12 +69,10 @@ If Vercel's own Git integration is also connected, every push to `main` makes a 
 
 `.github/workflows/monitor.yml` runs every 6 hours and fetches `recent.meta.json` from the live site; it fails (GitHub then emails you) when the file is missing or older than 12 hours. It only runs when the repository **variable** `SITE_URL` exists. After the first deploy: `gh variable set SITE_URL --body "https://your-domain"` (a variable, not a secret: it is a public address). Cost: about 4 short runs a day.
 
-## Not yet verified
+## Verification status
 
-- (Resolved 2026-10-18.) The Vercel steps ran green on GitHub (run 39120790184: pull, build, deploy) and the live site `https://defcon-roan.vercel.app` serves the events (8,918 events, as of 10:30 UTC) and every header from `vercel.json`, checked with curl and in a browser with no CSP violations.
-- Still not verified: The ingest, validate, build and artifact steps ran successfully on GitHub on 2026-10-18 (first run, cold cache: 2 min 18 s total, GDELT download 72 s, snapshot build 21 s, validation passed, a 2.9 MB `events-snapshot` artifact; the three Vercel steps were skipped because no secrets exist). The Vercel steps themselves have never run.
-- `deploymentEnabled` and the CLI flags are as documented by Vercel at the time of writing and were not run here.
-- The Content-Security-Policy and the other headers were verified against the built app served locally with `npm run serve:dist` (which applies `vercel.json`); they have not been seen on Vercel itself.
+- **Verified (2026-10-18):** the ingest workflow ran green on GitHub including the three Vercel steps (run 39120790184: pull, build, deploy); the first run took 2 min 18 s with a cold cache (GDELT download 72 s, snapshot build 21 s, validation passed). The live site `https://defcon-roan.vercel.app` serves the events (8,918 events, as of 10:30 UTC) and every header from `vercel.json` (CSP, HSTS, COOP, CORP and the rest), checked with curl and in a browser with no CSP violations.
+- **Not verified:** `git.deploymentEnabled` (documented by Vercel, not set or run here); the freshness monitor run (it needs a scheduled tick); a custom domain; behaviour on real phones, Safari/Firefox, screen readers and audio.
 
 ## Security headers
 

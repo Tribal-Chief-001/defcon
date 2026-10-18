@@ -47,7 +47,8 @@ describe('docs/DEPLOY.md', () => {
     expect(deploy).toMatch(/every 3 hours/i);
     expect(deploy).toMatch(/2,000/);
     expect(deploy).toMatch(/data:validate/);
-    expect(deploy).toMatch(/Not yet verified/i);
+    expect(deploy).toMatch(/Verification status/i);
+    expect(deploy).toMatch(/Not verified/i);
     expect(deploy).toMatch(/deploymentEnabled/);
   });
 });
