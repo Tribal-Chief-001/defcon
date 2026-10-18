@@ -13,3 +13,5 @@ The project ledger. Updated in the same change as the work it describes.
 - [SEVERITY.md](SEVERITY.md), [TENSION-INDEX.md](TENSION-INDEX.md): Plan 2 scales (provisional, owner reviews).
 - [Plan 3: dossiers and navigation](superpowers/plans/2026-10-18-plan-3-dossiers-navigation.md): per-country dossiers, Country Dive, Ctrl/Cmd-K, capital labels (decisions D-037 to D-040; sources in DATA-SOURCES.md).
 - [Plan 4: signature interactions](superpowers/plans/2026-10-18-plan-4-signature-interactions.md): alliance arcs, time scrubber and Declassify, grain, terminator, radar cursor, pulse border, Night Watch, World Sound (decisions D-042 to D-046).
+- [Plan 5: data pipeline and hosting](superpowers/plans/2026-10-18-plan-5-data-pipeline-hosting.md) and [DEPLOY.md](DEPLOY.md): the scheduled ingest workflow, the validator gate, the Vercel runbook (D-047, D-048).
+- [Plan 6: hardening and launch](superpowers/plans/2026-10-18-plan-6-hardening-launch.md) and [LAUNCH.md](LAUNCH.md): quality tiers, phone tier, keyboard and a11y, CSP, About, error boundary and monitor, the owner's launch checklist (D-049 to D-052).

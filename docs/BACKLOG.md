@@ -90,3 +90,13 @@ Open items found during Plan 1 that were deliberately not fixed. Each is graded 
 - `npm audit --audit-level=high` can fail an unrelated pull request when a new advisory appears.
 - The secret scanner covers tracked files only and misses unprefixed tokens (a 24-character Vercel token has no prefix); GitHub's own secret scanning is the backstop (enable it for the repo).
 - `eventsBase` over-rejects an upper-case `HTTPS://` scheme (harmless).
+
+## Plan 6 deferred (2026-10-18)
+
+- Real-device checks: phones (touch, pinch, safe areas), Safari and Firefox, a screen reader pass, audio output. The in-app browser only sends mouse events.
+- Colour contrast of labels over the live globe imagery is not tested (only the tokens on flat black).
+- The quality governor was only exercised by unit tests and forced tiers; a genuinely slow device has not been tried.
+- Tab order places the canvas before the top bar (DOM order); a roving focus for the capital markers and event dots is not built (the palette and dossier are the accessible route).
+- The Esc priority for the event card has no test; the About copy is the builder's draft for the owner to review.
+- `?tier=` forcing exists in dev builds only; there is no in-app quality setting.
+- The monitor only checks age; it does not check event counts or the CSP. Alerting beyond GitHub's failed-run email is not set up.

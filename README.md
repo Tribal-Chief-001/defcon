@@ -2,7 +2,7 @@
 
 A real-time 3D world monitor of armed conflict and civil unrest, and a frontend design showcase: true-black, hairline, sonar-lit globe; every border drawn from **India's official map**; every event labelled human-coded or auto-coded; missing data shown as missing.
 
-Status: Plans 1 (map and globe core), 2 (events and live data), 3 (dossiers, Country Dive, Ctrl/Cmd-K, capital labels) and 4 (signature interactions) are built; Plans 5-6 (data pipeline and hosting, hardening and launch) are next. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
+Status: Plans 1 (map and globe core), 2 (events and live data), 3 (dossiers, Country Dive, Ctrl/Cmd-K, capital labels) 4 (signature interactions), 5 (data pipeline and hosting) and 6 (hardening and launch) are built. What is left is the owner's list in [`docs/LAUNCH.md`](docs/LAUNCH.md): reviews, the Vercel project and secrets, a real-phone check. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
 
 ## Quick start
 
