@@ -8,6 +8,8 @@ import { buildBorderPositions, buildCountryPositions } from './borderGeometry';
 import type { Relations } from '../relations/types';
 import { createArcLayer } from './arcLayer';
 import { easeDive } from './dive';
+import { buildDensity } from './grain';
+import { createGrainLayer } from './grainLayer';
 import { createClickClassifier } from './gesture';
 import { selectCapitals, type Capital } from './labels';
 import { createPicker } from './pick';
@@ -162,6 +164,13 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   window.addEventListener('keydown', skipBoot);
   const eventLayer = createEventLayer();
   globe.add(eventLayer.points, eventLayer.marker);
+  // Grain = Data: heat texture rebuilt at most 4 times a second, only when the events or the playhead changed
+  const grain = createGrainLayer();
+  globe.add(grain.object);
+  let eventAttrs: EventAttrs[] = [];
+  let timeBack = 0;
+  let densityDirty = false;
+  let densityT = 0;
   const arcs = createArcLayer(reducedMotion);
   globe.add(arcs.object);
   let relations: Relations | null = null;
@@ -484,6 +493,12 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     camera.position.z = distance * (camera.aspect < 1 ? 1 / camera.aspect : 1);
     if (boot.done) fade = Math.min(1, fade + dt / 1.5); // events fade in over 1.5 s once the boot is done
     eventLayer.update(fade, renderer.getPixelRatio());
+    if (densityDirty && now - densityT > 250) {
+      densityDirty = false;
+      densityT = now;
+      grain.setDensity(buildDensity(eventAttrs, timeBack));
+    }
+    grain.update(now / 1000, fade, reducedMotion);
     arcs.update(now);
     renderer.render(scene, camera);
     updateCapitals(now);
@@ -519,6 +534,8 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       return () => void listeners.delete(cb);
     },
     setEvents(list) {
+      eventAttrs = list;
+      densityDirty = true;
       eventLayer.setData(list);
     },
     setEventMarker(lat, lon) {
@@ -529,6 +546,8 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     },
     setTimeBack(backS) {
       eventLayer.setBack(backS);
+      timeBack = Number.isFinite(backS) ? backS : 0;
+      densityDirty = true;
     },
     setRelations(rel, points) {
       relations = rel;
