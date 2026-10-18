@@ -1,0 +1,147 @@
+[
+ {
+  "page": 1,
+  "pages": 1,
+  "per_page": 500,
+  "total": 265,
+  "sourceid": null,
+  "lastupdated": "2026-10-08"
+ },
+ [
+  {
+   "indicator": {
+    "id": "SP.POP.TOTL",
+    "value": "Population, total"
+   },
+   "country": {
+    "id": "1A",
+    "value": "Arab World"
+   },
+   "countryiso3code": "ARB",
+   "date": "2025",
+   "value": 503356133,
+   "obs_status": "",
+   "decimal": 0
+  },
+  {
+   "indicator": {
+    "id": "SP.POP.TOTL",
+    "value": "Population, total"
+   },
+   "country": {
+    "id": "1W",
+    "value": "World"
+   },
+   "countryiso3code": "WLD",
+   "date": "2025",
+   "value": 8215424893,
+   "obs_status": "",
+   "decimal": 0
+  },
+  {
+   "indicator": {
+    "id": "SP.POP.TOTL",
+    "value": "Population, total"
+   },
+   "country": {
+    "id": "FR",
+    "value": "France"
+   },
+   "countryiso3code": "FRA",
+   "date": "2025",
+   "value": 68720337,
+   "obs_status": "",
+   "decimal": 0
+  },
+  {
+   "indicator": {
+    "id": "SP.POP.TOTL",
+    "value": "Population, total"
+   },
+   "country": {
+    "id": "IN",
+    "value": "India"
+   },
+   "countryiso3code": "IND",
+   "date": "2025",
+   "value": 1463865525,
+   "obs_status": "",
+   "decimal": 0
+  },
+  {
+   "indicator": {
+    "id": "SP.POP.TOTL",
+    "value": "Population, total"
+   },
+   "country": {
+    "id": "XK",
+    "value": "Kosovo"
+   },
+   "countryiso3code": "XKX",
+   "date": "2025",
+   "value": 1576876,
+   "obs_status": "",
+   "decimal": 0
+  },
+  {
+   "indicator": {
+    "id": "SP.POP.TOTL",
+    "value": "Population, total"
+   },
+   "country": {
+    "id": "NR",
+    "value": "Naoero"
+   },
+   "countryiso3code": "NRU",
+   "date": "2025",
+   "value": 12025,
+   "obs_status": "",
+   "decimal": 0
+  },
+  {
+   "indicator": {
+    "id": "SP.POP.TOTL",
+    "value": "Population, total"
+   },
+   "country": {
+    "id": "SS",
+    "value": "South Sudan"
+   },
+   "countryiso3code": "SSD",
+   "date": "2025",
+   "value": 12188788,
+   "obs_status": "",
+   "decimal": 0
+  },
+  {
+   "indicator": {
+    "id": "SP.POP.TOTL",
+    "value": "Population, total"
+   },
+   "country": {
+    "id": "PS",
+    "value": "West Bank and Gaza"
+   },
+   "countryiso3code": "PSE",
+   "date": "2025",
+   "value": 5413596,
+   "obs_status": "",
+   "decimal": 0
+  },
+  {
+   "indicator": {
+    "id": "SP.POP.TOTL",
+    "value": "Population, total"
+   },
+   "country": {
+    "id": "ER",
+    "value": "Eritrea"
+   },
+   "countryiso3code": "ERI",
+   "date": "2025",
+   "value": null,
+   "obs_status": "",
+   "decimal": 0
+  }
+ ]
+]

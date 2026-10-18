@@ -91,3 +91,15 @@ Built by `npm run data:build` into `public/data/events/` (not committed; `npm ru
 Binary layout: struct-of-arrays (time u32, lat f32, lon f32, detail u32, country u16, kind u8, severity u8, precision u8, human u8), each column padded to 4 bytes, offsets and SHA-256 in the meta file (`src/events/snapshot.ts`, `scripts/events/encode.ts`). `asOfS` is the newest source time (newest GDELT slot). Budgets (gzip): recent <= 500 KB, recent + archive <= 2 MB.
 
 Measured 2026-10-18 (UCDP to 2026-08-31 + 7 days of GDELT, after the review fixes): read UCDP 18,064 and GDELT kept 28,092; after merging 26,806 events (UCDP 18,064; GDELT 8,742), by kind armed 20,679, civilian 4,664, protest 1,371, riot 92. `recent` n=8,742, 68 KB gzip; `archive` n=18,064, 120 KB gzip. As of the newest GDELT slot (00:15 UTC). Each source in `*.meta.json` carries `asOfS` and `coverFromS`, which the UI turns into its coverage legend.
+
+## World Bank WDI (dossier numbers)
+
+| Item | Value |
+|------|-------|
+| API | `https://api.worldbank.org/v2/country/all/indicator/<CODE>?format=json&per_page=500&mrnev=1` (`mrnev=1`: most recent non-empty value per country; one page of 265 rows including regional aggregates) |
+| Indicators | `SP.POP.TOTL` population; `AG.SRF.TOTL.K2` surface area km2; `NY.GDP.MKTP.CD` GDP, current US$; `MS.MIL.XPND.CD` military expenditure, current US$ and `MS.MIL.XPND.GD.ZS` as % of GDP (underlying source: SIPRI Military Expenditure Database, republished by the World Bank, which resolves the SIPRI licence question) |
+| Dataset licence | World Development Indicators: **Creative Commons Attribution 4.0** (World Bank Data Catalog, dataset 0037712, checked 2026-10-18); use, copy, modify and redistribute with attribution and a note of changes |
+| Attribution text | "World Bank, World Development Indicators (CC BY 4.0); military expenditure: SIPRI Military Expenditure Database via the World Bank." |
+| Data last updated | 2026-10-08 (API `lastupdated`); fetched 2026-10-18 into `data/raw/wb/` (gitignored); `npm run data:wb` refetches |
+| Coverage of our 248 countries | population 220, area 220, GDP 217, military expenditure 171 (% of GDP 170). Years differ per country (population 2025, area 2024, military mostly 2025 but some only older); the year is shown as the field's "as of". |
+| Mapping | by ISO3 (`ISO_A3_EH` of our country list; South Sudan is `SDS` in our ids and `SSD` here); countries with no row get `null` ("unavailable") |
