@@ -104,3 +104,18 @@ Still to do:
 ## 8. What is NOT verified in this document
 
 No endpoint, licence or rate limit in section 3 was tested; they come from reading the Gemini document and our earlier research. The revised priority order is a proposal, not an owner decision.
+
+## 9. War Tracker (owner request, 2026-10-18; proposal, nothing built)
+
+**Ask:** current-conflicts view with a timeline for US/Israel-Iran, Russia-Ukraine, Israel-Gaza/Palestine and the wider Middle East, with the latest attacks, strikes and bombings, verified, with solid metrics.
+
+**What we found while checking (web search 2026-10-18, secondary sources, not yet verified against primary ones):** the picture changed after the assistant's knowledge cutoff, so nothing may be written from memory. Reports describe a US/Israel-Iran war from 28 Feb 2026, a ceasefire announced 7 Apr and renewed Israel-Iran clashes on 7 Jun; a Lebanon war with escalating Israeli strikes in early October; a Gaza truce (from 10 Oct 2025) that is fragile and stalled; Russia-Ukraine continuing with drone/missile strikes. Search results were a mix of reliable and low-quality pages, and nothing after about 6 Oct could be confirmed.
+
+**What our own data already holds (UCDP candidate, human-coded, ends 2026-08-31):** Russia-Ukraine (57,553 deaths, 2,140 events in 2026 files), Iran-Israel/USA (3,624 deaths, 80 events), Government of Iran vs civilians (19,893 deaths, 35 events), Israel-Southern Lebanon (6,668 deaths, 508 events), Israel-Palestine (1,034 deaths, 545 events). UCDP `best` numbers, with `low`/`high` ranges available.
+
+**Proposed design (two layers, strict about what is verified):**
+1. **Data layer (automatic, no claims from memory):** a Conflicts list built from UCDP conflict/dyad names with per-conflict deaths (best with low-high), events, last event, weekly timeline, and latest events with their source names; September-October shown from GDELT only and labelled auto-coded.
+2. **Curated key-events timeline (manual, sourced):** each entry has a date, one line and at least two independent sources (wire service, UN/ReliefWeb, ISW) with links; status confirmed / reported / disputed; every entry shows when it was last checked. Anything we cannot source does not go in.
+3. **Metrics:** conflict intensity (deaths per 30 days with range, trend against the previous 90 days), and the VRI once the study supports it. No metric without its definition and uncertainty.
+
+**Risks:** staleness (a hand-curated timeline ages; show "last checked"), the casualty-count politics of Gaza and Iran (show UCDP ranges and say who counts), single-source claims, and not presenting as live.
