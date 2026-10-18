@@ -6,3 +6,4 @@ data/raw/
 .env.*
 !.env.example
 .claude/
+public/data/events/

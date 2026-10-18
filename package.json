@@ -11,7 +11,8 @@
     "map:fetch": "tsx scripts/map/fetch.ts",
     "map:build": "tsx scripts/map/build.ts",
     "map:pin-india": "tsx scripts/map/pin-india.ts",
-    "check:budgets": "tsx scripts/check-budgets.ts"
+    "check:budgets": "tsx scripts/check-budgets.ts",
+    "data:ucdp": "tsx scripts/events/fetch-ucdp.ts"
   },
   "devDependencies": {
     "@tailwindcss/vite": "^4.3.3",
@@ -33,6 +34,7 @@
     "@types/topojson-simplify": "^3.0.3",
     "@types/topojson-specification": "^1.0.5",
     "@vitejs/plugin-react": "^6.1.2",
+    "csv-parse": "^7.0.3",
     "jsdom": "^30.1.3",
     "shapefile": "^0.6.6",
     "tailwindcss": "^4.3.3",

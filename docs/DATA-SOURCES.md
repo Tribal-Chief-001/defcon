@@ -42,3 +42,21 @@ Border build also: rewinds wrongly wound polygons and drops rings that quantizat
 | Downloaded | 2026-10-18 |
 | Use | Cross-check of the India outline only (`scripts/map/soi-check/`, `docs/MAP-POLICY.md`). Not committed, not shipped, not used in the build. Government of India publication: check its copyright terms before redistributing any derived data. |
 
+
+## UCDP (human-coded armed conflict events)
+
+| Item | Value |
+|------|-------|
+| Datasets | UCDP Georeferenced Event Dataset (GED) Global 26.1 (1989-01-01 to 2025-12-31; 417,968 events; 39 MB zip, 274 MB CSV) and UCDP Candidate Events monthly CSVs (Jan-Jun 2026, Jul 2026, Aug 2026; about 2,500 events a month) |
+| Where | `https://ucdp.uu.se/downloads/` (direct files listed in `data/events/sources.json`) |
+| Access | Free direct downloads, no token. (The UCDP API needs a token since Feb 2026; not used.) |
+| Licence | CC BY 4.0: free to use and redistribute provided the publications below are cited (stated on the UCDP downloads page, checked 2026-10-18) |
+| Pinned | SHA-256 per file in `data/events/sources.json`; `npm run data:ucdp` verifies, `-- --accept-new` re-pins. Candidate files are provisional and get revised, so a mismatch is expected over time. New monthly files must be added to the manifest by hand. |
+| Fetched | 2026-10-18; raw files in `data/raw/ucdp/` (gitignored) |
+| Coverage in Plan 2 | The last 400 days: 20,655 events (17,863 armed, 2,792 civilian), 2025-09-13 to 2026-08-31, streamed in 22 s at about 100 MB RSS. UCDP lags by about 6 weeks, so the newest weeks come from GDELT only. UCDP has no protests. |
+| Mapping | `type_of_violence` 1 and 2 -> `armed`, 3 -> `civilian`; `where_prec` 1-5 -> precision 1-5 (6, 7 -> 5); deaths = `best`; human-coded; country is assigned from the India-POV borders, not from UCDP's country name. |
+
+**Citation text (from the UCDP page, checked 2026-10-18):**
+- GED: Shawn Davies, Therese Pettersson, Magnus Oberg, *Organized violence 1989-2025, and violent political protests*, Journal of Peace Research, 2026, https://doi.org/10.1093/jopres/xjag046; Sundberg, Ralph and Erik Melander (2013) *Introducing the UCDP Georeferenced Event Dataset*, Journal of Peace Research 50(4).
+- Candidate: Hegre, Havard, Mihai Croicu, Kristine Eck, and Stina Hogbladh (July 2020) *Introducing the UCDP Candidate Events Dataset*, Research & Politics.
+- "UCDP is part of and funded by DEMSCORE, national research infrastructure grant 2021-00162 from the Swedish Research Council."
