@@ -15,3 +15,4 @@ The project ledger. Updated in the same change as the work it describes.
 - [Plan 4: signature interactions](superpowers/plans/2026-10-18-plan-4-signature-interactions.md): alliance arcs, time scrubber and Declassify, grain, terminator, radar cursor, pulse border, Night Watch, World Sound (decisions D-042 to D-046).
 - [Plan 5: data pipeline and hosting](superpowers/plans/2026-10-18-plan-5-data-pipeline-hosting.md) and [DEPLOY.md](DEPLOY.md): the scheduled ingest workflow, the validator gate, the Vercel runbook (D-047, D-048).
 - [Plan 6: hardening and launch](superpowers/plans/2026-10-18-plan-6-hardening-launch.md) and [LAUNCH.md](LAUNCH.md): quality tiers, phone tier, keyboard and a11y, CSP, About, error boundary and monitor, the owner's launch checklist (D-049 to D-052).
+- [RESEARCH-v1.1.md](RESEARCH-v1.1.md): competitor and data-source research, market gaps and the proposed direction for v1.1 (2026-10-18).
