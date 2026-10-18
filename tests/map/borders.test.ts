@@ -44,4 +44,39 @@ describe('built border data', () => {
   it('high-detail file is at most 1 MB gzipped (transfer size)', () => {
     expect(gz(HIGH)).toBeLessThanOrEqual(1_000_000);
   });
+
+  describe('countries.json rows (CountryRow)', () => {
+    type Row = { id: string; name: string; formalName: string | null; iso2: string | null; iso3: string | null; type: string; continent: string | null; subregion: string | null; lat: number; lon: number; hasPolygon: boolean; bbox: [number, number, number, number] | null; neighbours: string[] };
+    const rows = JSON.parse(readFileSync('public/data/countries.json', 'utf8')) as Row[];
+    const row = (id: string) => rows.find((r) => r.id === id)!;
+    it('keeps 248 rows sorted by id with every field', () => {
+      expect(rows).toHaveLength(248);
+      expect(rows.map((r) => r.id)).toEqual([...rows.map((r) => r.id)].sort((a, b) => a.localeCompare(b)));
+      for (const r of rows) for (const k of ['id', 'name', 'formalName', 'iso2', 'iso3', 'type', 'continent', 'subregion', 'lat', 'lon', 'hasPolygon', 'bbox', 'neighbours']) expect(k in r).toBe(true);
+    });
+    it('maps ISO codes (South Sudan is SDS here and SSD in ISO), -99 becomes null', () => {
+      expect(row('IND')).toMatchObject({ iso2: 'IN', iso3: 'IND', name: 'India' });
+      expect(row('SDS').iso3).toBe('SSD');
+      for (const id of ['ESB', 'USG', 'WSB', 'BRT', 'PGA', 'SCR']) expect(row(id).iso3).toBeNull();
+    });
+    it('has finite label coordinates for every row', () => {
+      for (const r of rows) expect(Number.isFinite(r.lat) && Number.isFinite(r.lon)).toBe(true);
+    });
+    it('hasPolygon is false exactly for VAT, CSI and SCR', () => {
+      expect(rows.filter((r) => !r.hasPolygon).map((r) => r.id).sort()).toEqual(['CSI', 'SCR', 'VAT']);
+      expect(row('VAT').bbox).toBeNull();
+    });
+    it('bounding boxes cross the antimeridian as w > e for Fiji, Russia and the USA', () => {
+      for (const id of ['FJI', 'RUS', 'USA']) {
+        const b = row(id).bbox!;
+        expect(b[0]).toBeGreaterThan(b[2]);
+      }
+      const ind = row('IND').bbox!;
+      expect(ind[0]).toBeLessThan(ind[2]);
+    });
+    it('carries neighbours from the borders', () => {
+      expect(row('IND').neighbours).toContain('AFG');
+      expect(row('JPN').neighbours).toEqual([]);
+    });
+  });
 });
