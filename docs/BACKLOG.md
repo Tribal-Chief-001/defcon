@@ -81,3 +81,12 @@ Open items found during Plan 1 that were deliberately not fixed. Each is graded 
 - The GDELT rolling cache is not size-capped beyond the 8-day prune; check cache usage after a few weeks.
 - Alerting: a failed scheduled run only shows in the Actions tab (email from GitHub if enabled); monitoring is Plan 6.
 - `npm audit` covers production dependencies only; dev-dependency advisories are left to Dependabot.
+
+## Plan 5 review minors (deferred, 2026-10-18)
+
+- The workflow builds the site twice when deploying (`npm run build`, then `vercel build`) and runs `npm ci` twice inside the job; the per-run duration (the plan assumed about 3 minutes, a reviewer estimated 5-8) is unmeasured until the first run on GitHub: recompute the monthly minutes then.
+- GDELT slots that returned 404 are marked missing permanently, so a transient outage leaves a gap.
+- The validator has no comparison with the previous published snapshot (for example "event count dropped by more than half").
+- `npm audit --audit-level=high` can fail an unrelated pull request when a new advisory appears.
+- The secret scanner covers tracked files only and misses unprefixed tokens (a 24-character Vercel token has no prefix); GitHub's own secret scanning is the backstop (enable it for the repo).
+- `eventsBase` over-rejects an upper-case `HTTPS://` scheme (harmless).

@@ -17,6 +17,14 @@ describe('scanText', () => {
     expect(rules(j('const api', 'Key = "', 'z9'.repeat(10), '"'))).toContain('assigned-secret');
     expect(rules(j('PASS', 'WORD: \'', 'hunter2hunter2hunter2', '\''))).toContain('assigned-secret');
   });
+  it('flags more shapes: JSON keys, unquoted env assignments, npm and sk- keys', () => {
+    expect(rules(j('{"api', '_key": "', 'z9'.repeat(10), '"}'))).toContain('assigned-secret');
+    expect(rules(j('VERCEL_TO', 'KEN=', 'abcd1234'.repeat(3)))).toContain('env-assignment');
+    expect(rules(j('npm', '_', 'A'.repeat(36)))).toContain('npm-token');
+    expect(rules(j('key = sk', '-', 'a1'.repeat(15)))).toContain('sk-key');
+    expect(rules('VERCEL_TOKEN=$VERCEL_TOKEN')).toEqual([]);
+    expect(rules('# VITE_EVENTS_BASE=/data/events')).toEqual([]);
+  });
   it('reports path, line and rule but never the matched text', () => {
     const secret = j('gh', 'p_', 'Q'.repeat(36));
     const hits = scanText('a/b.ts', `ok\nbad ${secret}\n`);

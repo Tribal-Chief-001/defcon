@@ -26,6 +26,11 @@ describe('eventsBase', () => {
     'https://',
     'ftp://x/y',
     '/data/../../etc',
+    '/\\evil.example.com/x',
+    '/\\\\evil.example.com/x',
+    'https://user:pw@host.example.com/x',
+    'https://host.example.com/x?',
+    'https://host.example.com/x#',
   ])('rejects %j and falls back to the default', (raw) => {
     expect(eventsBase(raw)).toBe(DEFAULT);
   });

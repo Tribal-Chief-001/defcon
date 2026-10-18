@@ -7,6 +7,7 @@ import { validateSnapshotDir } from '../../scripts/events/validate-snapshot';
 import type { Ev } from '../../src/events/types';
 
 const DAY = 86400;
+const OPTS = { minRecent: 1 }; // fixtures are tiny; the real defaults are covered below
 const NOW = Date.UTC(2026, 9, 18, 12) / 1000;
 let n = 0;
 const ev = (o: Partial<Ev>): Ev => ({
@@ -28,12 +29,12 @@ afterEach(() => rmSync(dir, { recursive: true, force: true }));
 describe('validateSnapshotDir', () => {
   it('passes a good, fresh snapshot pair', async () => {
     write(good());
-    expect(await validateSnapshotDir(dir, NOW)).toEqual({ ok: true, problems: [] });
+    expect(await validateSnapshotDir(dir, NOW, OPTS)).toEqual({ ok: true, problems: [] });
   });
   it('fails when a file is missing', async () => {
     write(good());
     rmSync(join(dir, 'recent.bin'));
-    const r = await validateSnapshotDir(dir, NOW);
+    const r = await validateSnapshotDir(dir, NOW, OPTS);
     expect(r.ok).toBe(false);
     expect(r.problems.join('\n')).toMatch(/recent\.bin.*missing/i);
   });
@@ -43,30 +44,30 @@ describe('validateSnapshotDir', () => {
     const b = readFileSync(f);
     b[b.length - 1] = b[b.length - 1]! ^ 0xff;
     writeFileSync(f, b);
-    expect((await validateSnapshotDir(dir, NOW)).problems.join('\n')).toMatch(/recent.*sha256/i);
+    expect((await validateSnapshotDir(dir, NOW, OPTS)).problems.join('\n')).toMatch(/recent.*sha256/i);
   });
   it('fails when there are no recent events', async () => {
     write([ev({ timeS: NOW - 60 * DAY })]);
-    expect((await validateSnapshotDir(dir, NOW)).problems.join('\n')).toMatch(/recent.*at least 1/i);
+    expect((await validateSnapshotDir(dir, NOW, OPTS)).problems.join('\n')).toMatch(/recent.*at least 1/i);
   });
-  it('fails when the data is older than 48 h or in the future by more than an hour', async () => {
-    write(good(), NOW - 3 * DAY);
-    expect((await validateSnapshotDir(dir, NOW)).problems.join('\n')).toMatch(/older than 48 h/i);
+  it('fails when the data is older than 12 h or in the future by more than an hour', async () => {
+    write(good(), NOW - 13 * 3600);
+    expect((await validateSnapshotDir(dir, NOW, OPTS)).problems.join('\n')).toMatch(/older than 12 h/i);
     rmSync(dir, { recursive: true });
     dir = mkdtempSync(join(tmpdir(), 'snap-'));
     write(good(), NOW + 2 * 3600);
-    expect((await validateSnapshotDir(dir, NOW)).problems.join('\n')).toMatch(/in the future/i);
+    expect((await validateSnapshotDir(dir, NOW, OPTS)).problems.join('\n')).toMatch(/in the future/i);
   });
   it('fails on a non-finite or out-of-range coordinate', async () => {
     write([...good(), ev({ lat: NaN }), ev({ lat: 95, lon: 3 })]);
-    const text = (await validateSnapshotDir(dir, NOW)).problems.join('\n');
+    const text = (await validateSnapshotDir(dir, NOW, OPTS)).problems.join('\n');
     expect(text).toMatch(/recent.*coordinate/i);
   });
   it('fails when a detail shard is missing', async () => {
     write(good());
     const day = new Date((NOW - 3600) * 1000).toISOString().slice(0, 10);
     rmSync(join(dir, 'detail', 'recent', `${day}.json`));
-    expect((await validateSnapshotDir(dir, NOW)).problems.join('\n')).toMatch(/shard/i);
+    expect((await validateSnapshotDir(dir, NOW, OPTS)).problems.join('\n')).toMatch(/shard/i);
   });
   it('fails when the recent and archive windows overlap', async () => {
     write(good());
@@ -74,11 +75,38 @@ describe('validateSnapshotDir', () => {
     const meta = JSON.parse(readFileSync(f, 'utf8'));
     meta.windowToS += 10 * DAY;
     writeFileSync(f, JSON.stringify(meta));
-    expect((await validateSnapshotDir(dir, NOW)).problems.join('\n')).toMatch(/overlap/i);
+    expect((await validateSnapshotDir(dir, NOW, OPTS)).problems.join('\n')).toMatch(/overlap/i);
   });
   it('reports every problem, not just the first', async () => {
     write([ev({ timeS: NOW - 60 * DAY })], NOW - 3 * DAY);
-    const r = await validateSnapshotDir(dir, NOW);
+    const r = await validateSnapshotDir(dir, NOW, OPTS);
     expect(r.problems.length).toBeGreaterThanOrEqual(2);
+  });
+  // review findings: the gate must catch a GDELT outage and weak or malformed data
+  it('has real defaults: at least 500 recent events and data no older than 12 h', async () => {
+    write(good());
+    const r = await validateSnapshotDir(dir, NOW);
+    expect(r.problems.join('\n')).toMatch(/recent has 2 events, at least 500 required/);
+  });
+  it('fails when GDELT covers fewer than 5 days (a fetch outage with a thin cache)', async () => {
+    const { recent, archive } = buildSnapshots({ events: good(), nowS: NOW - 600, sources: [{ ...sources[0]!, asOfS: NOW - 600, coverFromS: NOW - 2 * DAY }] });
+    writeSnapshots(dir, recent, archive);
+    expect((await validateSnapshotDir(dir, NOW, OPTS)).problems.join('\n')).toMatch(/GDELT covers only 2 days/);
+  });
+  it('fails on a missing or non-finite as-of time', async () => {
+    write(good());
+    const f = join(dir, 'recent.meta.json');
+    const meta = JSON.parse(readFileSync(f, 'utf8'));
+    delete meta.asOfS;
+    writeFileSync(f, JSON.stringify(meta));
+    expect((await validateSnapshotDir(dir, NOW, OPTS)).problems.join('\n')).toMatch(/as-of time is not a finite number/);
+  });
+  it('fails when a detail shard is not valid JSON or is too short for the events that point into it', async () => {
+    write(good());
+    const day = new Date((NOW - 3600) * 1000).toISOString().slice(0, 10);
+    writeFileSync(join(dir, 'detail', 'recent', `${day}.json`), '[]');
+    expect((await validateSnapshotDir(dir, NOW, OPTS)).problems.join('\n')).toMatch(/shard.*(too short|index)/i);
+    writeFileSync(join(dir, 'detail', 'recent', `${day}.json`), '{not json');
+    expect((await validateSnapshotDir(dir, NOW, OPTS)).problems.join('\n')).toMatch(/shard.*not valid JSON/i);
   });
 });

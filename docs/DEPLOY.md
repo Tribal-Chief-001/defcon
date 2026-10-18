@@ -21,11 +21,11 @@ The site then shows the globe, borders, capitals, dossiers and relations, and "N
 
 ## B. Live data: the scheduled workflow deploys the site
 
-`.github/workflows/ingest.yml` ("Ingest and publish") runs **every 3 hours** (cron `17 */3 * * *`), after every push to `main`, and on demand. One run: restores caches, downloads UCDP (pinned by SHA-256) and the last 7 days of GDELT, builds the snapshot, **validates it** (`npm run data:validate`), builds the site, uploads the snapshot as a 3-day artifact, and then, only if the Vercel secrets exist, deploys with the Vercel CLI. A failed validation stops the run before any deploy, so the live site keeps the previous data.
+`.github/workflows/ingest.yml` ("Ingest and publish") runs **every 3 hours** (cron `17 */3 * * *`), after every push to `main`, and on demand. One run: restores caches, downloads UCDP (pinned by SHA-256) and the last 7 days of GDELT, builds the snapshot, **validates it** (`npm run data:validate`), builds the site, uploads the snapshot as a 3-day artifact, and then, only if the Vercel secrets exist, deploys with the Vercel CLI. `vercel build` runs repository code, so it gets no secret; only `pull` and `deploy` do. A failed validation stops the run before any deploy, so the live site keeps the previous data.
 
 ### One-time setup (owner)
 
-1. Create or import the Vercel project (path A is fine) and link this folder once: `npx vercel link` (interactive). It writes `.vercel/project.json` (git-ignored) with the project and organisation ids.
+1. Create or import the Vercel project (path A is fine) and link this folder once: `npx vercel link` (interactive). It writes `.vercel/project.json` (git-ignored); its `orgId` and `projectId` fields are the values for `VERCEL_ORG_ID` and `VERCEL_PROJECT_ID`.
 2. In Vercel: Account Settings, Tokens, create a token. Treat it like a password.
 3. Store three repository secrets with the GitHub CLI. Each command asks for the value on stdin; **never paste a token into a chat, an issue or a commit**.
 
@@ -47,7 +47,8 @@ Without the secrets the workflow still ingests and validates (a useful check) bu
 ### Reading a failed run
 
 - `Validate the snapshot (gate)` failed: the step prints the problems (missing file, hash mismatch, no recent events, data older than 48 h, bad coordinates, missing detail shard, overlapping windows). Nothing was deployed. Re-run once; if the source (UCDP or GDELT) is down, wait. Locally: `npm run data:validate`.
-- A fetch step failed: GDELT or UCDP unreachable; the cache keeps older files, and the validator decides whether the data is still fresh enough.
+- `npm run data:ucdp` failed with a SHA-256 mismatch: UCDP revises its candidate files in place. Every run fails until the owner re-pins locally (`npm run data:ucdp -- --accept-new`), checks the diff of `data/events/sources.json` and commits it.
+- A fetch step failed or GDELT is unreachable: the cache keeps older files, and the validator turns the run red once the newest data is older than 12 hours (the live site then keeps its previous data).
 - The `events-snapshot` artifact on a run holds exactly what was validated.
 
 ### Cadence and cost
@@ -66,6 +67,6 @@ If Vercel's own Git integration is also connected, every push to `main` makes a 
 
 ## Not yet verified
 
-- The Vercel steps of the workflow and the `vercel.json` headers on Vercel's infrastructure have not run (no Vercel account access from this machine). The workflow's ingest, validate and artifact steps are exercised on GitHub (see the Plan 5 close-out in `docs/DECISIONS.md`).
+- The Vercel steps of the workflow and the `vercel.json` headers on Vercel's infrastructure have not run (no Vercel account access from this machine). The workflow has **not run on GitHub yet** at the time of writing: its first run happens after it is pushed to `main`; check `gh run list` for the result.
 - `deploymentEnabled` and the CLI flags are as documented by Vercel at the time of writing and were not run here.
 - The security headers include no Content-Security-Policy yet; Plan 6 adds and tests it against the real app.

@@ -1,5 +1,6 @@
 // A small guard against committing credentials: scans tracked text files for common key shapes. It reports path:line:rule only and
-// never prints the matched text, so a hit does not leak into CI logs. Not a replacement for GitHub secret scanning.
+// never prints the matched text, so a hit does not leak into CI logs. It reads `git ls-files`, so untracked files and git history
+// are not scanned; it is not a replacement for GitHub secret scanning.
 import { execFileSync } from 'node:child_process';
 import { readFileSync } from 'node:fs';
 
@@ -12,7 +13,11 @@ const RULES: [string, RegExp][] = [
   ['slack-token', /\bxox[baprs]-[A-Za-z0-9-]{10,}/],
   ['google-api-key', /\bAIza[0-9A-Za-z_-]{35}\b/],
   ['bearer-token', /\bBearer\s+[A-Za-z0-9._~+/=-]{20,}/],
-  ['assigned-secret', /(?:secret|token|password|api[_-]?key)\s*[:=]\s*["'](?![$]|\{\{)[^"']{12,}["']/i],
+  ['npm-token', /\bnpm_[A-Za-z0-9]{36}\b/],
+  ['sk-key', /\bsk-[A-Za-z0-9_-]{24,}/],
+  ['assigned-secret', /(?:secret|token|password|api[_-]?key)["']?\s*[:=]\s*["'`](?![$]|\{\{)[^"'`]{12,}["'`]/i],
+  // unquoted NAME=value in env-style files and shell lines, value of 16+ characters that is not a variable reference
+  ['env-assignment', /^\s*(?:export\s+)?[A-Z][A-Z0-9_]*(?:SECRET|TOKEN|PASSWORD|API_KEY|PRIVATE_KEY)[A-Z0-9_]*=(?![$<{])[^\s"'#]{16,}\s*$/],
 ];
 
 export function scanText(path: string, text: string): Hit[] {

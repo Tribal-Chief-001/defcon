@@ -5,27 +5,24 @@ const DIR = '.github/workflows';
 const files = readdirSync(DIR).filter((f) => f.endsWith('.yml'));
 const text = (f: string) => readFileSync(`${DIR}/${f}`, 'utf8');
 
+import { runBodies, steps, workflowProblems } from './workflowRules';
+
 describe.each(files)('%s', (f) => {
-  const t = text(f);
-  it('pins every action to a full commit SHA with a version comment', () => {
-    const uses = t.split('\n').filter((l) => /^\s*-?\s*uses:/.test(l));
-    expect(uses.length).toBeGreaterThan(0);
-    for (const l of uses) expect(l, l).toMatch(/uses:\s+[\w.-]+\/[\w./-]+@[0-9a-f]{40}\s+#\s+v\d/);
+  it('follows every workflow rule (pinned SHAs, least privilege, no injection, secrets only in step env, timeout)', () => {
+    expect(workflowProblems(text(f))).toEqual([]);
   });
-  it('has top-level least-privilege permissions (contents: read only)', () => {
-    const m = /^permissions:\n((?:[ \t]+.+\n)+)/m.exec(t);
-    expect(m, 'top-level permissions block').not.toBeNull();
-    expect(m![1]!.trim().split('\n').map((l) => l.trim())).toEqual(['contents: read']);
-  });
-  it('never uses pull_request_target and never interpolates untrusted event data into a shell line', () => {
-    expect(t).not.toMatch(/pull_request_target/);
-    for (const l of t.split('\n').filter((x) => /^\s*(-\s*)?run:/.test(x))) {
-      expect(l).not.toMatch(/\$\{\{\s*(github\.head_ref|github\.event\.(pull_request|issue|comment|head_commit)|secrets\.)/);
-    }
-  });
-  it('sets a job timeout', () => {
-    expect(t).toMatch(/timeout-minutes:\s*\d+/);
-  });
+});
+
+// the rules must actually catch what they claim to catch: break the real workflow and expect a named problem
+describe('workflowProblems catches broken variants', () => {
+  const base = text('ingest.yml');
+  const has = (t: string, re: RegExp) => workflowProblems(t).some((x) => re.test(x));
+  it('an unpinned action', () => expect(has(base.replace(/@3d3c42e[0-9a-f]+ # v7\.0\.1/, '@v7'), /not pinned/)).toBe(true));
+  it('a job-level permissions override', () => expect(has(base.replace('    timeout-minutes: 25', '    timeout-minutes: 25\n    permissions: write-all'), /exactly once/)).toBe(true));
+  it('injection inside a run block', () => expect(has(base.replace('      - run: npm ci', '      - run: |\n          echo ${{ github.head_ref }}'), /interpolated/)).toBe(true));
+  it('a secret moved to the job-level env', () => expect(has(base.replace("      HAS_VERCEL:", "      VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}\n      HAS_VERCEL:"), /job-level env|outside a step env/)).toBe(true));
+  it('continue-on-error', () => expect(has(base.replace('        run: npm run data:validate', '        run: npm run data:validate\n        continue-on-error: true'), /continue-on-error/)).toBe(true));
+  it('pull_request_target', () => expect(has(base.replace('  workflow_dispatch:', '  workflow_dispatch:\n  pull_request_target:'), /pull_request_target/)).toBe(true));
 });
 
 describe('ingest.yml', () => {
@@ -41,19 +38,23 @@ describe('ingest.yml', () => {
     expect(t).toMatch(/concurrency:\s*\n\s+group:\s*ingest\n\s+cancel-in-progress:\s*false/);
     expect(t).not.toMatch(/^\s+pull_request:/m);
   });
-  it('validates the snapshot before it builds the site, uploads it or deploys', () => {
-    const at = (s: string) => t.indexOf(s);
+  it('validates the snapshot before it builds the site, uploads it or deploys, and the gate cannot be skipped', () => {
+    const at = (x: string) => t.indexOf(x);
     expect(at('npm run data:validate')).toBeGreaterThan(at('npm run data:build'));
     expect(at('npm run data:validate')).toBeLessThan(at('npm run build'));
     expect(at('npm run data:validate')).toBeLessThan(at('upload-artifact'));
     expect(at('npm run data:validate')).toBeLessThan(at('deploy --prebuilt'));
+    const gate = steps(t).find((s) => /data:validate/.test(s.text))!;
+    expect(gate.text).not.toMatch(/\bif:|continue-on-error|\|\|/);
   });
-  it('reads secrets only in env blocks (job-level presence flag, step-level values), deploys only when the token exists', () => {
-    for (const l of t.split('\n').filter((x) => x.includes('secrets.'))) expect(l, l).toMatch(/^\s+[A-Z_]+:\s+\$\{\{\s*secrets\.[A-Z_]+( != '')?\s*\}\}\s*$/);
+  it('deploys only when the token exists: every step that runs vercel carries the guard, and only pull and deploy see secrets', () => {
     expect(t).toMatch(/HAS_VERCEL:\s+\$\{\{\s*secrets\.VERCEL_TOKEN != ''\s*\}\}/);
-    const deploy = t.split('\n').filter((l) => /^\s+if:\s+env\.HAS_VERCEL == 'true'/.test(l));
-    expect(deploy.length).toBeGreaterThanOrEqual(3); // pull, build, deploy
-    expect(t).toMatch(/vercel@\d+\.\d+\.\d+/); // pinned CLI version
+    const vercel = steps(t).filter((s) => runBodies(s.text).some((b) => /vercel@/.test(b)));
+    expect(vercel.length).toBe(3);
+    for (const s of vercel) expect(s.text).toMatch(/^\s+if:\s+env\.HAS_VERCEL == 'true'/m);
+    for (const s of vercel) expect(runBodies(s.text).join('\n')).toMatch(/vercel@\d+\.\d+\.\d+/);
+    const build = vercel.find((s) => /vercel@[\d.]+ build/.test(runBodies(s.text).join('\n')))!;
+    expect(build.text, 'the build step runs repository code and must not see any secret').not.toMatch(/secrets\./);
   });
   it('uploads the validated snapshot as an artifact with a short retention', () => {
     expect(t).toMatch(/path:\s*public\/data\/events/);
