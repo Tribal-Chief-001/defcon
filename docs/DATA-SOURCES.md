@@ -60,3 +60,20 @@ Border build also: rewinds wrongly wound polygons and drops rings that quantizat
 - GED: Shawn Davies, Therese Pettersson, Magnus Oberg, *Organized violence 1989-2025, and violent political protests*, Journal of Peace Research, 2026, https://doi.org/10.1093/jopres/xjag046; Sundberg, Ralph and Erik Melander (2013) *Introducing the UCDP Georeferenced Event Dataset*, Journal of Peace Research 50(4).
 - Candidate: Hegre, Havard, Mihai Croicu, Kristine Eck, and Stina Hogbladh (July 2020) *Introducing the UCDP Candidate Events Dataset*, Research & Politics.
 - "UCDP is part of and funded by DEMSCORE, national research infrastructure grant 2021-00162 from the Swedish Research Council."
+
+## GDELT 2.0 Events (auto-coded events)
+
+| Item | Value |
+|------|-------|
+| Source | `http://data.gdeltproject.org/gdeltv2/<YYYYMMDDHHMM00>.export.CSV.zip`, one per 15 minutes (about 27 KB), `lastupdate.txt` lists the newest |
+| Format | Tab-separated, no header, 61 columns (EventCode 26, EventRootCode 28, Goldstein 30, NumMentions 31, NumSources 32, ActionGeo type/name/lat/lon 51/52/56/57, DATEADDED 59, SOURCEURL 60) |
+| Terms | Free for any use; any use or redistribution must cite the GDELT Project and link to `https://www.gdeltproject.org` (GDELT About page, checked 2026-10-18) |
+| Politeness | At most 4 concurrent requests, requests start at least 100 ms apart, `User-Agent: Defcon/0.1 (research showcase)`, 3 attempts, cached files never refetched; 404s older than 2 h are remembered as missing |
+| Cache | `data/raw/gdelt/` (gitignored); a 7-day backfill is 285 MB unzipped |
+| Measured 2026-10-18 | 7-day backfill: 672 files, 723,710 rows, 28,092 kept (3.9%): armed 18,803, civilian 5,296, protest 3,839, riot 154; fetch phase 80 s (about 8 requests a second); before deduplication |
+
+**Kind mapping (CAMEO EventCode; the owner reviews):** `145x` -> riot; other `14x` -> protest; `19x` -> armed; `18x` and `20x` -> civilian (violence against individuals / mass violence); everything else is not drawn. Precision from ActionGeo_Type: 4 and 3 -> 2, 5 and 2 -> 4.
+
+**Filters (`GDELT_FILTER` in `scripts/events/gdelt.ts`; the owner reviews):** drop ActionGeo_Type 0 (no place) and 1 (country centroid); drop empty, non-numeric, out-of-range or exactly (0, 0) coordinates; drop events dated more than 2 days before DATEADDED (about 4% of a sample file, some over a year old); keep only rows with NumSources >= 2 or NumMentions >= 3.
+
+**Known limits (state them in the UI):** auto-coded and noisy (for example code 190 "use conventional military force" is also assigned to statements and rhetoric, so `armed` is the largest GDELT group); geocoding errors are common; no time of day (events are placed at midday UTC); no fatality counts, so severity never exceeds 3; protests come only from here until ACLED is added.
