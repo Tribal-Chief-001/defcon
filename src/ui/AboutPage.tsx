@@ -66,7 +66,7 @@ export function AboutPage({ onClose }: { onClose: () => void }) {
     ) : (
       <span>{text}</span>
     );
-  const h = 'font-[var(--font-mono)] text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]';
+  const h = 'font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.18em] text-[var(--text-muted)]';
 
   return (
     <div className="fixed inset-0 z-40 flex items-start justify-center overflow-y-auto bg-black/80 p-[5vw] pt-[8vh] backdrop-blur-sm" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
@@ -82,7 +82,7 @@ export function AboutPage({ onClose }: { onClose: () => void }) {
           <h2 id="about-title" className="font-[var(--font-display)] text-2xl font-extrabold leading-none tracking-tight">
             About and sources
           </h2>
-          <button type="button" onClick={onClose} className="rounded-full border border-[var(--border-strong)] px-3 py-1 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.15em] text-[var(--text-muted)] hover:text-[var(--lime)]">
+          <button type="button" onClick={onClose} className="rounded-full border border-[var(--border-strong)] px-3 py-1 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] hover:text-[var(--lime)]">
             Close
           </button>
         </div>
@@ -110,7 +110,7 @@ export function AboutPage({ onClose }: { onClose: () => void }) {
           ) : (
             <ul className="space-y-3">
               {sources.map((s) => (
-                <li key={s.id} className="border-t border-[var(--border)] pt-2 font-[var(--font-mono)] text-[12px]">
+                <li key={s.id} className="border-t border-[var(--border)] pt-2 font-[var(--font-mono)] text-[13px]">
                   <span className="font-bold">{s.name}</span>
                   <br />
                   <span className="text-[var(--text-muted)]">
@@ -127,7 +127,7 @@ export function AboutPage({ onClose }: { onClose: () => void }) {
           <p className={h}>Country data</p>
           <ul className="space-y-2">
             {STATIC_SOURCES.map((s) => (
-              <li key={s.name} className="border-t border-[var(--border)] pt-2 font-[var(--font-mono)] text-[12px]">
+              <li key={s.name} className="border-t border-[var(--border)] pt-2 font-[var(--font-mono)] text-[13px]">
                 <span className="font-bold">{s.name}</span>
                 <br />
                 <span className="text-[var(--text-muted)]">
@@ -157,13 +157,13 @@ export function AboutPage({ onClose }: { onClose: () => void }) {
         <section className="mt-5 space-y-2 text-sm leading-relaxed">
           <p className={h}>Diagnostics</p>
           <p className="text-[var(--text-muted)]">Errors from this session, kept in memory only. Nothing is sent anywhere; copy them if you want to report a problem.</p>
-          <pre data-diagnostics className="max-h-40 overflow-auto whitespace-pre-wrap rounded-[12px] border border-[var(--border)] p-3 font-[var(--font-mono)] text-[11px]">{diagnostics}</pre>
+          <pre data-diagnostics className="max-h-40 overflow-auto whitespace-pre-wrap rounded-[12px] border border-[var(--border)] p-3 font-[var(--font-mono)] text-[12px]">{diagnostics}</pre>
           <button
             type="button"
             onClick={() => {
               void navigator.clipboard?.writeText(diagnostics).then(() => setCopied(true), () => setCopied(false));
             }}
-            className="rounded-full border border-[var(--border-strong)] px-3 py-1 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.15em] text-[var(--text-muted)] hover:text-[var(--lime)]"
+            className="rounded-full border border-[var(--border-strong)] px-3 py-1 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] hover:text-[var(--lime)]"
           >
             {copied ? 'Copied' : 'Copy diagnostics'}
           </button>

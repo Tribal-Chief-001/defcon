@@ -10,6 +10,13 @@
   --orange: #FF4D00;
   --cyan: #00FFF0;
   --ease: cubic-bezier(0.16, 1, 0.3, 1);
+  /* type scale: mono labels and data, body, titles (Syne 800) and hero numerals (Space Grotesk 600) */
+  --fs-label: 11.5px;
+  --fs-data: 13px;
+  --fs-body: 14px;
+  --fs-title: 30px;
+  --fs-hero: 52px;
+  --track: 0.14em;
   --font-display: 'Syne', sans-serif;
   --font-body: 'Space Grotesk', sans-serif;
   --font-mono: 'JetBrains Mono', monospace;

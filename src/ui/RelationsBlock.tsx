@@ -3,7 +3,7 @@ import { loadRelations } from '../relations/load';
 import { relationsFor } from '../relations/lookup';
 import type { Relations } from '../relations/types';
 
-const label = 'font-[var(--font-mono)] text-[9.5px] uppercase tracking-[0.12em] text-[var(--text-faint)]';
+const label = 'font-[var(--font-mono)] text-[11px] uppercase tracking-[0.12em] text-[var(--text-faint)]';
 const int = (n: number) => n.toLocaleString('en-US');
 
 // Formal alliances and active disputes (sourced: see docs/DATA-SOURCES.md). "None on record" is a real answer, not missing data.
@@ -33,8 +33,8 @@ export function RelationsBlock({ countryId, names }: { countryId: string; names:
 
   return (
     <div className="mt-5 border-t border-[var(--border)] pt-3">
-      <p className="font-[var(--font-mono)] text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">Relations</p>
-      <div className="mt-2 grid grid-cols-[92px_1fr] gap-x-3 gap-y-2 text-[12px]">
+      <p className="font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.18em] text-[var(--text-muted)]">Relations</p>
+      <div className="mt-2 grid grid-cols-[92px_1fr] gap-x-3 gap-y-2 text-[13px]">
         <span className={label}>Formal allies</span>
         <span className="font-[var(--font-mono)]">
           {rel === undefined ? 'loading' : rel === null ? bar : r!.allies.length === 0 ? <span className="text-[var(--text-faint)]">none on record</span> : (
@@ -58,7 +58,7 @@ export function RelationsBlock({ countryId, names }: { countryId: string; names:
         </span>
       </div>
       {rel ? (
-        <p className="mt-2 font-[var(--font-mono)] text-[9.5px] uppercase leading-relaxed tracking-[0.1em] text-[var(--text-faint)]">
+        <p className="mt-2 font-[var(--font-mono)] text-[11px] uppercase leading-relaxed tracking-[0.1em] text-[var(--text-faint)]">
           Sources:{' '}
           {mine.map((a) => (
             <span key={a.id}>

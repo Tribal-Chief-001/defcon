@@ -15,7 +15,7 @@ export function Unsupported({ reason = 'webgl2' }: { reason?: keyof typeof COPY 
   const c = COPY[reason];
   return (
     <div className="flex h-full w-full flex-col items-start justify-end gap-3 p-[4vw]">
-      <p className="font-[var(--font-mono)] text-[11px] uppercase tracking-[0.18em] text-[var(--orange)]">{c.label}</p>
+      <p className="font-[var(--font-mono)] text-[12px] uppercase tracking-[0.18em] text-[var(--orange)]">{c.label}</p>
       <h1 className="font-[var(--font-display)] text-5xl font-extrabold leading-[0.9] tracking-tight">{c.title}</h1>
       <p className="max-w-[48ch] text-base text-[var(--text-muted)]">{c.body}</p>
     </div>

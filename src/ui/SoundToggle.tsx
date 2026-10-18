@@ -18,7 +18,7 @@ export function SoundToggle() {
         setEnabled(on);
         saveSound(on);
       }}
-      className={`pointer-events-auto rounded-full border px-3 py-1 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.15em] ${enabled ? 'border-[var(--lime)] text-[var(--lime)]' : 'border-[var(--border-strong)] text-[var(--text-muted)] hover:text-[var(--lime)]'}`}
+      className={`pointer-events-auto rounded-full border px-3 py-1 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] ${enabled ? 'border-[var(--lime)] text-[var(--lime)]' : 'border-[var(--border-strong)] text-[var(--text-muted)] hover:text-[var(--lime)]'}`}
     >
       {label}
     </button>

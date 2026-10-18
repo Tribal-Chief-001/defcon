@@ -58,7 +58,7 @@ export function CommandPalette({ onPick, index: given }: { onPick: (id: string) 
         type="button"
         onClick={show}
         aria-keyshortcuts="Control+K Meta+K"
-        className="flex items-center gap-2 rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)] focus-visible:text-[var(--lime)]"
+        className="flex items-center gap-2 rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)] focus-visible:text-[var(--lime)]"
       >
         Search <span className="text-[var(--text-faint)]">Ctrl K</span>
       </button>
@@ -113,13 +113,13 @@ export function CommandPalette({ onPick, index: given }: { onPick: (id: string) 
                   className={`flex cursor-pointer items-baseline justify-between gap-3 rounded-[12px] px-3 py-2 ${i === active ? 'bg-white/10' : ''}`}
                 >
                   <span className="text-[15px]">{r.entry.name}</span>
-                  <span className="font-[var(--font-mono)] text-[10px] uppercase tracking-[0.12em] text-[var(--text-muted)]">
+                  <span className="font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.12em] text-[var(--text-muted)]">
                     {r.via === 'capital' ? `capital · ${r.match}` : r.via === 'code' ? `code · ${r.match}` : (r.entry.capitals[0] ?? r.entry.continent ?? '')}
                   </span>
                 </li>
               ))}
             </ul>
-            {q.trim() && results.length === 0 ? <p role="status" className="px-3 py-2 font-[var(--font-mono)] text-[11px] uppercase tracking-[0.15em] text-[var(--text-muted)]">No match</p> : null}
+            {q.trim() && results.length === 0 ? <p role="status" className="px-3 py-2 font-[var(--font-mono)] text-[12px] uppercase tracking-[0.15em] text-[var(--text-muted)]">No match</p> : null}
           </div>
         </div>
       ) : null}

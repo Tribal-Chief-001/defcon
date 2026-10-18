@@ -11,7 +11,7 @@ export function CapitalLabels({ labels }: { labels: CapitalLabel[] }) {
       {labels.slice(0, MAX_LABELS).map((l) => (
         <span
           key={l.id}
-          className="absolute left-0 top-0 whitespace-nowrap font-[var(--font-mono)] text-[10px] uppercase tracking-[0.12em] text-[var(--cyan)]"
+          className="absolute left-0 top-0 whitespace-nowrap font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.12em] text-[var(--cyan)]"
           style={{ transform: `translate(${Math.round(l.x + 9)}px, ${Math.round(l.y - 6)}px)` }}
         >
           {l.name}

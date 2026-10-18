@@ -175,7 +175,7 @@ export function App() {
       <TopBar>
         <CommandPalette onPick={(id) => void startDive(id)} />
         <SoundToggle />
-        <button type="button" onClick={() => setAbout(true)} className="rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)]">
+        <button type="button" onClick={() => setAbout(true)} className="rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)]">
           About
         </button>
       </TopBar>
@@ -207,7 +207,7 @@ export function App() {
           />
         </ErrorBoundary>
       ) : null}
-      <p className="pointer-events-none absolute bottom-[calc(4.5rem+var(--safe-bottom))] left-[max(4vw,var(--safe-left))] font-[var(--font-mono)] text-[11px] uppercase tracking-[0.15em] text-[var(--cyan)]">
+      <p className="pointer-events-none absolute bottom-[calc(4.5rem+var(--safe-bottom))] left-[max(4vw,var(--safe-left))] font-[var(--font-mono)] text-[12px] uppercase tracking-[0.15em] text-[var(--cyan)]">
         {r ? `${r.lat.toFixed(2)}N ${r.lon.toFixed(2)}E // ${r.id ?? 'open water'}` : 'click the globe'}
       </p>
     </main>

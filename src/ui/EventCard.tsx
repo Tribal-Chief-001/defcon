@@ -36,7 +36,7 @@ export function EventCard({ detail, info, nowS = Math.floor(Date.now() / 1000), 
   const progress = redactionFor(nowS - info.timeS + backS);
   return (
     <aside ref={card} tabIndex={-1} aria-label="Event details" className="pointer-events-auto absolute right-[4vw] top-[4.5rem] z-20 w-[min(340px,calc(100vw-8vw))] rounded-[24px] border border-[var(--border)] bg-white/[0.06] p-6 backdrop-blur-xl">
-      <div className="flex items-start justify-between gap-3 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+      <div className="flex items-start justify-between gap-3 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
         <span>{KIND_LABEL[info.kind]}</span>
         <button type="button" onClick={onClose} aria-label="Close" className="rounded-full border border-[var(--border-strong)] px-2 py-0.5 hover:text-[var(--lime)]">
           close
@@ -46,12 +46,12 @@ export function EventCard({ detail, info, nowS = Math.floor(Date.now() / 1000), 
         <>
           <h2 className="mt-3 font-[var(--font-body)] text-xl font-semibold leading-tight">{detail.place}</h2>
           {detail.headline ? <p className="mt-2 text-sm text-[var(--text-muted)]">{detail.headline}</p> : null}
-          <div className="mt-4 flex flex-wrap gap-2 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.15em]">
+          <div className="mt-4 flex flex-wrap gap-2 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em]">
             <span className="rounded-full border border-[var(--border-strong)] px-2.5 py-1">SEV {info.severity}/5</span>
             <span className={`rounded-full border px-2.5 py-1 ${info.human ? 'border-[var(--lime)] text-[var(--lime)]' : 'border-[var(--border-strong)]'}`}>{info.human ? 'HUMAN-CODED' : 'AUTO-CODED'}</span>
             <span className="rounded-full border border-[var(--border-strong)] px-2.5 py-1">{info.human ? utcDate(info.timeS) : `reported ${ago(nowS, info.timeS)}`}</span>
           </div>
-          <dl className="mt-4 grid grid-cols-[88px_1fr] gap-y-2 border-t border-[var(--border)] pt-3 font-[var(--font-mono)] text-[11px]">
+          <dl className="mt-4 grid grid-cols-[88px_1fr] gap-y-2 border-t border-[var(--border)] pt-3 font-[var(--font-mono)] text-[12px]">
             <dt className="text-[var(--text-faint)]">DEATHS</dt>
             <dd className="font-bold">
               {detail.deaths === null ? 'unavailable' : String(detail.deaths)}
@@ -79,12 +79,12 @@ export function EventCard({ detail, info, nowS = Math.floor(Date.now() / 1000), 
               <Bar progress={progress} />
             </dd>
           </dl>
-          <p className="mt-3 font-[var(--font-mono)] text-[9.5px] uppercase tracking-[0.12em] text-[var(--text-faint)]">
+          <p className="mt-3 font-[var(--font-mono)] text-[11px] uppercase tracking-[0.12em] text-[var(--text-faint)]">
             File: {progress >= 1 ? 'declassified' : progress <= 0 ? 'classified' : 'declassifying'} (cosmetic: every detail is shown)
           </p>
         </>
       ) : (
-        <p className="mt-4 font-[var(--font-mono)] text-[11px] uppercase tracking-[0.15em] text-[var(--text-muted)]">loading detail</p>
+        <p className="mt-4 font-[var(--font-mono)] text-[12px] uppercase tracking-[0.15em] text-[var(--text-muted)]">loading detail</p>
       )}
     </aside>
   );

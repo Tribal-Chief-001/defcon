@@ -25,7 +25,7 @@ export function AsOf({ nowS: fixedNowS }: { nowS?: number }) {
     lastPill.current = pill;
   }, [pill]);
   return (
-    <div className="pointer-events-none flex flex-col items-end gap-1.5 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
+    <div className="pointer-events-none flex flex-col items-end gap-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
       <div className="flex items-center gap-2">
         <span>{f ? f.label : 'NO EVENT DATA'}</span>
         <span className={`rounded-full border px-2.5 py-1 ${alert ? 'border-[var(--orange)] text-[var(--orange)]' : 'border-[var(--border-strong)] text-[var(--lime)]'}`}>{pill}</span>

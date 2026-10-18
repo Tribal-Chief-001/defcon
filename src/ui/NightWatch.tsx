@@ -30,7 +30,7 @@ export function NightWatch({ active, caption }: { active: boolean; caption: stri
         <span className="sr-only" aria-live="polite">
           {caption}
         </span>
-        <p data-typed aria-hidden="true" className="font-[var(--font-mono)] text-[11px] uppercase tracking-[0.2em] text-[var(--cyan)]">
+        <p data-typed aria-hidden="true" className="font-[var(--font-mono)] text-[12px] uppercase tracking-[0.2em] text-[var(--cyan)]">
           {typed}
         </p>
       </div>

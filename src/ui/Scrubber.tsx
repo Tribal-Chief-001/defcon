@@ -50,7 +50,7 @@ export function Scrubber() {
     <div
       role="group"
       aria-label="Time travel controls"
-      className="pointer-events-auto absolute bottom-[calc(1rem+var(--safe-bottom))] left-1/2 z-20 flex w-[min(560px,92vw)] -translate-x-1/2 items-center gap-3 rounded-full border border-[var(--border)] bg-black/50 px-4 py-2 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md"
+      className="pointer-events-auto absolute bottom-[calc(1rem+var(--safe-bottom))] left-1/2 z-20 flex w-[min(560px,92vw)] -translate-x-1/2 items-center gap-3 rounded-full border border-[var(--border)] bg-black/50 px-4 py-2 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md"
     >
       <button type="button" className={btn} disabled={reduced} title={reduced ? 'Playback is off under reduced motion' : undefined} onClick={() => (playing ? setPlaying(false) : (backS === 0 && setBack(7 * DAY), setPlaying(true)))}>
         {playing ? 'Pause' : 'Play'}

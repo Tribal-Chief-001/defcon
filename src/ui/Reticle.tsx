@@ -45,7 +45,7 @@ export function Reticle() {
         <circle r={snapped ? 9 : 13} fill="none" stroke="currentColor" strokeWidth="1" opacity="0.9" />
         <path d="M0 -21V-8M0 8V21M-21 0H-8M8 0H21" stroke="currentColor" strokeWidth="1" />
       </svg>
-      <span data-readout className="absolute left-6 top-4 whitespace-nowrap font-[var(--font-mono)] text-[10px] uppercase tracking-[0.12em] text-[var(--cyan)] [paint-order:stroke_fill] [-webkit-text-stroke:3px_#000]" />
+      <span data-readout className="absolute left-6 top-4 whitespace-nowrap font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.12em] text-[var(--cyan)] [paint-order:stroke_fill] [-webkit-text-stroke:3px_#000]" />
     </div>
   );
 }

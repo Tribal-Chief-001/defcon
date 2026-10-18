@@ -16,7 +16,7 @@ export class ErrorBoundary extends Component<Props, { failed: boolean }> {
     if (!this.state.failed) return this.props.children;
     if (this.props.fallback !== undefined) return this.props.fallback;
     return (
-      <div role="alert" className="pointer-events-auto absolute left-[4vw] top-[7rem] z-10 rounded-[24px] border border-[var(--orange)] bg-black/70 p-4 font-[var(--font-mono)] text-[11px] uppercase tracking-[0.12em] text-[var(--orange)]">
+      <div role="alert" className="pointer-events-auto absolute left-[4vw] top-[7rem] z-10 rounded-[24px] border border-[var(--orange)] bg-black/70 p-4 font-[var(--font-mono)] text-[12px] uppercase tracking-[0.12em] text-[var(--orange)]">
         This panel failed. Close it and try again.
         <button
           type="button"
