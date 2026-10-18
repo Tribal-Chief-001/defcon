@@ -61,3 +61,18 @@ describe('ingest.yml', () => {
     expect(t).toMatch(/retention-days:\s*[1-7]\b/);
   });
 });
+
+describe('data-updates.yml (the monthly alert for newer UCDP data and an old timeline)', () => {
+  const t = text('data-updates.yml');
+  it('runs monthly and by hand, only reads the repository, and has no secrets, pushes or write permissions', () => {
+    expect(t).toMatch(/cron:\s*"\d+ \d+ \d+ \* \*"/); // once a month
+    expect(t).toMatch(/workflow_dispatch:/);
+    expect(t).toMatch(/permissions:\s*\n\s+contents: read/);
+    expect(t).not.toMatch(/secrets\./);
+    expect(t).not.toMatch(/git push|contents: write|pull-requests: write/);
+  });
+  it('runs the UCDP check and the timeline age check', () => {
+    expect(t).toMatch(/npm run data:ucdp-discover -- --check/);
+    expect(t).toMatch(/npm run data:timeline-age/);
+  });
+});

@@ -1,0 +1,39 @@
+name: Data update alerts
+
+# Once a month: tell the owner (a failed run is emailed by GitHub) when UCDP has published a newer monthly candidate file than the one
+# pinned in data/events/sources.json, and when the hand-curated key-events timeline is more than 45 days old. Read-only: it never pushes,
+# commits or deploys. The refresh itself is a reviewed change: npm run data:ucdp-discover -- --accept, then data:conflicts and data:indices.
+on:
+  schedule:
+    - cron: "23 6 5 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  ucdp:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Is there a newer UCDP candidate file? (HEAD request only)
+        run: npm run data:ucdp-discover -- --check
+
+  timeline:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Is the key-events timeline older than 45 days?
+        run: npm run data:timeline-age -- --max-days 45
