@@ -7,7 +7,7 @@ Everything below is either an owner decision, an account action the repo cannot 
 - [ ] **(owner)** Review the India guard-point list `data/map/india-guard.json` (18 points) against the Survey of India map, and `docs/MAP-POLICY.md`.
 - [ ] **(owner)** Read the About page text (`src/ui/AboutPage.tsx`): map policy, "not the official DEFCON level", what the data does not cover, privacy.
 - [ ] **(owner)** Review the provisional severity and tension scales (`docs/SEVERITY.md`, `docs/TENSION-INDEX.md`) and the alliance list and the active-dispute rule (D-042).
-- [ ] **(owner)** Choose a licence for the code (none is set; the repo is private) and decide whether the repo stays private (`docs/DEPLOY.md` explains what changes: unlimited Actions minutes when public).
+- [x] Licence: MIT for the code (the data keeps its own licences, see the README); the repo was made public on 2026-10-18 at the owner's request, after a history audit found no secrets (commit author email `raffrajput123@gmail.com` is visible in the history).
 - [ ] **(owner)** Replace or confirm the Factbook-derived fields, which are archived (D-038); decide if that is acceptable for launch.
 
 ## 2. Hosting (owner accounts)

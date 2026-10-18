@@ -1,8 +1,26 @@
 # Defcon
 
-A real-time 3D world monitor of armed conflict and civil unrest, and a frontend design showcase: true-black, hairline, sonar-lit globe; every border drawn from **India's official map**; every event labelled human-coded or auto-coded; missing data shown as missing.
+[![CI](https://github.com/Tribal-Chief-001/defcon/actions/workflows/ci.yml/badge.svg)](https://github.com/Tribal-Chief-001/defcon/actions/workflows/ci.yml)
+[![Ingest](https://github.com/Tribal-Chief-001/defcon/actions/workflows/ingest.yml/badge.svg)](https://github.com/Tribal-Chief-001/defcon/actions/workflows/ingest.yml)
+[![License: MIT](https://img.shields.io/badge/code-MIT-blue.svg)](LICENSE)
+![Node 22](https://img.shields.io/badge/node-22-green.svg)
 
-Status: Plans 1 (map and globe core), 2 (events and live data), 3 (dossiers, Country Dive, Ctrl/Cmd-K, capital labels) 4 (signature interactions), 5 (data pipeline and hosting) and 6 (hardening and launch) are built. What is left is the owner's list in [`docs/LAUNCH.md`](docs/LAUNCH.md): reviews, the Vercel project and secrets, a real-phone check. See [`docs/ROADMAP.md`](docs/ROADMAP.md).
+**A real-time 3D world monitor of armed conflict and civil unrest, and a frontend design showcase.** True-black, hairline, sonar-lit globe; every border drawn from **India's official map**; every event labelled human-coded or auto-coded; missing data shown as missing.
+
+![The Defcon globe](docs/images/home.png)
+
+![Country dossier with a dive into Ukraine](docs/images/dive.png)
+
+## Features
+
+- **Custom Three.js globe** (WebGL2, no map library) with a sonar boot, hairline borders in two detail levels, picking, and sonar ripples at events.
+- **Events from public datasets:** UCDP GED (human-coded) and GDELT (auto-coded), merged, deduplicated and severity-scored; a provisional "DEFCON-style" tension index, shown only when it is comparable (never the official US DEFCON level).
+- **Country dossiers** for 248 countries with the source and date of every field and redaction bars for missing data; **Country Dive**, **Ctrl/Cmd-K** search, capital labels, shareable links (`#c=IND`).
+- **Alliance arcs** (formal treaty members, cyan) and **active disputes** (UCDP state-vs-state events, orange dashed), both sourced.
+- **Time travel** scrubber with Play and a cosmetic Declassify effect, a shader **heat grain**, a live **day/night terminator**, a **radar cursor**, a **pulse border**, an idle **Night Watch** showcase and optional **World Sound** (off by default).
+- **Production-minded:** adaptive quality tiers and a phone tier, keyboard control and screen-reader announcements, WCAG AA text colours, a strict Content-Security-Policy, an error boundary, a scheduled data pipeline with a validation gate, and a freshness monitor.
+
+Status: all six planned phases are built; see [`docs/ROADMAP.md`](docs/ROADMAP.md). What a person still has to do before a public launch (a Vercel project, checks on real phones and screen readers) is in [`docs/LAUNCH.md`](docs/LAUNCH.md).
 
 ## Quick start
 
@@ -51,14 +69,26 @@ CI runs the same on every push (`.github/workflows/ci.yml`). All commands: [`doc
 - **Honest data.** Sources, age and confidence are always shown; auto-coded events never claim high severity; a "tension index" is only shown when it is comparable ([`docs/TENSION-INDEX.md`](docs/TENSION-INDEX.md)).
 - **Docs are the ledger.** Every decision is in [`docs/DECISIONS.md`](docs/DECISIONS.md); designs and plans are in `docs/superpowers/`.
 
+## Built with
+
+Vite, React 19, TypeScript (strict), Three.js, Zustand, Tailwind CSS 4, d3-geo, topojson, Vitest. Versions: [`docs/TECH-STACK.md`](docs/TECH-STACK.md).
+
 ## Data sources and attribution
 
-Natural Earth (public domain); UCDP (CC BY 4.0, cite the publications listed in [`docs/DATA-SOURCES.md`](docs/DATA-SOURCES.md)); GDELT (free, cite the GDELT Project, https://www.gdeltproject.org); the Survey of India political map is used only for a cross-check and is not redistributed.
+- **Natural Earth** (public domain): borders (India point-of-view data), country names, capitals.
+- **UCDP Georeferenced Event Dataset** (CC BY 4.0; Uppsala Conflict Data Program, https://ucdp.uu.se): human-coded events and the state-vs-state dyads behind "active disputes". Cite the publications listed in [`docs/DATA-SOURCES.md`](docs/DATA-SOURCES.md).
+- **GDELT 2.0** (free, cite the GDELT Project, https://www.gdeltproject.org): auto-coded news events.
+- **World Bank, World Development Indicators** (CC BY 4.0), including military spending from SIPRI via the World Bank.
+- **CIA World Factbook** (public domain, archived mirror; the CIA discontinued it on 2026-02-04).
+- **United Nations and NATO** official member lists (membership facts).
+- The Survey of India political map is used only for a cross-check and is not redistributed.
+
+Event data is informational, partly auto-coded from news and incomplete: a gap is never a sign of calm, and nothing here is an official assessment.
 
 ## Deploying
 
-See [`docs/DEPLOY.md`](docs/DEPLOY.md) (Vercel).
+See [`docs/DEPLOY.md`](docs/DEPLOY.md) (Vercel runbook, scheduled ingest workflow).
 
 ## Licence
 
-No licence has been chosen yet: all rights reserved by the owner until one is added.
+The **code** is released under the [MIT License](LICENSE). The **data** keeps its own licences, listed above; reuse of the generated data files must follow them (attribution for the CC BY 4.0 sources).

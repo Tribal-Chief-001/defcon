@@ -24,3 +24,5 @@ body {
 /* Keyboard focus is always visible */
 :focus-visible { outline: 2px solid var(--lime); outline-offset: 2px; }
 canvas:focus-visible { outline-offset: -4px; }
+/* panels that take focus programmatically (dossier, event card) show no ring: the ring is for keyboard stops */
+[tabindex="-1"]:focus, [tabindex="-1"]:focus-visible { outline: none; }
