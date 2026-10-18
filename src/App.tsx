@@ -17,7 +17,10 @@ import { DossierPanel } from './ui/DossierPanel';
 import { LiveCapitalLabels, setLabels } from './ui/CapitalLabels';
 import { Coverage } from './ui/Coverage';
 import { EventCard, type EventInfo } from './ui/EventCard';
+import { NightWatch } from './ui/NightWatch';
 import { Reticle } from './ui/Reticle';
+import { useTime } from './time/store';
+import { useNightWatch } from './watch/useNightWatch';
 import { Scrubber } from './ui/Scrubber';
 
 const BASE = '/data/events';
@@ -49,6 +52,14 @@ export function App() {
   const latest = useRef(createLatest()); // only the newest selection may receive its detail
 
   useEffect(() => startEventService(BASE), []);
+
+  // Night Watch waits while anything else needs the screen: a dossier, an event card, time travel, an open dialog (the palette)
+  const selRef = useRef<Selected | null>(null);
+  selRef.current = sel;
+  const watch = useNightWatch(BASE, () => {
+    const t = useTime.getState();
+    return dossierIdRef.current !== null || selRef.current !== null || t.backS > 0 || t.playing || !!document.querySelector('[role="dialog"]');
+  });
 
   // `key` is a map id or an ISO3 code (SSD for the map's SDS); an id with no country row opens nothing and flies nowhere
   const startDive = useCallback(async (key: string) => {
@@ -122,9 +133,10 @@ export function App() {
 
   return (
     <main className="relative h-full w-full bg-black">
-      <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : null} dive={dive} framing={framing} onLabels={setLabels} />
+      <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : watch.marker} focus={watch.focus} dive={dive} framing={framing} onLabels={setLabels} />
       <LiveCapitalLabels />
       <Reticle />
+      <NightWatch active={watch.active} caption={watch.caption} />
       <TopBar />
       <CommandPalette onPick={(id) => void startDive(id)} />
       <Coverage />

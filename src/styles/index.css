@@ -8,3 +8,7 @@ body {
   font-family: var(--font-body);
   overflow: hidden;
 }
+
+/* Night Watch letterbox bars slide in from the screen edges with the house easing */
+@keyframes letterbox-top { from { transform: translateY(-100%); } to { transform: translateY(0); } }
+@keyframes letterbox-bottom { from { transform: translateY(100%); } to { transform: translateY(0); } }

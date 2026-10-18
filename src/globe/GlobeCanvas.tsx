@@ -26,12 +26,14 @@ export function GlobeCanvas({
   dive,
   framing,
   onLabels,
+  focus,
 }: {
   onPick?: (id: string | null, lat: number, lon: number, kmPerPx: number) => void;
   marker?: { lat: number; lon: number } | null;
   dive?: { id: string; target: { lat: number; lon: number; distance: number } } | null;
   framing?: { x: number; y: number };
   onLabels?: (labels: CapitalLabel[]) => void;
+  focus?: { lat: number; lon: number; distance: number } | null;
 }) {
   const diveRef = useRef(dive);
   diveRef.current = dive;
@@ -123,6 +125,9 @@ export function GlobeCanvas({
   useEffect(() => {
     handleRef.current?.dive(dive ? dive.id : null, dive?.target);
   }, [dive]);
+  useEffect(() => {
+    handleRef.current?.focus(focus ?? null);
+  }, [focus?.lat, focus?.lon, focus?.distance]);
   useEffect(() => {
     handleRef.current?.setFraming(framing?.x ?? 0, framing?.y ?? 0);
   }, [framing?.x, framing?.y]);

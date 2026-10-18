@@ -24,6 +24,7 @@ export type GlobeHandle = {
   dive(id: string | null, target?: { lat: number; lon: number; distance: number }): void;
   setFraming(x: number, y: number): void;
   setTimeBack(backS: number): void;
+  focus(t: { lat: number; lon: number; distance: number } | null): void;
   setSunTime(unixS: number): void;
   project(lat: number, lon: number): { x: number; y: number; visible: boolean } | null;
   onCursor(cb: (c: { x: number; y: number; lat: number; lon: number } | null, kmPerPx: number, dragging: boolean) => void): () => void;
@@ -175,6 +176,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   globe.add(grain.object);
   let eventAttrs: EventAttrs[] = [];
   let timeBack = 0;
+  let holdSpin = false; // Night Watch keeps the camera on its target instead of letting the idle spin drift away
   let densityDirty = false;
   let densityT = 0;
   const arcs = createArcLayer(reducedMotion);
@@ -509,7 +511,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     dimT += ((diveId ? 1 : 0) - dimT) * Math.min(1, dt * 4);
     (borders.material as THREE.LineBasicMaterial).opacity = 0.7 - 0.45 * dimT;
     if (!dragging) {
-      const idle = boot.done && !diveId && !anim && now - lastInput > IDLE_BEFORE_SPIN_MS;
+      const idle = boot.done && !diveId && !holdSpin && !anim && now - lastInput > IDLE_BEFORE_SPIN_MS;
       yaw += (vYaw + (!reducedMotion && idle ? 0.06 : 0)) * dt;
       pitch = Math.max(-1.45, Math.min(1.45, pitch + vPitch * dt));
       const decay = Math.exp(-dt * 4);
@@ -570,6 +572,11 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     },
     setFraming(x, y) {
       frameTarget = { x, y };
+    },
+    focus(t) {
+      holdSpin = t !== null;
+      if (t && boot.done && Number.isFinite(t.lat) && Number.isFinite(t.lon))
+        flyTo({ yaw: yaw + wrapPi(-t.lon * D2R - yaw), pitch: Math.max(-1.45, Math.min(1.45, t.lat * D2R)), distance: Math.max(MIN_DIST, Math.min(MAX_DIST, t.distance)) });
     },
     setSunTime(unixS) {
       terminator.update(unixS);
