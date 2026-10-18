@@ -50,21 +50,21 @@ describe('App deep links and dive state', () => {
     history.replaceState(null, '', '/#c=IND');
     render(<App />);
     await waitFor(() => expect(screen.getByTestId('globe').getAttribute('data-dive')).toBe('IND'), { timeout: 4000 });
-    expect(location.hash).toBe('#c=IND');
+    await waitFor(() => expect(location.hash).toBe('#c=IND'), { timeout: 4000 }); // the hash effect runs after the render
     expect(await screen.findByRole('heading', { name: 'Country IND' }, { timeout: 4000 })).toBeTruthy();
   });
   it('accepts an ISO3 code that differs from the map id (SSD -> SDS)', async () => {
     history.replaceState(null, '', '/#c=SSD');
     render(<App />);
     await waitFor(() => expect(screen.getByTestId('globe').getAttribute('data-dive')).toBe('SDS'), { timeout: 4000 });
-    expect(location.hash).toBe('#c=SDS');
+    await waitFor(() => expect(location.hash).toBe('#c=SDS'), { timeout: 4000 }); // the hash effect runs after the render
   });
   it('prefers an exact map id over a territory that shares its ISO3 code (FRA vs Clipperton)', async () => {
     countries.rows = [row('CLP', 'FRA'), row('FRA', 'FRA')];
     history.replaceState(null, '', '/#c=FRA');
     render(<App />);
     await waitFor(() => expect(screen.getByTestId('globe').getAttribute('data-dive')).toBe('FRA'), { timeout: 4000 });
-    expect(location.hash).toBe('#c=FRA');
+    await waitFor(() => expect(location.hash).toBe('#c=FRA'), { timeout: 4000 }); // the hash effect runs after the render
   });
   it('does not fly anywhere, opens no dossier and clears the hash for an unknown id', async () => {
     history.replaceState(null, '', '/#c=XXX');
