@@ -91,7 +91,11 @@ Changes from the list in RESEARCH-v1.1 section 5b: **item 3 is new** (Signals la
 5. UCDP candidate releases (#4) in parallel with the index? Needs the owner's yes.
 6. The Gemini file: keep it out of git (`.gitignore`) or commit with a disclaimer header. This document and section 3 already carry what is useful from it.
 
-## 7. Next steps (nothing started)
+## 7. Next steps
+
+**Done 2026-10-18:** licence check ([LICENCE-CHECK-v1.1.md](LICENCE-CHECK-v1.1.md)) and the first VRI study, a persistence baseline on UCDP GED ([VRI-BASELINE-STUDY.md](VRI-BASELINE-STUDY.md)). Finding: "violence continues" is almost pure persistence (AUC 0.97), so the headline target must be rise/onset; the sensitivity study and structural features come next.
+
+Still to do:
 
 1. Licence and endpoint check for the Signals-layer sources and the Instability Index inputs (World Bank WGI, UNHCR, V-Dem). Output: a table in DATA-SOURCES with licence, attribution, rate limits, last checked date.
 2. Index: country-month feature table and a persistence baseline, per INSTABILITY-INDEX.md, before any UI.

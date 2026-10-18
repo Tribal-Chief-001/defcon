@@ -14,3 +14,4 @@ coverage/
 
 # Owner-supplied raw research (unvetted; vetted summary lives in docs/BRAINSTORM-v1.1.md)
 docs/osint_gods_eye_dashboard_sources_blueprint.md
+data/index/
