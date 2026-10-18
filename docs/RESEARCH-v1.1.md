@@ -33,7 +33,7 @@ Written 2026-10-18. Method: web searches and page reads on that day, plus what t
 |---|---|---|---|
 | UCDP GED + candidate | Hand-coded events | Free downloads | In use. Candidate releases are monthly; the real fix for "human-coded 0 %". |
 | GDELT 2.0 | Machine-coded news events, 15-minute files | Free, no key | In use. Known limits below. |
-| ACLED | Hand-coded events, near-real-time, strong on protests | Registration; commercial use needs a licence **[search]** | Valuable but check the EULA before any redistribution; the data cannot simply be mirrored in a public repo. |
+| ACLED | Hand-coded events, near-real-time, strong on protests | Registration; free Open level is aggregates only with no API; API and event data need Research level or higher; redistribution restricted **[read, see 5a]** | Ask first; aggregates-only layer at most. |
 | HDX HAPI | Standardised indicators incl. ACLED-derived conflict events, daily | Free; needs an app identifier **[search]** | A possible, licence-friendlier route to ACLED-derived counts; check terms. |
 | ReliefWeb API | UN OCHA reports and disasters | Free; asks for an `appname`; a secondary source says 1,000 calls/day **[search]** | Good for humanitarian context and headlines with attribution. |
 | UNHCR Refugee Data Finder API | Displacement statistics | Open, no credentials **[search]** | Easy, high value "human cost" layer. |
@@ -74,6 +74,30 @@ Not found: community criticism (Hacker News, Reddit) of World Monitor; user rese
 | H | **Radius and watchlist alerts** with no backend (client-side, Atom/RSS feed per country) | Competitor admits country-only | Medium | Utility |
 | I | **Forecast layer** from VIEWS, clearly separated from observed events | Only open forecasting system; check licence and format | Medium to high | Novel, but needs care |
 | J | **Explainers instead of AI slop**: every number has a "how this is computed" popover; optional local-model summaries with citations only | Accuracy risk and cost of LLM features; trust is the product | Low | Identity |
+
+## 5a. ACLED in detail (pages read 2026-10-18)
+
+ACLED = Armed Conflict Location & Event Data: hand-coded, near-real-time events (weekly updates), strong on protests and riots. Terms were read from acleddata.com: the EULA (updated 8 July 2025), the myACLED FAQ, the API pages, the Attribution Policy and the Content Usage Terms.
+
+**Access.** Register at acleddata.com/user/register. The level depends on the email domain: a public address (gmail.com) gets **Open** access: *aggregated* data grouped by administrative unit, **no API**. Research, Partner and Enterprise levels add the API and event-level data (Research is lagged; Partner weekly; Enterprise unlimited and expedited). The FAQ asks for an institutional email; the length of the lag, any row caps and prices are **not stated**. The API (base `https://acleddata.com/api/`) uses OAuth with the account's own username and password (token 24 h, refresh 14 days); the old key-and-email system is retired; JSON/CSV/XML, 5,000 rows by default; page-based paging is deprecated from 27 Oct 2026 in favour of a cursor. Rate-limit numbers are not stated. A static site cannot call it from the browser: it would need a build-time fetch with credentials kept as a secret.
+
+**What the licence allows (EULA 3.1/3.3, my reading).** A non-exclusive licence to publish materials that incorporate ACLED content for **non-commercial** purposes, but external materials must be **transformative** ("cannot be reverse engineered to recreate the Licensed Content"). It is "not sufficient" that content is excerpted, reorganised or "made available through Licensee's own dashboard", and the licensee must not allow direct access to the Licensed Content except via derivative materials. Content is treated as confidential for internal use. Scraping is prohibited; downloading via the platform or API is allowed. Termination requires deleting the content and what was made from it unless ACLED agrees otherwise. Prohibited: building a product that competes with or substitutes for ACLED, benchmarking such a product, sharing credentials, AI/ML/LLM uses that substitute for ACLED or give access to its data, commercial use without a corporate licence, using the logo without permission. Required attribution: "ACLED (Armed Conflict Location & Event Data)", a citation on the visual itself, access date, filters and what was changed; academic uses cite Raleigh, Kishi and Linke (2023), doi 10.1057/s41599-023-01559-4. **Not stated:** whether a non-commercial open-source site may commit derived JSON to a public repo, and whether any media/non-profit exception exists. The Attribution Policy says to contact ACLED for uses it does not describe.
+
+**What this means for Defcon.** Showing ACLED events as individual dots in a public, open-source world monitor (which is also a dashboard of conflict events) is very likely **outside** what the licence allows without ACLED's written agreement, and committing per-event ACLED data to the public repo is likely not allowed. What probably fits "transformative" is **aggregates that cannot be reversed into events** (for example counts of events by country or admin-1 unit per month and type, as a heat or intensity layer), with the required citation on the visual. Even that needs API-level access, which a gmail account will not get. **The right first step is to ask ACLED**, explaining the project is non-commercial, open source, shows only aggregates and credits ACLED on the visual. HDX HAPI also exposes conflict-event data (an endpoint named `coordination-context/conflict-events` exists, daily from the changelog), but its source, granularity and licence could not be read (pages returned 403); read its Terms of Use in a browser before planning on it.
+
+## 5b. Priority list (top 11)
+
+1. **ACLED**: phase 0 (no code, the owner): email ACLED to ask for access and written permission for an aggregates-only layer; phase 1 (only if the answer is yes): build-time fetch with secrets, monthly aggregates by country/admin-1/event type, a heat/intensity layer with the citation on the visual, no per-event ACLED data in git. If the answer is no: skip, nothing is lost.
+2. **Newer human-coded data** (UCDP candidate releases, CC BY 4.0, clearly allowed): fixes "human-coded 0 %".
+3. **Evidence trail and confidence on every event.**
+4. **Open exports and a free static API** (of our own derived data only, never ACLED event data).
+5. **Moment permalinks and share/screenshot.**
+6. **"How this number is computed" popovers and fairer Hotspots.**
+7. **Human-cost layer** (UNHCR displacement, hunger via HDX).
+8. **South Asia lens MVP** (local-language sources, regional view).
+9. **Indicators desk MVP** (keyless indicators first).
+10. **Radius and watchlist alerts** (no backend).
+11. **Story mode** (week playback with captions, GIF/video export).
 
 ## 6. Directions (pick one base, borrow from the others)
 
