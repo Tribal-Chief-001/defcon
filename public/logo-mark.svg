@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" fill="none">
+  <title>Defcon</title>
+  <path d="M19 23a9 9 0 0 1 0 18M19 16a16 16 0 0 1 0 32" stroke="#EDEDE9" stroke-width="1.5" stroke-linecap="round" opacity=".28"/>
+  <path d="M19 9v46M19 9a23 23 0 0 1 0 46" stroke="#EDEDE9" stroke-width="3.4" stroke-linecap="round" stroke-linejoin="round"/>
+  <path d="M19 32 37.8 18.8" stroke="#D6FF57" stroke-width="2" stroke-linecap="round"/>
+  <circle cx="32" cy="37.2" r="3" fill="#D6FF57"/>
+  <circle cx="19" cy="32" r="1.8" fill="#D6FF57"/>
+</svg>

@@ -3,6 +3,7 @@ import { globalStats } from '../events/stats';
 import { useEvents } from '../events/store';
 import { useNow } from '../lib/useNow';
 import { AsOf } from './AsOf';
+import { Logo } from './Logo';
 import { PulseBorder } from './PulseBorder';
 
 const int = (n: number) => n.toLocaleString('en-US');
@@ -47,8 +48,8 @@ function GlobalStats() {
 export function TopBar({ children }: { children?: ReactNode }) {
   return (
     <header className="pointer-events-none absolute inset-x-0 top-0 z-10 flex bg-black/60 backdrop-blur-sm h-[calc(4.25rem+var(--safe-top))] items-center justify-between gap-6 pl-[max(4vw,var(--safe-left))] pr-[max(4vw,var(--safe-right))] pt-[var(--safe-top)]">
-      <div className="flex items-baseline gap-3">
-        <span className="h-2 w-2 translate-y-[-2px] rounded-full bg-[var(--lime)]" aria-hidden="true" />
+      <div className="flex items-center gap-3">
+        <Logo />
         <h1 className="font-[var(--font-display)] text-[24px] font-extrabold leading-none tracking-tight">DEFCON</h1>
         <span className="hidden font-[var(--font-mono)] text-[11.5px] uppercase tracking-[var(--track)] text-[var(--text-muted)] sm:inline">Globe core</span>
       </div>
