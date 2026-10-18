@@ -1,5 +1,6 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { fetchDetail } from './events/detail';
+import { createLatest } from './events/latest';
 import { pickEvent } from './events/pickEvent';
 import { startEventService } from './events/service';
 import { useEvents } from './events/store';
@@ -7,6 +8,7 @@ import type { Detail } from './events/types';
 import { KINDS } from './events/types';
 import { GlobeCanvas } from './globe/GlobeCanvas';
 import { AsOf } from './ui/AsOf';
+import { Coverage } from './ui/Coverage';
 import { EventCard, type EventInfo } from './ui/EventCard';
 
 const BASE = '/data/events';
@@ -18,11 +20,13 @@ type Selected = { info: EventInfo; detail: Detail | null; lat: number; lon: numb
 export function App() {
   const [r, setR] = useState<Readout | null>(null);
   const [sel, setSel] = useState<Selected | null>(null);
+  const latest = useRef(createLatest()); // only the newest selection may receive its detail
 
   useEffect(() => startEventService(BASE), []);
 
   const onPick = useCallback((id: string | null, lat: number, lon: number, kmPerPx: number) => {
     setR({ id, lat, lon });
+    const token = latest.current.next();
     const { recent, archive } = useEvents.getState();
     const hit = pickEvent(recent, archive, lat, lon, PICK_RADIUS_PX * kmPerPx);
     if (!hit) {
@@ -40,7 +44,9 @@ export function App() {
     };
     const at = { lat: s.lat[i]!, lon: s.lon[i]! };
     setSel({ info, detail: null, ...at });
-    void fetchDetail(BASE, name, s, i).then((detail) => setSel((cur) => (cur && cur.lat === at.lat && cur.lon === at.lon ? { ...cur, detail } : cur)));
+    void fetchDetail(BASE, name, s, i).then((detail) => {
+      if (latest.current.isLatest(token)) setSel((cur) => (cur ? { ...cur, detail } : cur));
+    });
   }, []);
 
   return (
@@ -53,7 +59,11 @@ export function App() {
       <div className="absolute right-[4vw] top-6">
         <AsOf />
       </div>
-      {sel ? <EventCard detail={sel.detail} info={sel.info} onClose={() => setSel(null)} /> : null}
+      <Coverage />
+      {sel ? <EventCard detail={sel.detail} info={sel.info} onClose={() => {
+          latest.current.next();
+          setSel(null);
+        }} /> : null}
       <p className="pointer-events-none absolute bottom-6 left-[4vw] font-[var(--font-mono)] text-[11px] uppercase tracking-[0.15em] text-[var(--cyan)]">
         {r ? `${r.lat.toFixed(2)}N ${r.lon.toFixed(2)}E // ${r.id ?? 'open water'}` : 'click the globe'}
       </p>

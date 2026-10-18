@@ -21,4 +21,7 @@ describe('freshness', () => {
   it('treats a future time (clock skew) as live', () => {
     expect(freshness(NOW + 600, NOW).state).toBe('live');
   });
+  it('does not throw for a non-finite time and reports stale', () => {
+    expect(freshness(NaN, NOW)).toEqual({ state: 'stale', label: 'DATA AS OF --:-- UTC' });
+  });
 });

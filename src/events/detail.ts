@@ -15,7 +15,8 @@ export async function fetchDetail(
   const timeS = s.timeS[index];
   const at = s.detailIdx[index];
   if (timeS === undefined || at === undefined) return null;
-  const url = `${base}/detail/${name}/${dayKey(timeS)}.json`;
+  // the snapshot version is part of the URL: after a rebuild detailIdx values shift, so an old cached shard must never be reused
+  const url = `${base}/detail/${name}/${dayKey(timeS)}.json?v=${s.meta.sha256.slice(0, 12)}`;
   let p = shards.get(url);
   if (!p) {
     p = fetchFn(url)

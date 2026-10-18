@@ -33,7 +33,8 @@ describe('gdeltRowToEv: real rows', () => {
     expect(e).toMatchObject({ id: 'gdelt:1328505103', source: 'gdelt', kind: 'protest', precision: 4, human: false, severity: 1, country: null });
     expect(e.place).toBe('New York, United States');
     expect(e.lat).toBeCloseTo(42.1497, 3);
-    expect(e.timeS).toBe(Date.UTC(2026, 9, 18, 12, 0, 0) / 1000);
+    // GDELT has no time of day for the event itself: the time is when it was first reported (DATEADDED), not an invented midday
+    expect(e.timeS).toBe(Date.UTC(2026, 9, 18, 0, 30, 0) / 1000);
     expect(e.sources[0]).toEqual({ name: 'cnycentral.com', url: row('1328505103')[60] });
   });
   it('maps a city-level military event with Goldstein -10: armed, severity 3 (auto cap), precision 2', () => {

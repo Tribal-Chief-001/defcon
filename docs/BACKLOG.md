@@ -28,3 +28,15 @@ Open items found during Plan 1 that were deliberately not fixed. Each is graded 
 - `docs/DATA-SOURCES.md` border table has stale low-detail numbers (711 KB raw / 177 KB gz; measured 626 KB / 162 KB). D-021 should say the antimeridian split also caused the seam lines (fixed).
 - Patch engine fails on overlaps only, not on gaps (cut-from without add-to); see D-026.
 - Micro-states without a polygon (Vatican, Tuvalu's capital point, Coral Sea Islands, Scarborough Reef): point-based lookup in Plan 3.
+
+## Plan 2 deferred minors (final review, 2026-10-18)
+
+- `fetch-gdelt.ts` drops a slot silently after 3 failed attempts and ignores `Retry-After`; the summary does not report failures; `fetch-ucdp.ts` does not retry thrown network errors.
+- `verifySnapshotHash` resolves true when SubtleCrypto is missing (plain http off localhost): the checksum is skipped silently.
+- GDELT is fetched over plain http (GDELT offers no https for these files); source URLs from GDELT end up as links on the card (http(s) only, `noopener noreferrer`).
+- `merge.ts`: merged groups lose the other rows' actors and place; `find` recurses without a depth limit; a row with the head's own id can add it to `alsoIds`.
+- The idle archive load is not cancelled by a visibility change; the poller does not refetch when the tab becomes visible again.
+- `freshness` shows `HH:MM UTC` without a date, ambiguous when days old.
+- GDELT-only recent window: the recent snapshot has no UCDP data after 2026-08-31 and GDELT is US-centric and noisy (see `docs/TENSION-INDEX.md`); human-coded coverage (ACLED, newer UCDP) is the real fix.
+- No scheduled 15-minute ingest yet (Plan 5): "live" means the age of the last manual build, shown honestly by the pill.
+

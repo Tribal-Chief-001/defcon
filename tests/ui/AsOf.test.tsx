@@ -1,6 +1,6 @@
 // @vitest-environment jsdom
-import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { act, cleanup, render, screen } from '@testing-library/react';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { AsOf } from '../../src/ui/AsOf';
 import { decodeSnapshot } from '../../src/events/snapshot';
 import { useEvents } from '../../src/events/store';
@@ -11,7 +11,7 @@ const snapAt = (asOfS: number) => {
   const e = encodeSnapshot([], { asOfS, generatedS: asOfS, sources: [] });
   return decodeSnapshot(e.bin.buffer.slice(0) as ArrayBuffer, e.meta);
 };
-beforeEach(() => useEvents.setState({ recent: undefined, archive: undefined, status: 'idle', error: undefined }));
+beforeEach(() => useEvents.setState({ recent: undefined, archive: undefined, status: 'idle', error: undefined, archiveError: undefined }));
 afterEach(cleanup);
 
 describe('AsOf', () => {
@@ -40,5 +40,22 @@ describe('AsOf', () => {
     render(<AsOf nowS={NOW} />);
     expect(screen.getByText('LIVE')).toBeTruthy();
     expect(screen.getByText(/refresh failed/i)).toBeTruthy();
+  });
+});
+
+// review finding: the pill must age while the page stays open and polls return "unchanged"
+describe('AsOf ticking', () => {
+  it('moves from LIVE to RECENT as time passes without any store change', () => {
+    vi.useFakeTimers();
+    try {
+      vi.setSystemTime(NOW * 1000);
+      useEvents.setState({ recent: snapAt(NOW - 40 * 60), status: 'ready' });
+      render(<AsOf />);
+      expect(screen.getByText('LIVE')).toBeTruthy();
+      act(() => void vi.advanceTimersByTime(10 * 60 * 1000));
+      expect(screen.getByText('RECENT')).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
   });
 });

@@ -31,10 +31,20 @@ describe('mergeEvents within GDELT (Review Focus 3)', () => {
   it('keeps the highest severity of the merged rows', () => {
     expect(mergeEvents([g('1', { severity: 2 }), g('2', { severity: 3 })], pick)[0]!.severity).toBe(3);
   });
-  it('merges the same article (same URL path) reported at two places of the same kind', () => {
+  it('merges the same article (same URL path) reported at two nearby places of the same kind and day', () => {
     const a = g('1', { lat: 10, lon: 10, sources: [{ name: 's', url: 'https://s.com/x/story?utm=1' }] });
-    const b = g('2', { lat: 12, lon: 12, sources: [{ name: 's', url: 'https://s.com/x/story?utm=2#top' }] });
+    const b = g('2', { lat: 10.6, lon: 10.6, sources: [{ name: 's', url: 'https://s.com/x/story?utm=2#top' }] });
     expect(mergeEvents([a, b], pick)).toHaveLength(1);
+  });
+  // review finding: a roundup, live blog or homepage URL must not collapse distant places or different days
+  it('does not merge the same article when the places are more than 1 degree apart or the days differ by more than 1', () => {
+    const url = [{ name: 's', url: 'https://s.com/live/roundup' }];
+    expect(mergeEvents([g('1', { lat: 10, lon: 10, sources: url }), g('2', { lat: 20, lon: 30, sources: url })], pick)).toHaveLength(2);
+    expect(mergeEvents([g('1', { sources: url }), g('2', { lat: 10.2, lon: 10.2, timeS: T0 + 3 * DAY, sources: url })], pick)).toHaveLength(2);
+  });
+  it('never merges on a homepage-style URL (empty or "/" path)', () => {
+    const home = [{ name: 's', url: 'https://s.com/' }];
+    expect(mergeEvents([g('1', { lat: 10, lon: 10, sources: home }), g('2', { lat: 10.3, lon: 10.3, timeS: T0 + 3600 * 30, sources: home })], pick)).toHaveLength(2);
   });
   it('keeps events on different days, or of different kinds, separate', () => {
     expect(mergeEvents([g('1'), g('2', { timeS: T0 + DAY })], pick)).toHaveLength(2);
@@ -50,9 +60,10 @@ describe('mergeEvents across sources', () => {
     expect(out[0]!.alsoIds).toEqual(['gdelt:1']);
     expect(out[0]!.sources.map((s) => s.name)).toEqual(['Reuters', 'site.com']);
   });
-  it('folds a GDELT event one day away but not two days away', () => {
-    expect(mergeEvents([u('7'), g('1', { timeS: T0 + DAY })], pick)).toHaveLength(1);
-    expect(mergeEvents([u('7'), g('1', { timeS: T0 + 2 * DAY })], pick)).toHaveLength(2);
+  // GDELT time is when the event was first reported, up to 2 days after it happened, so the fold window is 2 days
+  it('folds a GDELT event two days away but not three days away', () => {
+    expect(mergeEvents([u('7'), g('1', { timeS: T0 + 2 * DAY })], pick)).toHaveLength(1);
+    expect(mergeEvents([u('7'), g('1', { timeS: T0 + 3 * DAY })], pick)).toHaveLength(2);
   });
   it('does not fold when more than 0.3 degrees away', () => {
     expect(mergeEvents([u('7'), g('1', { lat: 36.3 })], pick)).toHaveLength(2);

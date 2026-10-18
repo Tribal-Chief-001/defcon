@@ -10,6 +10,7 @@ const ago = (nowS: number, timeS: number) => {
   const h = Math.round(m / 60);
   return h < 48 ? `${h} h ago` : `${Math.round(h / 24)} d ago`;
 };
+const utcDate = (timeS: number) => new Date(timeS * 1000).toISOString().slice(0, 10);
 const isHttp = (u?: string) => !!u && /^https?:\/\//i.test(u);
 
 export function EventCard({ detail, info, nowS = Math.floor(Date.now() / 1000), onClose }: { detail: Detail | null; info: EventInfo; nowS?: number; onClose: () => void }) {
@@ -28,7 +29,7 @@ export function EventCard({ detail, info, nowS = Math.floor(Date.now() / 1000), 
           <div className="mt-4 flex flex-wrap gap-2 font-[var(--font-mono)] text-[10px] uppercase tracking-[0.15em]">
             <span className="rounded-full border border-[var(--border-strong)] px-2.5 py-1">SEV {info.severity}/5</span>
             <span className={`rounded-full border px-2.5 py-1 ${info.human ? 'border-[var(--lime)] text-[var(--lime)]' : 'border-[var(--border-strong)]'}`}>{info.human ? 'HUMAN-CODED' : 'AUTO-CODED'}</span>
-            <span className="rounded-full border border-[var(--border-strong)] px-2.5 py-1">{ago(nowS, info.timeS)}</span>
+            <span className="rounded-full border border-[var(--border-strong)] px-2.5 py-1">{info.human ? utcDate(info.timeS) : `reported ${ago(nowS, info.timeS)}`}</span>
           </div>
           <dl className="mt-4 grid grid-cols-[88px_1fr] gap-y-2 border-t border-[var(--border)] pt-3 font-[var(--font-mono)] text-[11px]">
             <dt className="text-[var(--text-faint)]">DEATHS</dt>

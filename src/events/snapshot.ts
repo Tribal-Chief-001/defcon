@@ -12,7 +12,7 @@ export type SnapshotMeta = {
   offsets: Record<'time' | 'lat' | 'lon' | 'detail' | 'country' | 'kind' | 'severity' | 'precision' | 'human', number>;
   bytes: number;
   sha256: string;
-  sources: { id: 'ucdp' | 'gdelt'; name: string; version: string; asOfS: number; url: string; license: string }[];
+  sources: { id: 'ucdp' | 'gdelt'; name: string; version: string; asOfS: number; coverFromS?: number; url: string; license: string }[];
 };
 
 export type Snapshot = {

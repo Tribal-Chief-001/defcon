@@ -10,6 +10,8 @@
 
 **Spec:** `docs/superpowers/specs/2026-10-18-defcon-design.md` (sections 5, 7, 10). Roadmap: `docs/ROADMAP.md`. Previous plan: `docs/superpowers/plans/2026-10-18-plan-1-foundation-map-globe.md` (done, on `main`).
 
+> **Corrections made during execution (see `docs/DECISIONS.md` D-032..D-034):** GDELT event time is the DATEADDED report time (not midday); detail shards live under `detail/<snapshot>/<day>.json?v=<sha12>`; the loader etag includes `asOfS`; the encoder is in `scripts/events/encode.ts`; the article merge rule is bounded; the tension function also returns `humanShare`/`comparable`.
+
 ## Verified facts this plan relies on (checked 2026-10-18)
 
 - **GDELT 2.0 Events:** `http://data.gdeltproject.org/gdeltv2/lastupdate.txt` lists the newest `*.export.CSV.zip` (about 27 KB, one per 15 minutes). Tab-separated, **no header, 61 columns**: 0 GLOBALEVENTID, 1 SQLDATE (YYYYMMDD), 26 EventCode, 28 EventRootCode, 30 GoldsteinScale, 31 NumMentions, 32 NumSources, 33 NumArticles, 34 AvgTone, 51 ActionGeo_Type, 52 ActionGeo_FullName, 53 ActionGeo_CountryCode, 56 ActionGeo_Lat, 57 ActionGeo_Long, 58 ActionGeo_FeatureID, 59 DATEADDED (YYYYMMDDHHMMSS), 60 SOURCEURL. In one sample file (506 rows): 45 protest/violence rows had coordinates; 18 rows had an event date more than 7 days before DATEADDED (some over a year); ActionGeo_Type was 0 for 25, 1 (country centroid) for 84, 2 (US state) for 72, 3 (US city) for 47, 4 (world city) for 269, 5 (world state) for 9. GDELT terms: free for any use; any use or redistribution must cite the GDELT Project and link to gdeltproject.org.

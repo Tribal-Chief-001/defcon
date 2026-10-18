@@ -18,12 +18,14 @@ describe('EventCard', () => {
     expect(screen.getByText('AUTO-CODED')).toBeTruthy();
     expect(screen.getByText('unavailable')).toBeTruthy();
     expect(screen.getByText('Kabul, Afghanistan')).toBeTruthy();
-    expect(screen.getByText(/2 h ago/i)).toBeTruthy();
+    expect(screen.getByText(/reported 2 h ago/i)).toBeTruthy(); // GDELT only knows when an event was first reported
   });
   it('labels human-coded events and shows a known death count', () => {
     render(<EventCard detail={{ ...detail, deaths: 7 }} info={{ ...info, human: true }} nowS={NOW} onClose={() => {}} />);
     expect(screen.getByText('HUMAN-CODED')).toBeTruthy();
     expect(screen.getByText('7')).toBeTruthy();
+    expect(screen.getByText('2026-10-18')).toBeTruthy(); // human-coded events show their date (UCDP has no time of day)
+    expect(screen.queryByText(/ago/i)).toBeNull();
   });
   it('renders source links that open safely, and plain text for sources without a URL', () => {
     render(<EventCard detail={detail} info={info} nowS={NOW} onClose={() => {}} />);

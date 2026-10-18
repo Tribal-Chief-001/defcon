@@ -4,6 +4,9 @@ const DAY = 86400;
 const MAX_SOURCES = 5; // sources kept on a merged GDELT event
 const FOLD_SOURCES = 3; // GDELT sources added to a UCDP event it is folded into
 const FOLD_DEG = 0.3;
+const FOLD_DAYS = 2; // GDELT time is when an event was first reported, up to 2 days after it happened
+const ARTICLE_DEG = 1; // the same article only merges events this close ...
+const ARTICLE_DAYS = 1; // ... and this many days apart
 const CELL = 0.5;
 
 const valid = (e: Ev) =>
@@ -15,9 +18,11 @@ const violent = (k: Ev['kind']) => k === 'armed' || k === 'civilian';
 
 // host + path of a source URL, without query or fragment, so the same article under different tracking parameters matches.
 const URL_RE = /^https?:\/\/(?:www\.)?([^/?#:]+)(?::\d+)?([^?#]*)/i;
+// null for a homepage-style URL (empty or "/" path): it identifies no single article.
 const articleKey = (url?: string): string | null => {
   const m = url ? URL_RE.exec(url) : null;
-  return m ? (m[1]! + m[2]!).toLowerCase() : null;
+  if (!m || m[2] === '' || m[2] === '/') return null;
+  return (m[1]! + m[2]!).toLowerCase();
 };
 
 const uniqSources = (list: EventSource[], max: number): EventSource[] => {
@@ -32,6 +37,8 @@ const uniqSources = (list: EventSource[], max: number): EventSource[] => {
   }
   return out;
 };
+
+const nearby = (a: Ev, b: Ev) => Math.abs(a.lat - b.lat) <= ARTICLE_DEG && Math.abs(a.lon - b.lon) <= ARTICLE_DEG && Math.abs(dayOf(a) - dayOf(b)) <= ARTICLE_DAYS;
 
 // Rows of the same kind that share a place and day, or the same article, are one event.
 function dedupeGdelt(events: Ev[]): Ev[] {
@@ -51,7 +58,7 @@ function dedupeGdelt(events: Ev[]): Ev[] {
       const ka = `${e.kind}|${a}`;
       const q = byArticle.get(ka);
       if (q === undefined) byArticle.set(ka, i);
-      else union(i, q);
+      else if (nearby(events[q]!, e)) union(i, q); // a roundup or live blog must not collapse distant places or other days
     }
   });
   const groups = new Map<number, Ev[]>();
@@ -92,7 +99,7 @@ export function mergeEvents(events: Ev[], pick: (lat: number, lon: number) => st
       for (let dy = -1; dy <= 1; dy++)
         for (let dx = -1; dx <= 1; dx++)
           for (const u of cells.get(`${cy + dy},${cx + dx}`) ?? []) {
-            if (!violent(u.kind) || Math.abs(dayOf(u) - dayOf(e)) > 1) continue;
+            if (!violent(u.kind) || Math.abs(dayOf(u) - dayOf(e)) > FOLD_DAYS) continue;
             const dLat = Math.abs(u.lat - e.lat);
             const dLon = Math.abs(u.lon - e.lon);
             if (dLat > FOLD_DEG || dLon > FOLD_DEG) continue;

@@ -15,7 +15,7 @@ const snap = decodeSnapshot(enc.bin.buffer.slice(enc.bin.byteOffset, enc.bin.byt
 const fakeFetch = (log: string[], missing = false) =>
   (async (url: string) => {
     log.push(url);
-    const day = url.match(/(\d{4}-\d{2}-\d{2})\.json$/)![1]!;
+    const day = url.match(/(\d{4}-\d{2}-\d{2})\.json/)![1]!;
     return missing ? ({ ok: false, status: 404 } as Response) : ({ ok: true, status: 200, json: async () => enc.details.get(day) } as unknown as Response);
   }) as unknown as typeof fetch;
 
@@ -24,7 +24,7 @@ describe('fetchDetail', () => {
     clearDetailCache();
     const log: string[] = [];
     const d = await fetchDetail('/e', 'recent', snap, 1, fakeFetch(log));
-    expect(log).toEqual(['/e/detail/recent/2026-10-18.json']);
+    expect(log).toEqual([`/e/detail/recent/2026-10-18.json?v=${snap.meta.sha256.slice(0, 12)}`]);
     expect(d?.place).toBe('place b');
     expect((await fetchDetail('/e', 'recent', snap, 2, fakeFetch(log)))?.place).toBe('place c');
   });
@@ -40,5 +40,16 @@ describe('fetchDetail', () => {
     expect(await fetchDetail('/e', 'recent', snap, 0, fakeFetch([], true))).toBeNull();
     clearDetailCache();
     expect(await fetchDetail('/e', 'recent', snap, 99, fakeFetch([]))).toBeNull();
+  });
+  // review finding: after a rebuild the same shard URL has different content and detailIdx values shift
+  it('keys the shard cache by the snapshot version, so a rebuilt snapshot never reads an old shard', async () => {
+    clearDetailCache();
+    const log: string[] = [];
+    const newer = { ...snap, meta: { ...snap.meta, sha256: 'f'.repeat(64) } };
+    await fetchDetail('/e', 'recent', snap, 0, fakeFetch(log));
+    await fetchDetail('/e', 'recent', newer, 0, fakeFetch(log));
+    expect(log).toHaveLength(2);
+    expect(log[0]).not.toBe(log[1]);
+    expect(log[1]).toContain('?v=ffffffffffff');
   });
 });

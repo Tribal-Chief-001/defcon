@@ -44,7 +44,7 @@ describe('loadSnapshot', () => {
     expect(r.status).toBe('ok');
     if (r.status === 'ok') {
       expect(r.snapshot.n).toBe(3);
-      expect(r.etag).toBe(enc.meta.sha256);
+      expect(r.etag).toBe(`${enc.meta.sha256}:${enc.meta.asOfS}`);
     }
   });
   it('sends If-None-Match when it has an etag, and treats 304 as unchanged', async () => {
@@ -53,9 +53,9 @@ describe('loadSnapshot', () => {
     expect(r).toEqual({ status: 'unchanged' });
     expect((log[0]!.init?.headers as Record<string, string>)['If-None-Match']).toBe('abc');
   });
-  it('is unchanged without downloading the binary when the meta hash equals the known etag', async () => {
+  it('is unchanged without downloading the binary when hash and asOf both equal the known etag', async () => {
     const log: { url: string }[] = [];
-    const r = await loadSnapshot('/d', 'recent', { etag: enc.meta.sha256 }, fakeFetch(good(), log));
+    const r = await loadSnapshot('/d', 'recent', { etag: `${enc.meta.sha256}:${enc.meta.asOfS}` }, fakeFetch(good(), log));
     expect(r).toEqual({ status: 'unchanged' });
     expect(log.map((l) => l.url)).toEqual(['/d/recent.meta.json']);
   });
@@ -89,11 +89,40 @@ describe('loadSnapshot', () => {
   });
 });
 
+// review findings: the data time lives in the meta file, so identical bytes with a newer asOf are NOT unchanged;
+// the meta must be validated; and a hung request must time out.
+describe('loadSnapshot: meta freshness, validation, timeout', () => {
+  it('reloads when the binary is identical but asOf moved forward', async () => {
+    const r = await loadSnapshot('/d', 'recent', { etag: `${enc.meta.sha256}:${enc.meta.asOfS - 900}` }, fakeFetch(good()));
+    expect(r.status).toBe('ok');
+  });
+  it.each([
+    ['asOfS is not a number', { asOfS: 'x' }],
+    ['asOfS is NaN', { asOfS: null }],
+    ['offsets are missing', { offsets: undefined }],
+    ['countries is not an array of strings', { countries: [1, 2] }],
+    ['sources is not an array', { sources: 'none' }],
+    ['bytes is missing', { bytes: undefined }],
+  ])('returns an error when %s', async (_n, patch) => {
+    const meta = { ...enc.meta, ...patch };
+    const r = await loadSnapshot('/d', 'recent', undefined, fakeFetch({ ...good(), '/d/recent.meta.json': { status: 200, body: meta } }));
+    expect(r.status).toBe('error');
+    if (r.status === 'error') expect(r.reason).toMatch(/meta/);
+  });
+  it('times out a request that never answers', async () => {
+    const hung = ((_u: string, init?: RequestInit) =>
+      new Promise((_res, rej) => init?.signal?.addEventListener('abort', () => rej(new DOMException('timed out', 'TimeoutError'))))) as unknown as typeof fetch;
+    const r = await loadSnapshot('/d', 'recent', undefined, hung, 30);
+    expect(r.status).toBe('error');
+    if (r.status === 'error') expect(r.reason).toMatch(/time/i);
+  });
+});
+
 describe('handleLoad (worker core)', () => {
   it('maps the three outcomes to messages', async () => {
     const ok = await handleLoad({ type: 'load', base: '/d', name: 'recent' }, { fetchFn: fakeFetch(good()) });
     expect(ok.type).toBe('snapshot');
-    const same = await handleLoad({ type: 'load', base: '/d', name: 'recent', etag: enc.meta.sha256 }, { fetchFn: fakeFetch(good()) });
+    const same = await handleLoad({ type: 'load', base: '/d', name: 'recent', etag: `${enc.meta.sha256}:${enc.meta.asOfS}` }, { fetchFn: fakeFetch(good()) });
     expect(same).toEqual({ type: 'unchanged', name: 'recent' });
     const err = await handleLoad({ type: 'load', base: '/d', name: 'recent' }, { fetchFn: fakeFetch({}) });
     expect(err).toMatchObject({ type: 'error', name: 'recent' });

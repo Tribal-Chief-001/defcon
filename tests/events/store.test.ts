@@ -8,7 +8,7 @@ const mk = () => {
   return decodeSnapshot(e.bin.buffer.slice(0) as ArrayBuffer, e.meta);
 };
 
-beforeEach(() => useEvents.setState({ recent: undefined, archive: undefined, status: 'idle', error: undefined }));
+beforeEach(() => useEvents.setState({ recent: undefined, archive: undefined, status: 'idle', error: undefined, archiveError: undefined }));
 
 describe('useEvents store', () => {
   it('starts idle and empty', () => {
@@ -42,5 +42,22 @@ describe('useEvents store', () => {
     useEvents.getState().setArchive(mk());
     expect(useEvents.getState().status).toBe('ready');
     expect(useEvents.getState().archive).toBeDefined();
+  });
+  // review findings: a stale banner after a successful "unchanged" poll, and an archive failure must not flip the whole status
+  it('clearError returns to ready when data is loaded', () => {
+    useEvents.getState().setRecent(mk());
+    useEvents.getState().fail('HTTP 500');
+    useEvents.getState().clearError();
+    expect(useEvents.getState().status).toBe('ready');
+    expect(useEvents.getState().error).toBeUndefined();
+  });
+  it('failArchive records its own error and leaves status ready', () => {
+    useEvents.getState().setRecent(mk());
+    useEvents.getState().failArchive('archive.bin: HTTP 404');
+    const s = useEvents.getState();
+    expect(s.status).toBe('ready');
+    expect(s.archiveError).toBe('archive.bin: HTTP 404');
+    useEvents.getState().setArchive(mk());
+    expect(useEvents.getState().archiveError).toBeUndefined();
   });
 });

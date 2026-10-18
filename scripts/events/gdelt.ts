@@ -28,6 +28,11 @@ const dayS = (yyyymmdd: string): number | null => {
   if (!/^\d{8}$/.test(yyyymmdd)) return null;
   return Date.UTC(+yyyymmdd.slice(0, 4), +yyyymmdd.slice(4, 6) - 1, +yyyymmdd.slice(6, 8)) / 1000;
 };
+// "YYYYMMDDHHMMSS" (UTC) -> unix seconds
+const stampS = (s: string): number | null => {
+  if (!/^\d{14}$/.test(s)) return null;
+  return Date.UTC(+s.slice(0, 4), +s.slice(4, 6) - 1, +s.slice(6, 8), +s.slice(8, 10), +s.slice(10, 12), +s.slice(12, 14)) / 1000;
+};
 const PRECISION: Record<number, Ev['precision']> = { 4: 2, 3: 2, 5: 4, 2: 4 };
 
 const hostOf = (url: string): string | null => {
@@ -47,9 +52,10 @@ export function gdeltRowToEv(cols: string[], nowS: number): Ev | null {
   const lon = num(cols[57]);
   const day = dayS(cols[1] ?? '');
   const added = dayS((cols[59] ?? '').slice(0, 8));
+  const reportedS = stampS(cols[59] ?? '');
   if (!kind || geoType === null || !(GDELT_FILTER.allowedGeoTypes as readonly number[]).includes(geoType)) return null;
   if (lat === null || lon === null || (lat === 0 && lon === 0) || Math.abs(lat) > 90 || Math.abs(lon) > 180) return null;
-  if (day === null || added === null) return null;
+  if (day === null || added === null || reportedS === null) return null;
   const lagDays = (added - day) / 86400;
   if (lagDays < -1 || lagDays > GDELT_FILTER.maxLagDays) return null;
   const mentions = num(cols[31]) ?? 0;
@@ -61,7 +67,7 @@ export function gdeltRowToEv(cols: string[], nowS: number): Ev | null {
     id: `gdelt:${cols[0]}`,
     source: 'gdelt',
     alsoIds: [],
-    timeS: day + 12 * 3600, // GDELT has no time of day: the event day is placed at midday UTC
+    timeS: reportedS, // GDELT has no time of day for the event: this is when it was first reported (DATEADDED), up to 2 days after the event date
     lat,
     lon,
     precision: PRECISION[geoType] ?? 4,
