@@ -16,6 +16,12 @@ vi.mock('../src/globe/GlobeCanvas', () => ({
   },
 }));
 vi.mock('../src/events/service', () => ({ startEventService: () => () => {} }));
+vi.mock('../src/conflicts/load', () => {
+  const r = { best: 5, low: 4, high: 9 };
+  const c = (id: string, name: string, cid: string | null) => ({ id, name, kinds: ['state'], countries: [{ id: cid, name: 'Indialand', deaths365: 50 }], deaths: { d30: r, d90: r, d365: r }, events: { d30: 1, d90: 1, d365: 1 }, trend: 'steady', lastDate: '2026-08-30', weekly: new Array(52).fill(0), latest: [], provisionalShare: 0 });
+  const file = { generated: '2026-10-18', dataEnd: '2026-08-31', sources: ['t'], conflicts: [c('alpha-war', 'Alpha war', 'IND'), c('beta-war', 'Beta war', null)] };
+  return { loadConflicts: async () => file, resetConflictsCache: () => {} };
+});
 vi.mock('../src/dossier/load', async (orig) => ({
   ...(await orig<typeof import('../src/dossier/load')>()),
   loadCountries: async () => {
@@ -164,5 +170,41 @@ describe('App deep links and dive state', () => {
     expect(wanted).toBeGreaterThanOrEqual(rowSeverity);
     vi.unstubAllGlobals();
     useEvents.setState({ recent: undefined });
+  });
+});
+
+describe('App War tracker', () => {
+  it('the top-bar button opens it, #war mirrors it, and Esc closes it and clears the hash', async () => {
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: /^war tracker$/i }));
+    const dialog = await screen.findByRole('dialog', { name: /war tracker/i }, { timeout: 4000 });
+    await waitFor(() => expect(location.hash).toBe('#war'), { timeout: 4000 });
+    await within(dialog).findByRole('button', { name: /Alpha war/ }, { timeout: 4000 });
+    fireEvent.keyDown(window, { key: 'Escape' });
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull(), { timeout: 4000 });
+    await waitFor(() => expect(location.hash).toBe(''), { timeout: 4000 });
+  });
+  it('opens one conflict from #war=<id> on load and writes the selection back to the hash', async () => {
+    history.replaceState(null, '', '/#war=beta-war');
+    render(<App />);
+    const detail = await screen.findByRole('region', { name: 'Beta war' }, { timeout: 4000 });
+    expect(detail).toBeTruthy();
+    fireEvent.click(screen.getByRole('button', { name: /Alpha war/ }));
+    await waitFor(() => expect(location.hash).toBe('#war=alpha-war'), { timeout: 4000 });
+  });
+  it('an unknown #war=zzz shows the list, not a crash', async () => {
+    history.replaceState(null, '', '/#war=zzz');
+    render(<App />);
+    expect(await screen.findByRole('button', { name: /Alpha war/ }, { timeout: 4000 })).toBeTruthy();
+    expect(screen.queryByRole('region', { name: /war/i })).toBeNull();
+  });
+  it('a country in the detail closes the tracker and dives into it', async () => {
+    history.replaceState(null, '', '/#war=alpha-war');
+    render(<App />);
+    const detail = await screen.findByRole('region', { name: 'Alpha war' }, { timeout: 4000 });
+    fireEvent.click(within(detail).getByRole('button', { name: /Indialand/ }));
+    await waitFor(() => expect(screen.queryByRole('dialog')).toBeNull(), { timeout: 4000 });
+    await waitFor(() => expect(location.hash).toBe('#c=IND'), { timeout: 4000 });
+    await waitFor(() => expect(screen.getByTestId('globe').getAttribute('data-dive')).toBe('IND'), { timeout: 4000 });
   });
 });

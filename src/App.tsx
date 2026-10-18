@@ -37,6 +37,7 @@ import { StatusRegion, announce } from './ui/status';
 
 const BASE = eventsBase(import.meta.env.VITE_EVENTS_BASE);
 const AboutPage = lazy(() => import('./ui/AboutPage').then((m) => ({ default: m.AboutPage })));
+const ConflictsPage = lazy(() => import('./ui/ConflictsPage').then((m) => ({ default: m.ConflictsPage })));
 const PICK_RADIUS_PX = 14;
 
 type Readout = { id: string | null; lat: number; lon: number };
@@ -48,6 +49,8 @@ export function App() {
   const [sel, setSel] = useState<Selected | null>(null);
   // initialised from the URL so the hash-mirroring effect below does not erase a shared #c=IND link before it is applied
   const [about, setAbout] = useState(() => parseHash(location.hash).about === true);
+  // null = closed, '' = the conflict list, otherwise one conflict id (`#war`, `#war=<id>`)
+  const [war, setWar] = useState<string | null>(() => parseHash(location.hash).war ?? null);
   const [dossierId, setDossierId] = useState<string | null>(() => parseHash(location.hash).country);
   const [dive, setDive] = useState<Dive | null>(null);
   const diveIdRef = useRef<string | null>(null);
@@ -124,14 +127,15 @@ export function App() {
     return () => window.removeEventListener('keydown', onKey);
   }, [exitDive]);
   useEffect(() => {
-    const want = formatHash(dossierId, about);
+    const want = formatHash(dossierId, about, war);
     if (location.hash !== want) history.replaceState(null, '', want || location.pathname + location.search);
-  }, [dossierId, about]);
+  }, [dossierId, about, war]);
   useEffect(() => {
     const apply = () => {
-      const { country, about: wantAbout } = parseHash(location.hash);
+      const { country, about: wantAbout, war: wantWar } = parseHash(location.hash);
       setAbout(wantAbout === true);
-      if (wantAbout) return; // the overlay sits on top of whatever is open
+      setWar(wantWar ?? null);
+      if (wantAbout || wantWar !== undefined) return; // an overlay sits on top of whatever is open
       if (country && country !== diveIdRef.current) void startDive(country);
       else if (!country && dossierIdRef.current) exitDive();
     };
@@ -200,6 +204,9 @@ export function App() {
       <TopBar>
         <CommandPalette onPick={(id) => void startDive(id)} />
         <SoundToggle />
+        <button type="button" onClick={() => setWar((w) => w ?? '')} className="rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)]">
+          War tracker
+        </button>
         <button type="button" onClick={() => setAbout(true)} className="rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)]">
           About
         </button>
@@ -208,6 +215,21 @@ export function App() {
         <Suspense fallback={null}>
           <ErrorBoundary where="about" onReset={() => setAbout(false)}>
             <AboutPage onClose={() => setAbout(false)} />
+          </ErrorBoundary>
+        </Suspense>
+      ) : null}
+      {war !== null && !about ? (
+        <Suspense fallback={null}>
+          <ErrorBoundary where="war" onReset={() => setWar(null)}>
+            <ConflictsPage
+              selected={war || null}
+              onSelect={(id) => setWar(id ?? '')}
+              onClose={() => setWar(null)}
+              onDive={(id) => {
+                setWar(null);
+                void startDive(id);
+              }}
+            />
           </ErrorBoundary>
         </Suspense>
       ) : null}

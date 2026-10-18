@@ -72,7 +72,15 @@ Rules for `conflictsFromRows` (decide, test, document):
 - [ ] **Step 2: Implement; run the suite; browser check at 1440, 1100 and 375 px** (screenshots into the session scratchpad, then `docs/images/war-tracker.png` at 1440).
 - [ ] **Step 3: Commit** `feat(ui): add the War tracker page`.
 
-### Task 4: Docs, review, merge
+### Task 4: World overview (fatalities monitor and the latest strikes worldwide)
+
+Owner ask (2026-10-18, mid-execution): "latest attacks, strikes, bombings across the world" and a fatalities/violence monitor with counts. Added to this plan because it reads the same data.
+- `ConflictsFile.world` (builder, `src/conflicts/types.ts`): `World = { deaths: { d30: Range; d90: Range; d365: Range }; byKind: Record<Kind, { d90: Range; d365: Range }>; weekly: number[] /* 52 */; countries: { id: string | null; name: string; deaths90: number; deaths365: number }[] /* top 12 by 90-day deaths */; conflictsListed: number; latest: ConflictEvent[] /* 20 newest events anywhere, usable coordinates */ }`. It counts **every** valid event (also the conflicts below the listing threshold); `world` is the reserved conflict id `world`, so no conflict slug may be `world`.
+- Builder hygiene found in review of the page: a `source_headline` that is only a date ("31 August 2026") becomes an empty headline.
+- Page: the list starts with a "World overview" row; with nothing selected the wide layout shows it by default (`selected === 'world'` or null). It shows the deaths cards (30/90/365 days, all kinds), a by-kind table, the weekly chart, the countries with most deaths in 90 days (dive buttons), a plain note that protest deaths are not counted (UCDP covers organised violence only), the 20 latest human-coded events, and "Newest reports (news, auto-coded, last 7 days)": up to 8 armed/civilian events from the live snapshot, one per country, with the country name, kind, age and an "auto-coded" tag, or "No recent reports loaded". On a narrow screen the page header and footer are shortened.
+- [ ] **Step 1: Tests first** (builder: world totals include unlisted conflicts, by-kind sums equal totals, weekly 52, top-12 countries sorted, latest 20 across conflicts, date-only headline emptied, slug `world` never used; loader rejects a malformed `world`; data test invariants; page: overview default and for `selected='world'`, protest note, by-kind rows, country button dives, newest-reports section with a snapshot and its empty state, text not markup; axe). Run: FAIL. **Step 2:** implement, regenerate `conflicts.json`, suite, screenshots. **Step 3: Commit** `feat(conflicts): add the World overview with a fatalities monitor and the latest strikes`.
+
+### Task 5: Docs, review, merge
 
 - [ ] Docs: DESIGN-LANGUAGE (War tracker page), DECISIONS D-055 (UCDP-only data layer, windows relative to data end, provisional label, no memory-written claims), BACKLOG (Plan 9: sourced key-events timeline; per-conflict GDELT "since UCDP" feed), BRAINSTORM section 9 status, README feature line and screenshot, `LAUNCH.md` untouched.
 - [ ] Full suite twice, typecheck, build, `check:budgets`, `ci:scan`. One fresh Sonnet review of the whole branch with the Review Focus above, one fix pass (each fix RED -> GREEN), merge ff-only to main, push, check CI and the live site (the deploy needs `conflicts.json` served with the right headers).

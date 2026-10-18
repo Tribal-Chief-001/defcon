@@ -10,6 +10,7 @@ import type { Relations } from '../../src/relations/types';
 import { useTime } from '../../src/time/store';
 import { encodeSnapshot } from '../../scripts/events/encode';
 import { AboutPage } from '../../src/ui/AboutPage';
+import { ConflictsPage } from '../../src/ui/ConflictsPage';
 import { CommandPalette } from '../../src/ui/CommandPalette';
 import { DossierPanel } from '../../src/ui/DossierPanel';
 import { EventCard } from '../../src/ui/EventCard';
@@ -100,6 +101,23 @@ describe('axe (rules jsdom supports)', () => {
     useEvents.setState({ recent: undefined, archive: undefined });
     const b = render(<AboutPage onClose={() => {}} />);
     expect(await check(b.container)).toEqual([]);
+  });
+  it('the War tracker: list, detail, error and loading states', async () => {
+    const r = { best: 5, low: 4, high: 9 };
+    const c = { id: 'a', name: 'Alpha war', kinds: ['state' as const], countries: [{ id: 'IND', name: 'India', deaths365: 5 }], deaths: { d30: r, d90: r, d365: r }, events: { d30: 1, d90: 1, d365: 1 }, trend: 'rising' as const, lastDate: '2026-08-30', weekly: Array.from({ length: 52 }, (_, i) => i), latest: [{ id: 'e', date: '2026-08-30', place: 'Town', country: 'India', lat: 1, lon: 2, precision: 1, kind: 'state' as const, deaths: r, headline: 'Shelling', sources: ['Agency'], provisional: true }], provisionalShare: 0.5 };
+    const file = { generated: '2026-10-18', dataEnd: '2026-08-31', sources: ['t'], conflicts: [c] };
+    const a = render(<ConflictsPage selected={null} onSelect={() => {}} onClose={() => {}} onDive={() => {}} load={async () => file} />);
+    expect(await check(a.container)).toEqual([]); // loading
+    await screen.findByRole('button', { name: /Alpha war/ });
+    expect(await check(a.container)).toEqual([]);
+    a.unmount();
+    const b = render(<ConflictsPage selected="a" onSelect={() => {}} onClose={() => {}} onDive={() => {}} load={async () => file} />);
+    await screen.findByRole('region', { name: 'Alpha war' });
+    expect(await check(b.container)).toEqual([]);
+    b.unmount();
+    const d = render(<ConflictsPage selected={null} onSelect={() => {}} onClose={() => {}} onDive={() => {}} load={async () => Promise.reject(new Error('Could not load the conflicts data'))} />);
+    await screen.findByRole('alert');
+    expect(await check(d.container)).toEqual([]);
   });
   it('the Hotspots and Latest rails', async () => {
     const { container } = render(<Rails dossierOpen={false} cardOpen={false} onDive={() => {}} onOpenEvent={() => {}} />);

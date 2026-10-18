@@ -28,4 +28,20 @@ describe('hash state (deep links)', () => {
     expect(formatHash('IND', true)).toBe('#about');
     expect(formatHash('IND', false)).toBe('#c=IND');
   });
+  it('parses the War tracker links: #war for the list, #war=<id> for one conflict', () => {
+    expect(parseHash('#war')).toEqual({ country: null, war: '' });
+    expect(parseHash('#war=russia-ukraine')).toEqual({ country: null, war: 'russia-ukraine' });
+    expect(parseHash('#war=xxx475-nigeria-2')).toEqual({ country: null, war: 'xxx475-nigeria-2' });
+  });
+  it.each([['#war='], ['#war=<script>'], ['#war=A'], ['#war=a_b'], ['#war=../x'], ['#war=' + 'a'.repeat(61)], ['#WAR'], ['#war=a&b=1']])('rejects %j as a war link', (h) => {
+    expect(parseHash(h)).toEqual({ country: null });
+  });
+  it('formats war links, with about first, then war, then country', () => {
+    expect(formatHash(null, false, '')).toBe('#war');
+    expect(formatHash(null, false, 'russia-ukraine')).toBe('#war=russia-ukraine');
+    expect(formatHash('IND', false, 'x')).toBe('#war=x');
+    expect(formatHash('IND', true, 'x')).toBe('#about');
+    expect(formatHash(null, false, '<x>')).toBe('#war'); // an invalid id falls back to the list
+    expect(formatHash('IND', false, null)).toBe('#c=IND');
+  });
 });
