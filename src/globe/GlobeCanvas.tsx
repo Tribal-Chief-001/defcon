@@ -8,6 +8,8 @@ import { hasWebGL2 } from './capabilities';
 import { createGlobe, type GlobeHandle } from './engine';
 import type { CapitalLabel } from '../ui/CapitalLabels';
 import type { Capital } from './labels';
+import { loadCountries } from '../dossier/load';
+import { loadRelations } from '../relations/load';
 import { Unsupported } from './Unsupported';
 
 const getJson = async (url: string) => {
@@ -75,6 +77,10 @@ export function GlobeCanvas({
       unsubscribe = useEvents.subscribe((st, prev) => {
         if (st.recent !== prev.recent || st.archive !== prev.archive) push();
       });
+      // arcs are an extra: a failed load leaves the globe without them
+      void Promise.all([loadRelations(), loadCountries()])
+        .then(([rel, rows]) => !cancelled && rel && handle?.setRelations(rel, Object.fromEntries(rows.map((r) => [r.id, { lat: r.lat, lon: r.lon }]))))
+        .catch(() => undefined);
       const high = await getJson('/data/borders.high.topo.json');
       if (!cancelled) handle.setHighDetail(high);
     })().catch((e) => {

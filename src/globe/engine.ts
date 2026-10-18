@@ -5,6 +5,8 @@ import type { EventAttrs } from '../events/attributes';
 import { createBootControl, type BootControl, type BootState } from './boot';
 import { createEventLayer } from './eventLayer';
 import { buildBorderPositions, buildCountryPositions } from './borderGeometry';
+import type { Relations } from '../relations/types';
+import { createArcLayer } from './arcLayer';
 import { easeDive } from './dive';
 import { createClickClassifier } from './gesture';
 import { selectCapitals, type Capital } from './labels';
@@ -19,6 +21,7 @@ export type GlobeHandle = {
   dive(id: string | null, target?: { lat: number; lon: number; distance: number }): void;
   setFraming(x: number, y: number): void;
   setCapitals(caps: Capital[]): void;
+  setRelations(rel: Relations | null, points: Record<string, { lat: number; lon: number }>): void;
   onLabels(cb: (labels: { id: string; name: string; x: number; y: number }[]) => void): () => void;
   boot: BootControl;
   dispose(): void;
@@ -158,6 +161,18 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   window.addEventListener('keydown', skipBoot);
   const eventLayer = createEventLayer();
   globe.add(eventLayer.points, eventLayer.marker);
+  const arcs = createArcLayer(reducedMotion);
+  globe.add(arcs.object);
+  let relations: Relations | null = null;
+  let relPoints: Record<string, { lat: number; lon: number }> = {};
+  let arcFocus: string | null | undefined;
+  // arcs follow the hovered country, else the dived one; rebuilt only when that changes
+  const refreshArcs = (force = false) => {
+    const focus = hoverId ?? diveId;
+    if (!force && focus === arcFocus) return;
+    arcFocus = focus;
+    arcs.show(focus, relations, relPoints);
+  };
   const hover = lines(new Float32Array(0), LIME, 0.5);
   const selected = lines(new Float32Array(0), LIME, 1);
   hover.visible = selected.visible = false;
@@ -281,6 +296,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   };
   const doDive = (id: string | null, target?: { lat: number; lon: number; distance: number }) => {
     diveId = id;
+    refreshArcs();
     setOutline(selected, id);
     if (id === null) return flyTo({ yaw, pitch, distance: HOME_DISTANCE });
     outlineT = reducedMotion ? 1 : 0;
@@ -333,6 +349,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       if (id !== hoverId) {
         hoverId = id;
         setOutline(hover, id);
+        refreshArcs();
       }
       canvas.style.cursor = id ? 'pointer' : 'grab';
     });
@@ -466,6 +483,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     camera.position.z = distance * (camera.aspect < 1 ? 1 / camera.aspect : 1);
     if (boot.done) fade = Math.min(1, fade + dt / 1.5); // events fade in over 1.5 s once the boot is done
     eventLayer.update(fade, renderer.getPixelRatio());
+    arcs.update(now);
     renderer.render(scene, camera);
     updateCapitals(now);
     opts.onFrame?.(now);
@@ -507,6 +525,11 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     },
     setFraming(x, y) {
       frameTarget = { x, y };
+    },
+    setRelations(rel, points) {
+      relations = rel;
+      relPoints = points;
+      refreshArcs(true);
     },
     setCapitals(caps) {
       allCaps = caps;

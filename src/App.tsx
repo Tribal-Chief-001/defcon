@@ -54,7 +54,8 @@ export function App() {
     latest.current.next(); // a new dive closes any open event card; a click's own event card is set after this
     setSel(null);
     setDossierId(key);
-    const row = (await loadCountries()).find((r) => r.id === key || r.iso3 === key);
+    const rows = await loadCountries();
+    const row = rows.find((r) => r.id === key) ?? rows.find((r) => r.iso3 === key); // an exact map id wins over a territory sharing the ISO3 (Clipperton has FRA)
     if (!diveToken.current.isLatest(token)) return;
     if (!row) {
       setDossierId(null);

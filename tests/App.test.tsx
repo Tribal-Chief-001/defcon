@@ -59,6 +59,13 @@ describe('App deep links and dive state', () => {
     await waitFor(() => expect(screen.getByTestId('globe').getAttribute('data-dive')).toBe('SDS'));
     expect(location.hash).toBe('#c=SDS');
   });
+  it('prefers an exact map id over a territory that shares its ISO3 code (FRA vs Clipperton)', async () => {
+    countries.rows = [row('CLP', 'FRA'), row('FRA', 'FRA')];
+    history.replaceState(null, '', '/#c=FRA');
+    render(<App />);
+    await waitFor(() => expect(screen.getByTestId('globe').getAttribute('data-dive')).toBe('FRA'));
+    expect(location.hash).toBe('#c=FRA');
+  });
   it('does not fly anywhere, opens no dossier and clears the hash for an unknown id', async () => {
     history.replaceState(null, '', '/#c=XXX');
     render(<App />);
