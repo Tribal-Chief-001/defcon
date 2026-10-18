@@ -11,6 +11,8 @@ const DATA_BUDGETS: [string, number][] = [
 ];
 const EVENTS_RECENT = 500_000;
 const EVENTS_TOTAL = 2_000_000;
+const DOSSIER_INDEX = 40_000;
+const DOSSIER_ONE = 6_000;
 const gz = (path: string) => gzipSync(readFileSync(path)).length;
 const kb = (n: number) => `${(n / 1000).toFixed(0)} KB`;
 
@@ -31,6 +33,15 @@ export function checkBudgets(distDir: string, dataDir: string): { ok: boolean; f
   const a = existsSync(archive) ? gz(archive) : 0;
   if (r > EVENTS_RECENT) failures.push(`events/recent.bin ${kb(r)} gzip exceeds ${kb(EVENTS_RECENT)}`);
   if (r + a > EVENTS_TOTAL) failures.push(`events total (recent + archive) ${kb(r + a)} gzip exceeds ${kb(EVENTS_TOTAL)}`);
+  const dossierDir = join(dataDir, 'dossiers');
+  if (existsSync(dossierDir)) {
+    for (const f of readdirSync(dossierDir).filter((x) => x.endsWith('.json'))) {
+      const path = join(dossierDir, f);
+      if (f === 'index.json') {
+        if (gz(path) > DOSSIER_INDEX) failures.push(`dossiers/index.json ${kb(gz(path))} gzip exceeds ${kb(DOSSIER_INDEX)}`);
+      } else if (readFileSync(path).length > DOSSIER_ONE) failures.push(`dossiers/${f} ${readFileSync(path).length} bytes exceeds ${DOSSIER_ONE} bytes`);
+    }
+  }
   return { ok: failures.length === 0, failures };
 }
 

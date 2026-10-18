@@ -20,7 +20,19 @@ export function parseDms(text: string): { lat: number; lon: number } | null {
 }
 
 type Node = { text?: unknown } | undefined;
-const text = (n: Node): string | undefined => (typeof n?.text === 'string' && n.text.trim() ? n.text.trim() : undefined);
+const ENT: Record<string, string> = {
+  nbsp: ' ', amp: '&', quot: '"', apos: "'", lt: '<', gt: '>', rsquo: '’', lsquo: '‘', ldquo: '“', rdquo: '”', ndash: '–', mdash: '—',
+  eacute: 'é', Eacute: 'É', egrave: 'è', ecirc: 'ê', euml: 'ë', iacute: 'í', Iacute: 'Í', iuml: 'ï', uacute: 'ú', uuml: 'ü',
+  aacute: 'á', Aacute: 'Á', atilde: 'ã', auml: 'ä', aring: 'å', oacute: 'ó', Oacute: 'Ó', ocirc: 'ô', oslash: 'ø', ntilde: 'ñ',
+  Ntilde: 'Ñ', ccedil: 'ç', Scaron: 'Š', scaron: 'š',
+};
+// the Factbook JSON carries html entities (for example &nbsp;); show real characters, one space between words
+const clean = (s: string) =>
+  s.replace(/&#(\d+);/g, (_, n) => String.fromCodePoint(+n)).replace(/&([a-z]+);/gi, (m, n) => ENT[n] ?? ENT[n.toLowerCase()] ?? m).replace(/\s+/g, ' ').trim();
+const text = (n: Node): string | undefined => {
+  const t = typeof n?.text === 'string' ? clean(n.text) : '';
+  return t || undefined;
+};
 
 export function parseFactbook(json: unknown): FactbookFacts {
   const j = (json && typeof json === 'object' ? json : {}) as Record<string, Record<string, unknown> | undefined>;

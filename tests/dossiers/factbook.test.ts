@@ -40,6 +40,14 @@ describe('parseFactbook (only the enumerated fields)', () => {
   it('returns {} for empty or odd input without throwing', () => {
     for (const x of [{}, null, undefined, [], 'x', { Government: null }]) expect(parseFactbook(x)).toEqual({});
   });
+  it('decodes the html entities the Factbook text carries and collapses whitespace', () => {
+    const j = { ...fx('in'), 'People and Society': { Languages: { Languages: { text: 'Hindi 43.6%;&nbsp; English &amp; more &quot;x&quot; it&#39;s' } } } };
+    expect(parseFactbook(j).languages).toBe('Hindi 43.6%; English & more "x" it\'s');
+  });
+  it('decodes the accented letters and typographic quotes found in the real data', () => {
+    const j = { ...fx('in'), 'People and Society': { Languages: { Languages: { text: 'caf&eacute; d&rsquo;Ivoire &ndash; Cura&ccedil;ao &Eacute;&uuml;&ntilde; &lt;5%' } } } };
+    expect(parseFactbook(j).languages).toBe('café d’Ivoire – Curaçao Éüñ <5%');
+  });
   it('omits a field that is missing rather than inventing it', () => {
     const noLang = { ...fx('in'), 'People and Society': {} };
     expect('languages' in parseFactbook(noLang)).toBe(false);

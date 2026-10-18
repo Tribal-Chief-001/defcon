@@ -126,3 +126,15 @@ Measured 2026-10-18 (UCDP to 2026-08-31 + 7 days of GDELT, after the review fixe
 | As of | 2026-10-18 |
 | Independent cross-check (2026-10-18) | Against the archived Factbook organisation text: UN differs only by Nauru (not in the Factbook match) and the Holy See (observer); NATO differs only by Jordan and Malta, which the Factbook text lists as partners. |
 | Not covered | Other alliances and groupings (CSTO, SCO, EU, ...): the dossier shows the Factbook's organisation text as stated; alliance arcs are Plan 4. |
+
+## Country dossiers (derived, committed)
+
+Built by `npm run data:dossiers` (after `data:wb` and `data:factbook`) into `public/data/dossiers/`: one `<ADM0_A3>.json` per country (248) plus `index.json` (search index). Output is **committed** so a static deploy needs no pipeline; refresh monthly or when a source changes.
+
+| Item | Value |
+|------|-------|
+| Per-country file | `Dossier` (see `src/dossier/types.ts`): identity and ISO codes, capitals (Natural Earth; a different Factbook capital is added as a `note`, e.g. Burundi's Gitega, never replaces it), neighbours (from our India-POV borders), World Bank fields, Factbook fields, UN and NATO membership |
+| Field shape | `{ value, source, asOf, url?, note? }` or `null` = unavailable. A source without a row gives `null`, never 0; a real 0 is kept; a non-finite number becomes `null`. UN and NATO are always answered (the official lists are complete): not in the list = `non-member` / `false`. |
+| Provenance | World Bank: `World Bank WDI` (`SIPRI via World Bank WDI` for military), `asOf` = the data year; Factbook: `CIA World Factbook (archived)`, `asOf` 2026-01-22 with the sunset note; memberships: official list, `asOf` = list date |
+| Measured 2026-10-18 | 248 dossiers, 575 KB total, largest 4.2 KB, index 9.0 KB gzip. Non-null: population 220, area 220, GDP 217, military 171 (% GDP 170), government type 194, languages 125, independence 193, organisations 194; 194 have a capital, 166 have neighbours. Budgets (`check:budgets`): index <= 40 KB gzip, each dossier <= 6 KB. |
+| Text cleaning | The Factbook text contains HTML entities (`&nbsp;`, `&eacute;`, ...): decoded to real characters and whitespace collapsed (tests cover all 30 entity names present in the data). |
