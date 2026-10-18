@@ -3,6 +3,13 @@ import { cleanup, fireEvent, render, screen, waitFor, within } from '@testing-li
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import type { Conflict, ConflictsFile, Range } from '../../src/conflicts/types';
 import { ConflictsPage } from '../../src/ui/ConflictsPage';
+import { decodeSnapshot } from '../../src/events/snapshot';
+import { useEvents } from '../../src/events/store';
+import type { Ev } from '../../src/events/types';
+import { encodeSnapshot } from '../../scripts/events/encode';
+import { worldFixture } from '../conflicts/fixture';
+
+vi.mock('../../src/dossier/load', () => ({ loadIndex: async () => [{ id: 'AAA', name: 'Aland', iso2: null, iso3: 'AAA', capitals: [], continent: null, lat: 0, lon: 0, hasPolygon: true }] }));
 
 const R = (best: number, low = best - 10, high = best + 20): Range => ({ best, low, high });
 const conflict = (o: Partial<Conflict> & { id: string; name: string }): Conflict => ({
@@ -26,11 +33,23 @@ const file: ConflictsFile = {
   generated: '2026-10-18',
   dataEnd: '2026-08-31',
   sources: ['GED 26.1', 'Candidate 26.0.8'],
+  world: worldFixture(),
   conflicts: [conflict({ id: 'russia-ukraine', name: 'Russia - Ukraine' }), conflict({ id: 'israel-palestine', name: 'Israel: Palestine', trend: 'rising', countries: [{ id: 'ISR', name: 'Israel', deaths365: 400 }] })],
 };
 const props = (o: Partial<React.ComponentProps<typeof ConflictsPage>> = {}) => ({ selected: null, onSelect: vi.fn(), onClose: vi.fn(), onDive: vi.fn(), load: async () => file, ...o });
 
-afterEach(cleanup);
+const NOW = Math.floor(Date.now() / 1000);
+let n = 0;
+const ev = (o: Partial<Ev>): Ev => ({ id: `e${n++}`, source: 'gdelt', alsoIds: [], timeS: NOW - 3 * 3600, lat: 10, lon: 20, precision: 3, country: 'AAA', kind: 'armed', deaths: null, severity: 2, human: false, place: '', headline: '', actors: '', sources: [], firstSeenS: NOW, updatedS: NOW, ...o });
+const snap = (events: Ev[]) => {
+  const e = encodeSnapshot(events, { asOfS: NOW, generatedS: NOW, sources: [] });
+  return decodeSnapshot(e.bin.buffer.slice(e.bin.byteOffset, e.bin.byteOffset + e.bin.byteLength) as ArrayBuffer, e.meta);
+};
+
+afterEach(() => {
+  cleanup();
+  useEvents.setState({ recent: undefined, archive: undefined, status: 'idle' } as never);
+});
 
 describe('ConflictsPage', () => {
   it('shows a loading state, then the conflicts with deaths, range and trend', async () => {
@@ -145,5 +164,67 @@ describe('ConflictsPage', () => {
     expect(cite).toMatch(/UCDP/);
     expect(cite).toMatch(/CC BY 4\.0/);
     expect(screen.getByRole('link', { name: /ucdp\.uu\.se/i }).getAttribute('href')).toBe('https://ucdp.uu.se/');
+  });
+
+  describe('World overview', () => {
+    it('starts the list with a World overview row and shows it by default as the fatalities monitor', async () => {
+      const p = props();
+      render(<ConflictsPage {...p} />);
+      await screen.findByRole('button', { name: /Russia - Ukraine/ });
+      const first = screen.getAllByRole('button').find((b) => /World overview/.test(b.textContent ?? ''));
+      expect(first).toBeTruthy();
+      fireEvent.click(first!);
+      expect(p.onSelect).toHaveBeenCalledWith('world');
+      const world = await screen.findByRole('region', { name: /World overview/ });
+      const t = world.textContent ?? '';
+      expect(t).toMatch(/Fatalities monitor/i);
+      expect(t).toMatch(/Last 30 days/);
+      expect(t).toMatch(/Last 90 days/);
+      expect(t).toMatch(/Last 365 days/);
+      expect(t).toMatch(/9,000/);
+      expect(t).toMatch(/State-based/);
+      expect(t).toMatch(/Non-state/);
+      expect(t).toMatch(/One-sided/);
+      expect(t).toMatch(/7,000/);
+    });
+
+    it('is also shown for selected="world", with the countries as dive buttons and the protest note', async () => {
+      const p = props({ selected: 'world' });
+      render(<ConflictsPage {...p} />);
+      const world = await screen.findByRole('region', { name: /World overview/ });
+      fireEvent.click(within(world).getByRole('button', { name: /Ukraine/ }));
+      expect(p.onDive).toHaveBeenCalledWith('UKR');
+      expect(within(world).queryByRole('button', { name: /Atlantis/ })).toBeNull();
+      expect(world.textContent).toMatch(/protest deaths are not counted/i);
+      expect(within(world).getByRole('img', { name: /weekly deaths/i })).toBeTruthy();
+    });
+
+    it('lists the latest human-coded events worldwide as text, never as markup', async () => {
+      render(<ConflictsPage {...props({ selected: 'world' })} />);
+      const world = await screen.findByRole('region', { name: /World overview/ });
+      expect(world.textContent).toMatch(/Town, Region/);
+      expect(world.textContent).toContain('Drone strike <b>hits</b> a camp');
+      expect(world.querySelector('b')).toBeNull();
+    });
+
+    it('shows the newest news reports (auto-coded) from the live snapshot: armed and civilian only, one per country, with the country name', async () => {
+      useEvents.setState({ recent: snap([ev({ country: 'AAA', kind: 'armed' }), ev({ country: 'AAA', kind: 'armed', timeS: NOW - 7200 }), ev({ country: 'BBB', kind: 'protest' })]), status: 'ready' } as never);
+      render(<ConflictsPage {...props({ selected: 'world' })} />);
+      const world = await screen.findByRole('region', { name: /World overview/ });
+      const sec = await within(world).findByRole('list', { name: /newest reports/i });
+      await waitFor(() => expect(sec.textContent).toMatch(/Aland/));
+      expect(sec.textContent).toMatch(/auto-coded/i);
+      expect(within(sec).getAllByRole('listitem')).toHaveLength(1); // the protest is not an attack, AAA counts once
+      expect(document.body.textContent).not.toMatch(/NaN|undefined/);
+    });
+
+    it('says so when no reports are loaded or none are attacks', async () => {
+      render(<ConflictsPage {...props({ selected: 'world' })} />);
+      expect((await screen.findByRole('region', { name: /World overview/ })).textContent).toMatch(/No recent reports loaded/i);
+      cleanup();
+      useEvents.setState({ recent: snap([ev({ kind: 'protest' })]), status: 'ready' } as never);
+      render(<ConflictsPage {...props({ selected: 'world' })} />);
+      expect((await screen.findByRole('region', { name: /World overview/ })).textContent).toMatch(/No armed or civilian reports in the last 7 days/i);
+    });
   });
 });

@@ -51,4 +51,25 @@ describe('public/data/conflicts.json', () => {
     const d = file.conflicts.map((c) => c.deaths.d90.best);
     expect(d).toEqual([...d].sort((a, b) => b - a));
   });
+
+  it('has a consistent world overview', () => {
+    const w = file.world;
+    for (const k of ['d30', 'd90', 'd365'] as const) expect(ok(w.deaths[k]), `world ${k}`).toBe(true);
+    expect(w.deaths.d30.best).toBeLessThanOrEqual(w.deaths.d90.best);
+    expect(w.deaths.d90.best).toBeLessThanOrEqual(w.deaths.d365.best);
+    for (const w2 of ['d90', 'd365'] as const) {
+      const sum = (['state', 'non-state', 'one-sided'] as const).reduce((s, k) => s + w.byKind[k][w2].best, 0);
+      expect(sum).toBe(w.deaths[w2].best);
+    }
+    expect(w.weekly).toHaveLength(52);
+    expect(w.weekly.reduce((s, v) => s + v, 0)).toBeLessThanOrEqual(w.deaths.d365.best);
+    expect(w.conflictsListed).toBe(file.conflicts.length);
+    expect(file.conflicts.reduce((s, c) => s + c.deaths.d365.best, 0)).toBeLessThanOrEqual(w.deaths.d365.best); // the world also holds the small conflicts
+    expect(w.countries.length).toBeLessThanOrEqual(12);
+    const d = w.countries.map((c) => c.deaths90);
+    expect(d).toEqual([...d].sort((a, b) => b - a));
+    expect(w.latest.length).toBeLessThanOrEqual(20);
+    expect(w.latest.map((e) => e.date)).toEqual([...w.latest.map((e) => e.date)].sort().reverse());
+    expect(file.conflicts.some((c) => c.id === 'world')).toBe(false);
+  });
 });

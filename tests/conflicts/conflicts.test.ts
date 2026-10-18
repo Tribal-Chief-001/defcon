@@ -141,4 +141,74 @@ describe('conflictsFromRows', () => {
     expect(f.generated).toBe('2026-10-18');
     expect(f.sources).toEqual(['t']);
   });
+
+  describe('world overview', () => {
+    const world = (rows: ReturnType<typeof row>[]) => conflictsFromRows(rows, opts).world;
+
+    it('counts every valid event, also those of conflicts below the listing threshold', () => {
+      const w = world([row({ ago: 3, best: 200, conflict_name: 'Big' }), row({ ago: 5, best: 10, conflict_name: 'Small' })]);
+      expect(w.deaths.d365.best).toBe(210);
+      expect(w.deaths.d90.best).toBe(210);
+      expect(w.deaths.d30.best).toBe(210);
+      expect(w.conflictsListed).toBe(1);
+    });
+
+    it('splits deaths by kind of violence and the parts add up to the total', () => {
+      const w = world([row({ ago: 1, best: 150, type_of_violence: '1' }), row({ ago: 2, best: 60, type_of_violence: '3' }), row({ ago: 100, best: 40, type_of_violence: '2' })]);
+      expect(w.byKind.state.d365.best).toBe(150);
+      expect(w.byKind['one-sided'].d90.best).toBe(60);
+      expect(w.byKind['non-state'].d90.best).toBe(0);
+      expect(w.byKind['non-state'].d365.best).toBe(40);
+      const sum = (f: (k: 'state' | 'non-state' | 'one-sided') => number) => f('state') + f('non-state') + f('one-sided');
+      expect(sum((k) => w.byKind[k].d365.best)).toBe(w.deaths.d365.best);
+      expect(sum((k) => w.byKind[k].d90.best)).toBe(w.deaths.d90.best);
+    });
+
+    it('has 52 weekly buckets over all conflicts', () => {
+      const w = world([row({ ago: 0, best: 5, conflict_name: 'A' }), row({ ago: 1, best: 7, conflict_name: 'B' }), row({ ago: 8, best: 100, conflict_name: 'C' })]);
+      expect(w.weekly).toHaveLength(52);
+      expect(w.weekly[51]).toBe(12);
+      expect(w.weekly[50]).toBe(100);
+    });
+
+    it('ranks the top 12 countries by 90-day deaths, null id when unmapped', () => {
+      const rows = Array.from({ length: 14 }, (_, i) => row({ ago: 1, best: 10 + i, country: `Land ${i}`, country_id: String(900 + i), conflict_name: `C${i}` }));
+      rows.push(row({ ago: 200, best: 5000, country: 'Old', country_id: '365' }));
+      const w = world(rows);
+      expect(w.countries).toHaveLength(12);
+      expect(w.countries[0]).toEqual({ id: null, name: 'Land 13', deaths90: 23, deaths365: 23 });
+      expect(w.countries.map((c) => c.deaths90)).toEqual([...w.countries.map((c) => c.deaths90)].sort((a, b) => b - a));
+      expect(w.countries.some((c) => c.name === 'Old')).toBe(false); // no deaths in the last 90 days: not in a 90-day ranking
+    });
+
+    it('lists the 20 newest located events of all conflicts, newest first', () => {
+      const rows = Array.from({ length: 25 }, (_, i) => row({ ago: i, best: 1, conflict_name: i % 2 ? 'Odd' : 'Even', id: `ev${String(i).padStart(2, '0')}` }));
+      rows.push(row({ ago: 0, best: 1, latitude: '', longitude: '', id: 'nocoords' }));
+      const w = world(rows);
+      expect(w.latest).toHaveLength(20);
+      expect(w.latest[0]!.date).toBe(day(0));
+      expect(w.latest.some((e) => e.id === 'nocoords')).toBe(false);
+      expect(w.latest.map((e) => e.date)).toEqual([...w.latest.map((e) => e.date)].sort().reverse());
+    });
+
+    it('is all zeros for no data, without NaN', () => {
+      const f = conflictsFromRows([], opts);
+      expect(f.conflicts).toEqual([]);
+      expect(f.world.deaths.d365).toEqual({ best: 0, low: 0, high: 0 });
+      expect(f.world.weekly.every((v) => v === 0)).toBe(true);
+      expect(f.world.countries).toEqual([]);
+      expect(f.world.latest).toEqual([]);
+    });
+
+    it('never gives a conflict the reserved id "world"', () => {
+      const [c] = one([row({ ago: 1, best: 200, conflict_name: 'World' })]);
+      expect(c!.id).toBe('world-2');
+    });
+  });
+
+  it('empties a headline that is only a date', () => {
+    const hs = ['31 August 2026', '2026-08-31', '31 Aug 2026', 'Shelling hits a market'];
+    const [c] = one(hs.map((h, i) => row({ ago: i, best: 100, source_headline: h })));
+    expect(c!.latest.map((e) => e.headline).sort()).toEqual(['', '', '', 'Shelling hits a market']);
+  });
 });

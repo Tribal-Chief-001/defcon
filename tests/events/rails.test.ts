@@ -75,3 +75,12 @@ describe('latestEvents', () => {
     expect(hotspots(s, NOW)[0]).toMatchObject({ country: 'AAA', events: 1 });
   });
 });
+
+describe('latestEvents with a kind filter', () => {
+  it('filters before taking one event per country, so a newer protest does not hide an older attack', () => {
+    const s = snap([ev({ country: 'AAA', kind: 'armed', timeS: NOW - 7200 }), ev({ country: 'AAA', kind: 'protest', timeS: NOW - 600 }), ev({ country: 'BBB', kind: 'protest' })]);
+    const r = latestEvents(s, NOW, 6, { kinds: ['armed', 'civilian'] });
+    expect(r.map((x) => [x.country, x.kind])).toEqual([['AAA', 'armed']]);
+    expect(latestEvents(s, NOW, 6).map((x) => x.country)).toEqual(['AAA', 'BBB']); // no filter: unchanged behaviour
+  });
+});

@@ -32,4 +32,14 @@ export type Conflict = {
   provisionalShare: number; // 0..1, share of the 365-day events that are provisional
 };
 
-export type ConflictsFile = { generated: string; dataEnd: string; sources: string[]; conflicts: Conflict[] };
+// Every valid event in the data, also those of conflicts too small to be listed: the fatalities monitor of the War tracker.
+export type World = {
+  deaths: { d30: Range; d90: Range; d365: Range };
+  byKind: Record<Kind, { d90: Range; d365: Range }>;
+  weekly: number[]; // 52 weeks of best deaths, oldest first
+  countries: { id: string | null; name: string; deaths90: number; deaths365: number }[]; // top 12 by 90-day deaths
+  conflictsListed: number;
+  latest: ConflictEvent[]; // the 20 newest events with a usable location, newest first
+};
+
+export type ConflictsFile = { generated: string; dataEnd: string; sources: string[]; conflicts: Conflict[]; world: World };

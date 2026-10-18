@@ -3,17 +3,11 @@ import { loadIndex } from '../dossier/load';
 import { hotspots, latestEvents, type LatestEvent } from '../events/rails';
 import { useEvents } from '../events/store';
 import type { Kind } from '../events/types';
+import { ago } from '../lib/ago';
 import { useNow } from '../lib/useNow';
 import { useTime } from '../time/store';
 
 const KIND_LABEL: Record<Kind, string> = { armed: 'Armed', civilian: 'Civilians', riot: 'Riot', protest: 'Protest', other: 'Event' };
-const ago = (nowS: number, t: number) => {
-  const m = Math.max(0, Math.round((nowS - t) / 60));
-  if (m < 60) return `${m} min ago`;
-  const h = Math.round(m / 60);
-  return h < 48 ? `${h} h ago` : `${Math.round(h / 24)} d ago`;
-};
-
 const panel = 'pointer-events-auto hidden max-h-[calc(100vh-13rem)] w-[300px] flex-col overflow-y-auto rounded-[24px] border border-[var(--border)] bg-white/[0.04] p-5 backdrop-blur-md';
 const label = 'font-[var(--font-mono)] text-[11.5px] uppercase tracking-[var(--track)] text-[var(--text-muted)]';
 const row = 'group flex w-full items-center gap-3 rounded-[14px] border border-transparent px-2 py-2 text-left hover:border-[var(--border-strong)] focus-visible:border-[var(--lime)]';
