@@ -34,8 +34,8 @@ export function buildDossier(row: CountryRow, ctx: BuildCtx): Dossier {
     v ? { value: v, source: 'CIA World Factbook (archived)', asOf: ctx.fbMeta.dataDate, url: ctx.fbMeta.url, note: FB_NOTE } : null;
   const { un, nato } = membershipOf(ctx.mem, row.id);
   const own = ctx.caps.filter((c) => c.country === row.id);
-  const fbIs = (name: string) => !!fb?.capitalName && norm(fb.capitalName) === norm(name);
-  const fbAgrees = !fb?.capitalName || own.some((c) => norm(fb.capitalName!) === norm(c.name));
+  const fbIs = (name: string) => !!fb?.capitalName && norm(fb.capitalName.replace(/\([^)]*\)/g, '')) === norm(name);
+  const fbAgrees = !fb?.capitalName || own.some((c) => norm(fb.capitalName!.replace(/\([^)]*\)/g, '')) === norm(c.name));
   const capitals = own
     // the capital the Factbook names first, then Natural Earth's primary capitals, then its alternates
     .sort((a, b) => Number(!fbIs(a.name)) - Number(!fbIs(b.name)) || Number(!!a.alt) - Number(!!b.alt) || a.rank - b.rank || a.name.localeCompare(b.name))

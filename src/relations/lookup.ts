@@ -2,7 +2,7 @@ import type { Relations } from './types';
 
 export type CountryRelations = {
   allies: { id: string; via: string[] }[];
-  disputes: { id: string; conflict: string; events: number }[];
+  disputes: { id: string; conflict: string; events: number; lastYear: number }[];
 };
 
 // Allies of `id` (every alliance it shares, one entry per ally) and its active disputes; empty for no data or an unknown id.
@@ -15,8 +15,8 @@ export function relationsFor(rel: Relations | null, id: string): CountryRelation
       for (const m of a.members) if (m !== id) allies.set(m, [...(allies.get(m) ?? []), a.name]);
     }
     for (const d of rel.disputes) {
-      if (d.a === id) disputes.push({ id: d.b, conflict: d.conflict, events: d.events });
-      else if (d.b === id) disputes.push({ id: d.a, conflict: d.conflict, events: d.events });
+      if (d.a === id) disputes.push({ id: d.b, conflict: d.conflict, events: d.events, lastYear: d.lastYear });
+      else if (d.b === id) disputes.push({ id: d.a, conflict: d.conflict, events: d.events, lastYear: d.lastYear });
     }
   }
   return {

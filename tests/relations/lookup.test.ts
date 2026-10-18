@@ -17,7 +17,7 @@ describe('relationsFor', () => {
     expect(r.allies.find((a) => a.id === 'FRA')).toBeUndefined();
   });
   it('lists disputes from either side', () => {
-    expect(relationsFor(rel, 'UKR').disputes).toEqual([{ id: 'RUS', conflict: 'Russia - Ukraine', events: 99 }]);
+    expect(relationsFor(rel, 'UKR').disputes).toEqual([{ id: 'RUS', conflict: 'Russia - Ukraine', events: 99, lastYear: 2026 }]);
     expect(relationsFor(rel, 'RUS').disputes.map((d) => d.id)).toEqual(['UKR']);
   });
   it('is empty for a country with none, an unknown id and null relations', () => {

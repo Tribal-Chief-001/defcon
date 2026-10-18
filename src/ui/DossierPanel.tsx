@@ -6,6 +6,7 @@ import { createLatest } from '../events/latest';
 import { useEvents } from '../events/store';
 import { KINDS } from '../events/types';
 import { Field } from './Field';
+import { RelationsBlock } from './RelationsBlock';
 import { Sparkline } from './Sparkline';
 
 const int = (n: number) => Math.round(n).toLocaleString('en-US');
@@ -130,6 +131,8 @@ export function DossierPanel({ countryId, onClose, nowS: fixedNowS }: { countryI
           </>
         )}
       </div>
+
+      <RelationsBlock countryId={countryId} names={names} />
 
       <div className="mt-5 border-t border-[var(--border)] pt-3 font-[var(--font-mono)] text-[9.5px] uppercase leading-relaxed tracking-[0.1em] text-[var(--text-faint)]">
         <p className="text-[var(--text-muted)]">Sources</p>

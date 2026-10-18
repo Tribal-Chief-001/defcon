@@ -101,6 +101,11 @@ describe('buildDossier', () => {
     expect(d.capitals.map((c) => c.name)).toEqual(['Dodoma', 'Dar es Salaam']);
     expect(d.capitals.every((c) => c.note === undefined)).toBe(true);
   });
+  it('ignores a parenthetical in the Factbook capital when comparing (Kyiv)', () => {
+    const caps = [{ name: 'Kyiv', country: 'UKR', lat: 50.4, lon: 30.5, rank: 1 }];
+    const d = buildDossier(row({ id: 'UKR' }), ctx({ caps, factbookByCountry: { UKR: { capitalName: 'Kyiv (Kiev is the transliteration from Russian)' } } }));
+    expect(d.capitals[0]!.note).toBeUndefined();
+  });
   it('keeps Natural Earth capitals and notes a different Factbook capital instead of overwriting', () => {
     const d = buildDossier(row({ id: 'BDI', iso3: 'BDI' }), ctx());
     expect(d.capitals[0]!.name).toBe('Bujumbura');
