@@ -1,7 +1,9 @@
 import * as THREE from 'three';
 import type { Topology } from 'topojson-specification';
 import { latLonToVec3, vec3ToLatLon } from '../lib/geo';
+import type { EventAttrs } from '../events/attributes';
 import { createBootControl, type BootControl, type BootState } from './boot';
+import { createEventLayer } from './eventLayer';
 import { buildBorderPositions, buildCountryPositions } from './borderGeometry';
 import { createClickClassifier } from './gesture';
 import { createPicker } from './pick';
@@ -9,7 +11,9 @@ import { createPicker } from './pick';
 export type GlobeHandle = {
   setHighDetail(topo: Topology): void;
   setHighlight(id: string | null): void;
-  onPick(cb: (id: string | null, lat: number, lon: number) => void): () => void;
+  onPick(cb: (id: string | null, lat: number, lon: number, kmPerPx: number) => void): () => void;
+  setEvents(list: EventAttrs[]): void;
+  setEventMarker(lat: number | null, lon?: number): void;
   boot: BootControl;
   dispose(): void;
 };
@@ -141,6 +145,8 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   applyBoot(boot.state());
   const skipBoot = () => boot.skip();
   window.addEventListener('keydown', skipBoot);
+  const eventLayer = createEventLayer();
+  globe.add(eventLayer.points, eventLayer.marker);
   const hover = lines(new Float32Array(0), LIME, 0.5);
   const selected = lines(new Float32Array(0), LIME, 1);
   hover.visible = selected.visible = false;
@@ -198,7 +204,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     return vec3ToLatLon(p.x, p.y, p.z);
   };
 
-  const listeners = new Set<(id: string | null, lat: number, lon: number) => void>();
+  const listeners = new Set<(id: string | null, lat: number, lon: number, kmPerPx: number) => void>();
   let hoverId: string | null = null;
   let hoverQueued = false;
 
@@ -257,7 +263,9 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       const ll = latLonAt(e.clientX, e.clientY);
       const id = ll ? pick(ll.lat, ll.lon) : null;
       setOutline(selected, id);
-      if (ll) listeners.forEach((cb) => cb(id, ll.lat, ll.lon));
+      // ground distance one screen pixel covers at the front of the globe (6,371 km radius), used to size the event pick radius
+      const kmPerPx = ((2 * Math.max(0.05, camera.position.z - 1) * Math.tan((camera.fov * Math.PI) / 360)) / Math.max(1, canvas.clientHeight)) * 6371;
+      if (ll) listeners.forEach((cb) => cb(id, ll.lat, ll.lon, kmPerPx));
     }
   };
   const onWheel = (e: WheelEvent) => {
@@ -280,6 +288,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
 
   // ---- render loop (paused while the tab is hidden)
   let prev = performance.now();
+  let fade = 0;
   const frame = (now: number) => {
     const dt = Math.min(0.05, (now - prev) / 1000);
     prev = now;
@@ -294,6 +303,8 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     }
     globe.rotation.set(pitch, yaw, 0, 'XYZ');
     camera.position.z = distance * (camera.aspect < 1 ? 1 / camera.aspect : 1);
+    if (boot.done) fade = Math.min(1, fade + dt / 1.5); // events fade in over 1.5 s once the boot is done
+    eventLayer.update(fade, renderer.getPixelRatio());
     renderer.render(scene, camera);
     opts.onFrame?.(now);
   };
@@ -326,6 +337,12 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       listeners.add(cb);
       return () => void listeners.delete(cb);
     },
+    setEvents(list) {
+      eventLayer.setData(list);
+    },
+    setEventMarker(lat, lon) {
+      eventLayer.setMarker(lat, lon);
+    },
     boot,
     dispose() {
       disposed = true;
@@ -345,6 +362,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
         m.geometry?.dispose();
         (m.material as THREE.Material | undefined)?.dispose();
       });
+      eventLayer.dispose();
       renderer.dispose();
     },
   };
