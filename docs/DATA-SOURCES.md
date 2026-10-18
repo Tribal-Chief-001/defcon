@@ -153,3 +153,5 @@ Built by `npm run data:relations` into `public/data/relations.json` (about 2 KB 
 ## Publishing gate: snapshot validator
 
 `npm run data:validate` (`scripts/events/validate-snapshot.ts`) runs before anything is published. It fails (exit 1, problems listed) on: a missing `recent`/`archive` file, a hash that does not match the bytes, a snapshot that cannot be decoded, fewer than 1 recent event, data older than 48 h or more than 1 h in the future, a non-finite or out-of-range coordinate, a missing per-day detail shard, or overlapping recent and archive windows. A failed ingest therefore leaves the live site on the previous data.
+
+Cadence: the scheduled ingest runs every 3 hours (D-047), so "live" means at most about 3 hours old plus the GDELT delay; the pill says exactly how old the data is.

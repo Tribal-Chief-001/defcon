@@ -73,3 +73,11 @@ Open items found during Plan 1 that were deliberately not fixed. Each is graded 
 - Night Watch re-targets with instant camera cuts every 9 s under reduced motion (a decision to record, not a bug).
 - Hovering another country during a dive swaps the dived country's arcs away (arcs follow hover first).
 - ANZUS AUS-NZL source (State Department Office of the Historian) was read by the author only; a second reading is welcome.
+
+## Plan 5 deferred (2026-10-18)
+
+- 15-minute cadence: needs a public repo (unlimited Actions minutes) and room under the Vercel deployment limit; or a data origin decoupled from deployments (Vercel Blob, R2) so new data does not need a deploy.
+- The Vercel deploy steps are unverified (no account access here); the first owner run of `gh workflow run ingest.yml` with the secrets set is the real test.
+- The GDELT rolling cache is not size-capped beyond the 8-day prune; check cache usage after a few weeks.
+- Alerting: a failed scheduled run only shows in the Actions tab (email from GitHub if enabled); monitoring is Plan 6.
+- `npm audit` covers production dependencies only; dev-dependency advisories are left to Dependabot.
