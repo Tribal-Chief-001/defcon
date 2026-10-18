@@ -16,6 +16,7 @@ export function WarRoom({
   onDive,
   onFocusPlace,
   onHoverPin,
+  onMethod,
   load = loadConflicts,
   loadTimeline: loadTl = loadTimeline,
 }: {
@@ -25,6 +26,7 @@ export function WarRoom({
   onDive: (countryId: string) => void;
   onFocusPlace: PlaceHandler;
   onHoverPin: (pinIndex: number | null) => void;
+  onMethod?: () => void;
   load?: () => Promise<ConflictsFile>;
   loadTimeline?: () => Promise<TimelineFile | null>;
 }) {
@@ -106,7 +108,7 @@ export function WarRoom({
         ) : current ? (
           <ConflictView c={current} f={file} tl={tl} onBack={back} onDive={onDive} onFocusPlace={onFocusPlace} onHoverPin={onHoverPin} />
         ) : (
-          <Overview f={file} tl={tl} onSelect={(id) => onSelect(id)} onDive={onDive} onFocusPlace={onFocusPlace} onHoverPin={onHoverPin} />
+          <Overview f={file} tl={tl} onSelect={(id) => onSelect(id)} onDive={onDive} onFocusPlace={onFocusPlace} onHoverPin={onHoverPin} onMethod={onMethod} />
         )}
         <footer className="mt-12 border-t border-[var(--border)] pt-4 font-[var(--font-mono)] text-[11.5px] leading-relaxed text-[var(--text-muted)]">
         Source: UCDP Georeferenced Event Dataset (GED) 26.1 and UCDP Candidate Events, CC BY 4.0,{' '}

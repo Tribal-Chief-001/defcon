@@ -47,6 +47,10 @@ describe('RangeBar', () => {
     expect(Number(range.getAttribute('x2'))).toBeCloseTo(65, 1);
     expect(Number(container.querySelector('[data-part="best"]')!.getAttribute('x'))).toBeGreaterThan(48);
   });
+  it('words the numbers of its accessible name with a custom formatter (probabilities as percent)', () => {
+    const { container } = render(<RangeBar low={0.1} best={0.25} high={0.4} max={1} fmt={(n) => `${Math.round(n * 100)}%`} />);
+    expect(container.querySelector('svg')!.getAttribute('aria-label')).toBe('Best estimate 25%, range 10% to 40%');
+  });
   it('clamps values beyond the scale and never emits NaN', () => {
     const { container } = render(<RangeBar low={-5} best={50} high={900} max={200} />);
     const range = container.querySelector('[data-part="range"]')!;

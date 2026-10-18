@@ -7,7 +7,9 @@ import { decodeSnapshot } from '../../src/events/snapshot';
 import { useEvents } from '../../src/events/store';
 import type { Ev } from '../../src/events/types';
 import { encodeSnapshot } from '../../scripts/events/encode';
+import { resetIndicesCache } from '../../src/indices/load';
 import { WarRoom } from '../../src/ui/WarRoom';
+import { indicesFixture } from '../indices/fixture';
 import { worldFixture } from '../conflicts/fixture';
 import { timelineFixture } from '../timeline/fixture';
 
@@ -302,5 +304,22 @@ describe('Conflict view', () => {
     cleanup();
     await open({ onSelect: p.onSelect });
     expect(await check(screen.getByRole('region', { name: 'War room' }))).toEqual([]);
+  });
+});
+
+describe('WarRoom: Index board', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    resetIndicesCache();
+  });
+  it('shows the Index board in the overview and opens the method from it', async () => {
+    resetIndicesCache();
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(indicesFixture()), { status: 200 })));
+    const onMethod = vi.fn();
+    render(<WarRoom {...props()} onMethod={onMethod} />);
+    const board = await screen.findByRole('region', { name: /index board/i });
+    expect(within(board).getByRole('list', { name: /most deadly now/i })).toBeTruthy();
+    fireEvent.click(within(board).getByRole('button', { name: /how computed/i }));
+    expect(onMethod).toHaveBeenCalled();
   });
 });

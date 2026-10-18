@@ -298,6 +298,7 @@ export function App() {
                 }}
                 onFocusPlace={(at) => setPlaceFocus(at ? { lat: at.lat, lon: at.lon, distance: 1.7 } : null)}
                 onHoverPin={setWarHover}
+                onMethod={() => setAbout(true)}
               />
             </ErrorBoundary>
           </Suspense>

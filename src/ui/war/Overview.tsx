@@ -9,6 +9,7 @@ import { kindLayers, StreamChart } from '../../viz/StreamChart';
 import { useCountUp } from '../../viz/useCountUp';
 import { TimelineBlock, type TimelineRow } from '../TimelineBlock';
 import { EventList } from './EventList';
+import { IndexBoard } from './IndexBoard';
 import { NewsReports } from './NewsReports';
 import { date, int, Section, span, TREND } from './parts';
 
@@ -27,7 +28,7 @@ export type PlaceHandler = (at: { lat: number; lon: number; place: string } | nu
 
 // The world at a glance: a hero numeral, the stream of weekly deaths with the key events on it, bubbles and a league of the conflicts, the
 // countries, the newest key events and reports. The League is the text equivalent of the bubbles.
-export function Overview({ f, tl, onSelect, onDive, onFocusPlace, onHoverPin }: { f: ConflictsFile; tl: TimelineFile | null | undefined; onSelect: (id: string) => void; onDive: (id: string) => void; onFocusPlace: PlaceHandler; onHoverPin: (i: number | null) => void }) {
+export function Overview({ f, tl, onSelect, onDive, onFocusPlace, onHoverPin, onMethod }: { f: ConflictsFile; tl: TimelineFile | null | undefined; onSelect: (id: string) => void; onDive: (id: string) => void; onFocusPlace: PlaceHandler; onHoverPin: (i: number | null) => void; onMethod?: () => void }) {
   const w = f.world;
   const [q, setQ] = useState('');
   const [highlight, setHighlight] = useState<string | undefined>();
@@ -66,6 +67,8 @@ export function Overview({ f, tl, onSelect, onDive, onFocusPlace, onHoverPin }: 
           ))}
         </dl>
       </div>
+
+      <IndexBoard onDive={onDive} onMethod={onMethod ?? (() => {})} />
 
       <Section title="By kind of violence, last 365 days">
         <div className="flex h-[10px] w-full overflow-hidden rounded-full border border-[var(--border)]" role="img" aria-label={KIND_BAR.map((k) => `${k.name} ${int(w.byKind[k.k].d365.best)}`).join(', ')}>

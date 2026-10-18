@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useEvents } from '../events/store';
 import { errorLog } from '../lib/errorLog';
+import { MethodSection } from './MethodSection';
 
 const utcDate = (s: number) => (Number.isFinite(s) ? new Date(s * 1000).toISOString().slice(0, 10) : 'unknown');
 const isHttps = (u?: string) => !!u && /^https:\/\//i.test(u);
@@ -148,6 +149,8 @@ export function AboutPage({ onClose }: { onClose: () => void }) {
             <li>Allies are formal treaty memberships; active disputes are pairs on opposing sides in UCDP state-based events. Neither is an opinion.</li>
           </ul>
         </section>
+
+        <MethodSection />
 
         <section className="mt-5 space-y-2 text-sm leading-relaxed">
           <p className={h}>Privacy</p>

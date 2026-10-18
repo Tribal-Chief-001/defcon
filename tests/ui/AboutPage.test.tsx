@@ -2,7 +2,9 @@
 import { cleanup, fireEvent, render, screen } from '@testing-library/react';
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
-import { afterEach, beforeEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { resetIndicesCache } from '../../src/indices/load';
+import { indicesFixture } from '../indices/fixture';
 import { decodeSnapshot } from '../../src/events/snapshot';
 import { useEvents } from '../../src/events/store';
 import { errorLog } from '../../src/lib/errorLog';
@@ -115,5 +117,19 @@ describe('AboutPage', () => {
     expect(text).toMatch(/local storage/i);
     expect(text).toMatch(/session storage/i);
     expect(text).not.toMatch(/only thing stored/i);
+  });
+});
+
+describe('AboutPage: the method of the indices', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    resetIndicesCache();
+  });
+  it('includes the Fatality and Instability method with the backtest table', async () => {
+    resetIndicesCache();
+    vi.stubGlobal('fetch', vi.fn(async () => new Response(JSON.stringify(indicesFixture()), { status: 200 })));
+    render(<AboutPage onClose={() => {}} />);
+    expect(await screen.findByRole('table', { name: /backtest/i })).toBeTruthy();
+    expect(screen.getByRole('heading', { name: /fatality and instability indices/i })).toBeTruthy();
   });
 });

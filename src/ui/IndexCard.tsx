@@ -1,3 +1,4 @@
+import { interval, pct } from '../indices/format';
 import { fmtDate } from '../lib/fmtDate';
 import type { Band, CountryIndex, ModelMeta, Prob } from '../indices/types';
 import { Gauge } from '../viz/Gauge';
@@ -13,17 +14,6 @@ const BAND: Record<Band, string> = {
   severe: 'Severe: 1,000 or more deaths in 365 days',
 };
 const BAND_WORD: Record<Band, string> = { none: 'None', minor: 'Minor', active: 'Active', severe: 'Severe' };
-
-// probabilities as text: one decimal at the extremes, markers beyond 99.9 and below 0.1 (a model is never certain)
-const pct = (v: number) => {
-  const x = v * 100;
-  return x > 99.9 ? '>99.9%' : x < 0.1 ? '<0.1%' : x < 1 || x > 99 ? `${x.toFixed(1)}%` : `${Math.round(x)}%`;
-};
-const ptsNum = (v: number) => {
-  const x = v * 100;
-  return x < 1 || x > 99 ? x.toFixed(1) : String(Math.round(x));
-};
-const interval = (p: Prob) => `90% interval ${ptsNum(p.lo)} to ${ptsNum(p.hi)}%`;
 
 function ProbBar({ name, short, p }: { name: string; short: string; p: Prob }) {
   const x = (v: number) => Math.min(100, Math.max(0, v * 100));
