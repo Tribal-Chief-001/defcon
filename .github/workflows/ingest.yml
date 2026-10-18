@@ -1,0 +1,78 @@
+name: Ingest and publish
+
+# Every 3 hours (about 240 runs of ~3 minutes a month: inside the 2,000 free minutes of a private repo; a public repo could use */15)
+# and after every push to main so a code deploy also carries data. Without the three Vercel secrets it still ingests, validates and
+# uploads the snapshot as an artifact; with them it deploys the site with fresh data. See docs/DEPLOY.md.
+on:
+  schedule:
+    - cron: "17 */3 * * *"
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ingest
+  cancel-in-progress: false
+
+jobs:
+  ingest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    env:
+      HAS_VERCEL: ${{ secrets.VERCEL_TOKEN != '' }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+      - uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+      - run: npm ci
+      - name: Restore UCDP downloads (pinned by SHA-256 in data/events/sources.json)
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: data/raw/ucdp
+          key: ucdp-${{ hashFiles('data/events/sources.json') }}
+      - name: Restore GDELT files (rolling)
+        uses: actions/cache@55cc8345863c7cc4c66a329aec7e433d2d1c52a9 # v6.1.0
+        with:
+          path: data/raw/gdelt
+          key: gdelt-${{ github.run_id }}
+          restore-keys: gdelt-
+      - run: npm run data:ucdp
+      - run: npm run data:gdelt -- --days 7
+      - name: Drop GDELT files older than 8 days from the cache
+        run: find data/raw/gdelt -type f -mtime +8 -delete
+      - run: npm run data:build
+      - name: Validate the snapshot (gate)
+        run: npm run data:validate
+      - run: npm run build
+      - name: Upload the validated snapshot
+        uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: events-snapshot
+          path: public/data/events
+          retention-days: 3
+      - name: Vercel pull
+        if: env.HAS_VERCEL == 'true'
+        run: npx --yes vercel@64.5.0 pull --yes --environment=production --token="$VERCEL_TOKEN"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Vercel build
+        if: env.HAS_VERCEL == 'true'
+        run: npx --yes vercel@64.5.0 build --prod --token="$VERCEL_TOKEN"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+      - name: Vercel deploy
+        if: env.HAS_VERCEL == 'true'
+        run: npx --yes vercel@64.5.0 deploy --prebuilt --prod --token="$VERCEL_TOKEN"
+        env:
+          VERCEL_TOKEN: ${{ secrets.VERCEL_TOKEN }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
