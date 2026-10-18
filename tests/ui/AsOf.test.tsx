@@ -22,7 +22,7 @@ describe('AsOf', () => {
     expect(screen.getByText('DATA AS OF 04:50 UTC')).toBeTruthy();
   });
   it('says STALE for an old recent snapshot', () => {
-    useEvents.setState({ recent: snapAt(NOW - 6 * 3600), status: 'ready' });
+    useEvents.setState({ recent: snapAt(NOW - 14 * 3600), status: 'ready' });
     render(<AsOf nowS={NOW} />);
     expect(screen.getByText('STALE')).toBeTruthy();
   });
@@ -49,7 +49,7 @@ describe('AsOf ticking', () => {
     vi.useFakeTimers();
     try {
       vi.setSystemTime(NOW * 1000);
-      useEvents.setState({ recent: snapAt(NOW - 40 * 60), status: 'ready' });
+      useEvents.setState({ recent: snapAt(NOW - (4 * 3600 - 5 * 60)), status: 'ready' });
       render(<AsOf />);
       expect(screen.getByText('LIVE')).toBeTruthy();
       act(() => void vi.advanceTimersByTime(10 * 60 * 1000));

@@ -4,14 +4,16 @@ import { freshness } from '../../src/events/freshness';
 const NOW = Date.UTC(2026, 9, 18, 5, 0, 0) / 1000;
 
 describe('freshness', () => {
+  // thresholds follow the 3-hour publish cadence (D-047): live up to 4 h, recent up to 12 h
   it.each([
     [10 * 60, 'live'],
-    [45 * 60, 'live'],
-    [46 * 60, 'recent'],
-    [2 * 3600, 'recent'],
-    [3 * 3600, 'recent'],
-    [3 * 3600 + 1, 'stale'],
-    [5 * 3600, 'stale'],
+    [3 * 3600 + 59 * 60, 'live'],
+    [4 * 3600, 'live'],
+    [4 * 3600 + 60, 'recent'],
+    [11 * 3600, 'recent'],
+    [12 * 3600, 'recent'],
+    [12 * 3600 + 60, 'stale'],
+    [30 * 3600, 'stale'],
   ])('%i seconds old -> %s', (age, state) => {
     expect(freshness(NOW - age, NOW).state).toBe(state);
   });

@@ -3,6 +3,7 @@ import { loadCountries } from './dossier/load';
 import { diveTarget } from './globe/dive';
 import { framingFor } from './globe/framing';
 import { formatHash, parseHash } from './lib/hashState';
+import { eventsBase } from './events/config';
 import { fetchDetail } from './events/detail';
 import { createLatest } from './events/latest';
 import { pickEvent } from './events/pickEvent';
@@ -25,7 +26,7 @@ import { useNightWatch } from './watch/useNightWatch';
 import { Scrubber } from './ui/Scrubber';
 import { SoundToggle } from './ui/SoundToggle';
 
-const BASE = '/data/events';
+const BASE = eventsBase(import.meta.env.VITE_EVENTS_BASE);
 const PICK_RADIUS_PX = 14;
 
 type Readout = { id: string | null; lat: number; lon: number };
