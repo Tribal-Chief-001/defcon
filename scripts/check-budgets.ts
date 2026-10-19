@@ -13,6 +13,7 @@ const DATA_BUDGETS: [string, number][] = [
   ['borders.high.topo.json', 1_000_000],
   ['conflicts.json', 180_000], // the War room data, loaded when it opens (138 KB gzip in Plan 12)
   ['indices.json', 60_000],
+  ['displacement.json', 40_000], // UNHCR figures by country (5 KB gzip), loaded when a dossier opens
   ['signals.json', 60_000], // the Signals layer: fires near conflicts, disaster alerts, explosion-type seismic events (built at ingest, not committed) // the indices, loaded by the dossier, the War room and About (23 KB gzip)
 ];
 const EVENTS_RECENT = 500_000;

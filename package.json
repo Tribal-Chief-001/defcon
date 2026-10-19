@@ -26,6 +26,7 @@
     "data:memberships": "tsx scripts/dossiers/build-memberships.ts",
     "data:dossiers": "tsx scripts/dossiers/build-dossiers.ts",
     "data:relations": "tsx scripts/relations/build-relations.ts",
+    "data:displacement": "tsx scripts/displacement/build-displacement.ts",
     "data:conflicts": "tsx scripts/conflicts/build-conflicts.ts",
     "data:timeline-places": "tsx scripts/timeline/places.ts",
     "data:timeline-age": "tsx scripts/timeline/age.ts",

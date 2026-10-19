@@ -7,6 +7,7 @@ import { useEvents } from '../events/store';
 import { KINDS } from '../events/types';
 import { indexFor, loadIndices } from '../indices/load';
 import type { IndicesFile } from '../indices/types';
+import { DisplacementBlock } from './DisplacementBlock';
 import { Field } from './Field';
 import { IndexCard } from './IndexCard';
 import { RelationsBlock } from './RelationsBlock';
@@ -96,6 +97,8 @@ export function DossierPanel({ countryId, onClose, nowS: fixedNowS, onMethod }: 
 
       {indices ? <IndexCard index={indexFor(indices, d.id)} countryId={d.id} model={indices.model} dataEnd={indices.dataEnd} rankedTotal={indices.countries.filter((c) => c.fatality.rank !== null).length} onMethod={onMethod ?? (() => {})} /> : null}
 
+      <DisplacementBlock iso3={d.iso3} />
+
       <div className="mt-4 border-t border-[var(--border)]">
         <div className="grid grid-cols-[92px_1fr] gap-3 border-b border-[var(--border)] py-2 text-[13px]">
           <span className="font-[var(--font-mono)] text-[11px] uppercase tracking-[0.12em] text-[var(--text-faint)] pt-0.5">Capital</span>
@@ -163,7 +166,7 @@ export function DossierPanel({ countryId, onClose, nowS: fixedNowS, onMethod }: 
       <div className="mt-5 border-t border-[var(--border)] pt-3 font-[var(--font-mono)] text-[11px] uppercase leading-relaxed tracking-[0.1em] text-[var(--text-faint)]">
         <p className="text-[var(--text-muted)]">Sources</p>
         <p>Borders, names, capitals: Natural Earth (public domain), India official-map worldview.</p>
-        <p>Numbers: World Bank WDI (CC BY 4.0); military: SIPRI via World Bank.</p>
+        <p>Numbers: World Bank WDI (CC BY 4.0); military: SIPRI via World Bank. Displacement: UNHCR Refugee Population Statistics Database (CC BY 4.0).</p>
         <p>Text fields: CIA World Factbook, archived (discontinued 2026-02-04).</p>
         <p>Membership: UN and NATO official lists. Events: UCDP (CC BY 4.0), GDELT.</p>
       </div>

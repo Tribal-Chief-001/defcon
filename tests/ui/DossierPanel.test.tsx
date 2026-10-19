@@ -13,6 +13,8 @@ import type { Dossier } from '../../src/dossier/types';
 import type { Ev } from '../../src/events/types';
 import { resetIndicesCache } from '../../src/indices/load';
 import { indicesFixture } from '../indices/fixture';
+import { resetDisplacementCache } from '../../src/displacement/load';
+import { displacementFixture } from '../displacement/fixture';
 
 const NOW = Date.UTC(2026, 9, 18, 5, 0, 0) / 1000;
 const prov = (source: string, asOf: string) => ({ source, asOf });
@@ -231,3 +233,18 @@ describe('DossierPanel: indices', () => {
   });
 });
 
+describe('DossierPanel: displacement', () => {
+  beforeEach(() => resetDisplacementCache());
+  it('shows the UNHCR displacement block of the country (by its ISO3 code) and credits UNHCR', async () => {
+    stubFetch({ IND: base });
+    const inner = globalThis.fetch;
+    const f = displacementFixture();
+    f.countries[base.iso3 ?? 'IND'] = f.countries.AFG!;
+    vi.stubGlobal('fetch', vi.fn(async (url: string, init?: RequestInit) => (url.endsWith('/data/displacement.json') ? res(f) : inner(url, init))));
+    render(<DossierPanel countryId="IND" onClose={() => {}} nowS={NOW} />);
+    const block = await screen.findByRole('region', { name: /displacement/i });
+    expect(block.textContent).toMatch(/Refugees from this country.*2,671,560/);
+    expect(block.textContent).toMatch(/UNHCR Refugee Population Statistics Database/);
+    expect(screen.getByRole('heading', { name: 'India' })).toBeTruthy();
+  });
+});
