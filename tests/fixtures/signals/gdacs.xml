@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<rss version="2.0" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:geo="http://www.w3.org/2003/01/geo/wgs84_pos#" xmlns:gdacs="http://www.gdacs.org" xmlns:glide="http://glidenumber.net" xmlns:georss="http://www.georss.org/georss" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>GDACS RSS information</title>
+    <link>https://www.gdacs.org/</link>
+    <copyright>public domain</copyright>
+    <description>Near real-time notification about natural disaster with a potential humanitarian impact</description>
+    <managingEditor>stefano.paris@ext.ec.europa.eu</managingEditor>
+    <!--Records number 361-->
+    <!--Start 10/19/2026 8:20:40 AM-->
+    <!--=Start 10/19/2026 8:20:40 AM-->
+    <webMaster>stefano.paris@ext.ec.europa.eu</webMaster>
+    <pubDate>Mon, 19 Oct 2026 06:20:40 GMT</pubDate>
+    <atom:link href="https://www.gdacs.org/xml/rss_7d.xml" rel="self" type="application/rss+xml" />
+    <item>
+      <title>Green earthquake (Magnitude 4.9M, Depth:44.017km) in Nicaragua 19/10/2026 05:18 UTC, 660 thousand in 100km.</title>
+      <description>On 10/19/2026 5:18:36 AM, an earthquake occurred in Nicaragua potentially affecting 660 thousand in 100km. The earthquake had Magnitude 4.9M, Depth:44.017km.</description>
+      <enclosure type="image/png" length="1" url="https://www.gdacs.org/contentdata/resources/imgtemp/gdacs/eq/eq1741074_1.png" />
+      <gdacs:temporary>false</gdacs:temporary>
+      <link>https://www.gdacs.org/report.aspx?eventtype=EQ&amp;eventid=1572487</link>
+      <pubDate>Mon, 19 Oct 2026 06:10:24 GMT</pubDate>
+      <gdacs:dateadded>Mon, 19 Oct 2026 06:10:24 GMT</gdacs:dateadded>
+      <gdacs:datemodified>Mon, 19 Oct 2026 06:10:24 GMT</gdacs:datemodified>
+      <gdacs:iscurrent>true</gdacs:iscurrent>
+      <gdacs:fromdate>Mon, 19 Oct 2026 05:18:36 GMT</gdacs:fromdate>
+      <gdacs:todate>Mon, 19 Oct 2026 05:18:36 GMT</gdacs:todate>
+      <gdacs:durationinweek>0</gdacs:durationinweek>
+      <gdacs:year>2026</gdacs:year>
+      <dc:subject>EQ1</dc:subject>
+      <guid isPermaLink="false">EQ1572487</guid>
+      <geo:Point>
+        <geo:lat>11.1229</geo:lat>
+        <geo:long>-86.4815</geo:long>
+      </geo:Point>
+      <!--gdacs:bbox format = lonmin lonmax latmin latmax-->
+      <gdacs:bbox>-90.4815 -82.4815 7.1229 15.1229</gdacs:bbox>
+      <georss:point>11.1229 -86.4815</georss:point>
+      <gdacs:cap>https://www.gdacs.org/contentdata/resources/EQ/1572487/cap_1572487.xml</gdacs:cap>
+      <gdacs:icon>https://www.gdacs.org/Images/gdacs_icons/alerts/Green/EQ.png</gdacs:icon>
+      <gdacs:version>1</gdacs:version>
+      <gdacs:eventtype>EQ</gdacs:eventtype>
+      <gdacs:alertlevel>Green</gdacs:alertlevel>
+      <gdacs:alertscore>0</gdacs:alertscore>
+      <gdacs:episodealertlevel>Green</gdacs:episodealertlevel>
+      <gdacs:episodealertscore>1</gdacs:episodealertscore>
+      <gdacs:eventname />
+      <gdacs:eventid>1572487</gdacs:eventid>
+      <gdacs:episodeid>1741074</gdacs:episodeid>
+      <gdacs:calculationtype>earthquakeonly</gdacs:calculationtype>
+      <gdacs:severity unit="M" value="4.9">Magnitude 4.9M, Depth:44km</gdacs:severity>
+      <gdacs:population unit="in MMI III" value="1016775">1 million in MMI III</gdacs:population>
+      <gdacs:vulnerability value="1.62113293717696" />
+      <gdacs:iso3>NIC</gdacs:iso3>
+      <gdacs:country>Nicaragua</gdacs:country>
+      <gdacs:glide />
+      <gdacs:mapimage />
+      <gdacs:maplink />
+      <gdacs:gtsimage />
+      <gdacs:gtslink />
+      <gdacs:resources>
+        <gdacs:resource id="event_rss" version="0" source="EC-JRC" url="https://www.gdacs.org//datareport/resources/EQ/1572487/rss_1572487.xml" type="rss">
+          <gdacs:title>Event in rss format</gdacs:title>
+          <gdacs:description>Joint Research Center of the European Commission</gdacs:description>
+          <gdacs:acknowledgements>Copyright notice: European Union (CC BY 4.0), reuse is allowed, provided appropriate credit to GDACS is given.</gdacs:acknowledgements>
+          <gdacs:accesslevel>Public</gdacs:accesslevel>
+        </gdacs:resource>
+      </gdacs:resources>
+    </item>
+<item>
+      <title>Drought is on going in Democratic Republic of Congo, Kenya, Tanzania, Uganda</title>
+      <description>The  Drought notification level is Orange.</description>
+      <enclosure type="image/png" length="1" url="https://www.gdacs.org/contentdata/resources/imgtemp/gdacs/dr/dr1027465_8.png" />
+      <gdacs:temporary>false</gdacs:temporary>
+      <link>https://www.gdacs.org/report.aspx?eventtype=DR&amp;eventid=1027465</link>
+      <pubDate>Wed, 29 Jul 2026 12:47:44 GMT</pubDate>
+      <gdacs:dateadded>Wed, 29 Jul 2026 12:47:44 GMT</gdacs:dateadded>
+      <gdacs:datemodified>Mon, 19 Oct 2026 05:57:15 GMT</gdacs:datemodified>
+      <gdacs:iscurrent>false</gdacs:iscurrent>
+      <gdacs:fromdate>Thu, 21 May 2026 00:00:00 GMT</gdacs:fromdate>
+      <gdacs:todate>Sat, 17 Oct 2026 00:00:00 GMT</gdacs:todate>
+      <gdacs:durationinweek>21</gdacs:durationinweek>
+      <gdacs:year>2026</gdacs:year>
+      <dc:subject>DR2</dc:subject>
+      <guid isPermaLink="false">DR1027465</guid>
+      <geo:Point>
+        <geo:lat>0.772</geo:lat>
+        <geo:long>33.546</geo:long>
+      </geo:Point>
+      <!--gdacs:bbox format = lonmin lonmax latmin latmax-->
+      <gdacs:bbox>29.546 37.546 -3.228 4.772</gdacs:bbox>
+      <georss:point>0.772 33.546</georss:point>
+      <gdacs:cap>https://www.gdacs.org/contentdata/resources/DR/1027465/cap_1027465.xml</gdacs:cap>
+      <gdacs:icon>https://www.gdacs.org/Images/gdacs_icons/alerts/Orange/DR.png</gdacs:icon>
+      <gdacs:version>0</gdacs:version>
+      <gdacs:eventtype>DR</gdacs:eventtype>
+      <gdacs:alertlevel>Orange</gdacs:alertlevel>
+      <gdacs:alertscore>2</gdacs:alertscore>
+      <gdacs:episodealertlevel>Orange</gdacs:episodealertlevel>
+      <gdacs:episodealertscore>2</gdacs:episodealertscore>
+      <gdacs:eventname>Uganda, Kenya, Tanzania-2026</gdacs:eventname>
+      <gdacs:eventid>1027465</gdacs:eventid>
+      <gdacs:episodeid>8</gdacs:episodeid>
+      <gdacs:calculationtype />
+      <gdacs:severity unit="km2" value="270713">Medium impact for agricultural drought in 270713 km2</gdacs:severity>
+      <gdacs:population unit="" value="0" />
+      <gdacs:vulnerability value="0" />
+      <gdacs:iso3>COD</gdacs:iso3>
+      <gdacs:country>Democratic Republic of Congo, Kenya, Tanzania, Uganda</gdacs:country>
+      <gdacs:glide>DR-2026-000143-COD</gdacs:glide>
+      <gdacs:mapimage />
+      <gdacs:maplink />
+      <gdacs:gtsimage />
+      <gdacs:gtslink />
+      <gdacs:resources>
+        <gdacs:resource id="event_rss" version="0" source="EC-JRC" url="https://www.gdacs.org//datareport/resources/DR/1027465/rss_1027465.xml" type="rss">
+          <gdacs:title>Event in rss format</gdacs:title>
+          <gdacs:description>Joint Research Center of the European Commission</gdacs:description>
+          <gdacs:acknowledgements>Copyright notice: European Union (CC BY 4.0), reuse is allowed, provided appropriate credit to GDACS is given.</gdacs:acknowledgements>
+          <gdacs:accesslevel>Public</gdacs:accesslevel>
+        </gdacs:resource>
+      </gdacs:resources>
+    </item>
+<item>
+      <title>Red notification for tropical cyclone CHAMPI-26. Population affected by Category 1 (120 km/h) wind speeds or higher is 0.233 million .</title>
+      <description>From 14/10/2026 to 19/10/2026, a Hurricane/Typhoon &gt; 74 mph (maximum wind speed of 269 km/h) CHAMPI-26 was active in NWPacific. The cyclone affects these countries: Guam, Northern Mariana Islands, Japan (vulnerability Medium). Estimated population affected by category 1 (120 km/h) wind speeds or higher is 0.233 million .</description>
+      <enclosure type="image/png" length="1" url="https://www.gdacs.org/contentdata/resources/imgtemp/gdacs/tc/1001338/1001338_19_tn.png" />
+      <gdacs:temporary>false</gdacs:temporary>
+      <link>https://www.gdacs.org/report.aspx?eventtype=TC&amp;eventid=1001338</link>
+      <pubDate>Wed, 14 Oct 2026 14:31:53 GMT</pubDate>
+      <gdacs:dateadded>Wed, 14 Oct 2026 14:31:53 GMT</gdacs:dateadded>
+      <gdacs:datemodified>Mon, 19 Oct 2026 04:00:50 GMT</gdacs:datemodified>
+      <gdacs:iscurrent>true</gdacs:iscurrent>
+      <gdacs:fromdate>Wed, 14 Oct 2026 12:00:00 GMT</gdacs:fromdate>
+      <gdacs:todate>Mon, 19 Oct 2026 00:00:00 GMT</gdacs:todate>
+      <gdacs:durationinweek>1</gdacs:durationinweek>
+      <gdacs:year>2026</gdacs:year>
+      <dc:subject>TC1</dc:subject>
+      <guid isPermaLink="false">TC1001338</guid>
+      <geo:Point>
+        <geo:lat>14</geo:lat>
+        <geo:long>139.2</geo:long>
+      </geo:Point>
+      <!--gdacs:bbox format = lonmin lonmax latmin latmax-->
+      <gdacs:bbox>120.999704743163 146.999704743163 4.70242987645598 30.702429876456</gdacs:bbox>
+      <georss:point>14 139.2</georss:point>
+      <gdacs:cap>https://www.gdacs.org/contentdata/resources/TC/1001338/cap_1001338.xml</gdacs:cap>
+      <gdacs:icon>https://www.gdacs.org/Images/gdacs_icons/alerts/Red/TC.png</gdacs:icon>
+      <gdacs:version>19</gdacs:version>
+      <gdacs:eventtype>TC</gdacs:eventtype>
+      <gdacs:alertlevel>Red</gdacs:alertlevel>
+      <gdacs:alertscore>3</gdacs:alertscore>
+      <gdacs:episodealertlevel>Green</gdacs:episodealertlevel>
+      <gdacs:episodealertscore>1</gdacs:episodealertscore>
+      <gdacs:eventname>CHAMPI-26</gdacs:eventname>
+      <gdacs:eventid>1001338</gdacs:eventid>
+      <gdacs:episodeid>19</gdacs:episodeid>
+      <gdacs:calculationtype>tropicalcyclonewithstormsurge</gdacs:calculationtype>
+      <gdacs:severity unit="km/h" value="268.5168">Hurricane/Typhoon &gt; 74 mph (maximum wind speed of 269 km/h)</gdacs:severity>
+      <gdacs:population unit="Pop74" value="232897">Population affected by Category 1 (120 km/h) wind speeds or higher is 0.233 million </gdacs:population>
+      <gdacs:vulnerability value="2">Medium</gdacs:vulnerability>
+      <gdacs:iso3>GUM</gdacs:iso3>
+      <gdacs:country>Guam, Northern Mariana Islands, Japan</gdacs:country>
+      <gdacs:glide>TC-2026-000192-GUM</gdacs:glide>
+      <gdacs:mapimage />
+      <gdacs:maplink />
+      <gdacs:gtsimage />
+      <gdacs:gtslink />
+      <gdacs:resources>
+        <gdacs:resource id="event_rss" version="0" source="EC-JRC" url="https://www.gdacs.org//datareport/resources/TC/1001338/rss_1001338.xml" type="rss">
+          <gdacs:title>Event in rss format</gdacs:title>
+          <gdacs:description>Joint Research Center of the European Commission</gdacs:description>
+          <gdacs:acknowledgements>Copyright notice: European Union (CC BY 4.0), reuse is allowed, provided appropriate credit to GDACS is given.</gdacs:acknowledgements>
+          <gdacs:accesslevel>Public</gdacs:accesslevel>
+        </gdacs:resource>
+      </gdacs:resources>
+    </item>
+  </channel>
+</rss>
