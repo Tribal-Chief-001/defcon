@@ -188,12 +188,22 @@ Cadence: the scheduled ingest runs every 3 hours (D-047), so "live" means at mos
 
 | Item | Value |
 |------|-------|
-| File | `public/data/signals.json` (about 48 KB, 6 KB gzipped; built in CI by `npm run data:signals` before the site is built, gitignored like the events snapshot; budget 60 KB gzip) |
+| File | `public/data/signals.json` (about 83 KB, 10 KB gzipped; built in CI by `npm run data:signals` before the site is built, gitignored like the events snapshot; budget 60 KB gzip) |
 | Sources | USGS earthquake feed `all_week.geojson` (explosion-type events of magnitude 2 or more, public domain, credit U.S. Geological Survey); GDACS `rss_7d.xml` (Orange and Red alerts, CC BY 4.0 with credit to GDACS); NASA FIRMS `SUOMI_VIIRS_C2_Global_24h.csv` (high and nominal confidence detections, open data with the FIRMS/LANCE/ESDIS acknowledgement) |
-| What is kept | explosion-type seismic events; Orange and Red disaster alerts; fire detections aggregated into 0.5-degree cells inside or next to the conflict areas (cells with 3 or more UCDP deaths of `conflicts.json`), top 300 cells |
+| What is kept | explosion-type seismic events; Orange and Red disaster alerts; fire detections aggregated into 0.5-degree cells inside or next to the conflict areas (cells with 3 or more UCDP deaths of `conflicts.json`), up to 800 cells plus true per-conflict totals computed before the cap |
 | Failure | each source is fetched with a 30 s timeout, no redirects and a 15 MB cap; a source that is down, slow, returns HTML or is too large is reported (`ok: false`, `error`) and does not fail the run; a malformed result does (`scripts/signals/validate.ts`) |
 | Not used | IODA (no terms found), IMF PortWatch (bulk download forbidden), GPSJAM (no reuse terms), Cloudflare Radar (token, CC BY-NC), OONI (CC BY-NC-SA); see LICENCE-CHECK-v1.1 |
 | Meaning | context only: a fire has many causes and a seismic explosion is not a strike; signals never change a conflict number or an index |
+
+## Displacement (Plan 15, UNHCR)
+
+| Item | Value |
+|------|-------|
+| File | `public/data/displacement.json` (33 KB, 5 KB gzipped; committed; loaded when a dossier opens; budget 40 KB gzip) |
+| Built by | `npm run data:displacement` (`scripts/displacement/build-displacement.ts`) from the keyless UNHCR population API (`api.unhcr.org/population/v1/population/`, newest of the last three years, all pages, by country of origin and of asylum), keyed by the ISO3 column (UNHCR's own `coo`/`coa` codes differ: Sudan is `SUD` there); run by hand after UNHCR's annual (June) and mid-year releases |
+| Content | per country: refugees, asylum-seekers, people displaced inside the country (IDPs), returned refugees, stateless people, others in need of protection (from the country), refugees and asylum-seekers hosted (in the country); `null` where UNHCR writes "-" (not reported), never 0 |
+| Licence | CC BY 4.0 (read 2026-10-19 on unhcr.org/what-we-do/data-and-publications/data-and-statistics/terms-use-datasets): attribution "UNHCR Refugee Population Statistics Database", a link to those terms, no implied endorsement; third-party figures inside it may carry other terms |
+| Meaning | people, not conflict deaths: displacement has many causes; what each figure includes is on UNHCR's methodology page (linked from the dossier) |
 
 ## Refreshing UCDP data (Plan 12)
 

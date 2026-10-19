@@ -12,6 +12,7 @@ const STATIC_SOURCES: { name: string; use: string; licence: string; url: string 
   { name: 'World Bank, World Development Indicators', use: 'population, area, GDP, military spending (SIPRI via World Bank)', licence: 'CC BY 4.0', url: 'https://datatopics.worldbank.org/world-development-indicators/' },
   { name: 'CIA World Factbook (archived mirror)', use: 'government type, languages, independence, organisations; discontinued 2026-02-04, data of 2026-01-22', licence: 'public domain', url: 'https://github.com/factbook/factbook.json' },
   { name: 'United Nations and NATO official member lists', use: 'membership flags, formal alliances', licence: 'facts, linked', url: 'https://www.un.org/en/about-us/member-states' },
+  { name: 'UNHCR Refugee Population Statistics Database (displacement in country dossiers)', use: 'refugees, asylum-seekers and people displaced inside a country', licence: 'CC BY 4.0, credit UNHCR Refugee Population Statistics Database', url: 'https://www.unhcr.org/refugee-statistics/' },
   { name: 'USGS earthquake feed (Signals: explosion-type seismic events)', use: 'context signals in the War room', licence: 'public domain, credit U.S. Geological Survey', url: 'https://earthquake.usgs.gov/earthquakes/feed/' },
   { name: 'GDACS, Global Disaster Alert and Coordination System (Signals)', use: 'Orange and Red disaster alerts, context in the War room', licence: 'CC BY 4.0, credit to GDACS', url: 'https://www.gdacs.org/' },
   { name: "NASA FIRMS, Fire Information for Resource Management System (Signals)", use: 'fire detections near conflict areas, context in the War room', licence: 'NASA open data, acknowledgement requested', url: 'https://firms.modaps.eosdis.nasa.gov/' },
@@ -123,6 +124,14 @@ export function AboutPage({ onClose, toMethod = false }: { onClose: () => void; 
             <li>Missing values are shown as "unavailable", never guessed. The tension level is shown only when enough human-coded data backs it.</li>
             <li>Allies are formal treaty memberships; active disputes are pairs on opposing sides in UCDP state-based events. Neither is an opinion.</li>
           </ul>
+        </section>
+
+        <section className="mt-5 space-y-2 text-sm leading-relaxed">
+          <p className={h}>Open data</p>
+          <p>
+            The files the site reads are static and may be reused with their licences: conflicts, indices, signals, displacement, the timeline and the event snapshot. The War room and the Index board download CSV.{' '}
+            {link('https://github.com/Tribal-Chief-001/defcon/blob/main/docs/OPEN-DATA.md', 'List of files and rules')}.
+          </p>
         </section>
 
         <MethodSection />

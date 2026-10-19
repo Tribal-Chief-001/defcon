@@ -158,3 +158,14 @@ describe('AboutPage: the Signals sources', () => {
     expect(t).toMatch(/NASA FIRMS.*open data|NASA open data, acknowledgement requested/);
   });
 });
+
+describe('AboutPage: UNHCR and open data', () => {
+  it('lists UNHCR with its licence and points to the open data file list', () => {
+    render(<AboutPage onClose={() => {}} />);
+    const t = screen.getByRole('dialog').textContent ?? '';
+    expect(t).toMatch(/UNHCR Refugee Population Statistics Database/);
+    expect(t).toMatch(/CC BY 4\.0, credit UNHCR/);
+    const a = screen.getByRole('link', { name: /list of files and rules/i }) as HTMLAnchorElement;
+    expect(a.href).toBe('https://github.com/Tribal-Chief-001/defcon/blob/main/docs/OPEN-DATA.md');
+  });
+});

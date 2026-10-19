@@ -201,3 +201,13 @@ Still open (needs a person, hardware or research, or was judged not worth it):
 - Clamped ranges understate uncertainty when UCDP's `high` equals `best` (a range of 13,280 to 13,280); `locatedShare` is relative to geocoded events; the sr-only month in the TimelineBlock date; animation polish; naming anonymised UCDP conflicts when UCDP publishes the actors.
 - Labels already avoid the top controls strip and re-emit when the selection changes (no change was needed).
 
+## Plan 14 and 15 deferred (2026-10-19)
+
+- Signals: IODA (internet outages) needs its terms read from a normal browser or a reply from Georgia Tech; PortWatch forbids automated bulk download without permission; GPSJAM has no reuse terms; Cloudflare Radar needs an account token (owner-set secret) and is CC BY-NC; OONI is CC BY-NC-SA. FIRMS CSV downloads were keyless on 2026-10-19; if NASA starts requiring a login the ingest reports FIRMS as unavailable.
+- Signals: fires are context only (most detections are vegetation fires); a smarter filter (excluding known agricultural burn seasons or flares) would need a method and a validation, not a guess.
+- Evidence trail: signals are matched by distance and time only; a corroboration score was deliberately not built (no invented weights).
+- Displacement: refreshed by hand after UNHCR's releases (no alert for a new UNHCR year); UNRWA-registered Palestine refugees are a separate dataset not included.
+- Watchlist: countries only (radius alerts and "notify me by e-mail" need a server); notifications only while a tab is open.
+- Share: `#e=<event id>` links (an event card) were not built; only the moment, the country and the conflict.
+- Items 11 (Indicators desk) and 13 (Story mode) of the v1.1 list have no plan.
+
