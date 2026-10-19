@@ -23,7 +23,7 @@ const CONF: Record<string, string> = { high: 'text-[var(--text)]', medium: 'text
 // The two rankings of the indices in the War room: the most deadly countries now (the Fatality Index, observed) and the countries with the
 // highest chance of a sharp rise in the next 3 months (the Instability Index, a model estimate). Both lists are buttons that dive into the
 // country; every number has its range or interval; a line says what the indices are not. Without the data file the board says so.
-export function IndexBoard({ onDive, onMethod }: { onDive: (countryId: string) => void; onMethod: () => void }) {
+export function IndexBoard({ onDive, onMethod, ids }: { onDive: (countryId: string) => void; onMethod: () => void; ids?: readonly string[] }) {
   const [file, setFile] = useState<IndicesFile | null | undefined>(undefined);
   const [names, setNames] = useState<Map<string, string>>(new Map());
   useEffect(() => {
@@ -39,10 +39,11 @@ export function IndexBoard({ onDive, onMethod }: { onDive: (countryId: string) =
   const lists = useMemo(() => {
     if (!file) return null;
     const byName = (a: CountryIndex, b: CountryIndex) => name(a.id).localeCompare(name(b.id));
-    const deadly = file.countries.filter((c) => c.fatality.rank !== null).sort((a, b) => a.fatality.rank! - b.fatality.rank! || byName(a, b)).slice(0, TOP);
-    const rising = file.countries.filter((c) => c.risk !== null).sort((a, b) => b.risk!.rise.p - a.risk!.rise.p || byName(a, b)).slice(0, TOP);
+    const pool = ids ? file.countries.filter((c) => ids.includes(c.id)) : file.countries;
+    const deadly = pool.filter((c) => c.fatality.rank !== null).sort((a, b) => a.fatality.rank! - b.fatality.rank! || byName(a, b)).slice(0, TOP);
+    const rising = pool.filter((c) => c.risk !== null).sort((a, b) => b.risk!.rise.p - a.risk!.rise.p || byName(a, b)).slice(0, TOP);
     return { deadly, rising };
-  }, [file, names]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [file, names, ids]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (file === undefined) return <p role="status" className="mt-8 text-[13px] text-[var(--text-muted)]">Loading the indices{'…'}</p>;
   if (!file || !lists) return <p className="mt-8 text-[13px] text-[var(--text-muted)]">The indices are unavailable right now. The rest of the room works without them.</p>;

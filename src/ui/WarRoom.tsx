@@ -6,6 +6,8 @@ import { loadTimeline } from '../timeline/load';
 import type { TimelineFile } from '../timeline/types';
 import { ConflictView } from './war/ConflictView';
 import { Overview, type PlaceHandler } from './war/Overview';
+import { RegionView } from './war/RegionView';
+import { SOUTH_ASIA_VIEW } from '../regions';
 import { date } from './war/parts';
 
 // The War room: a dashboard docked beside the globe (a bottom sheet on a narrow screen), not a modal. It shows the world overview or one
@@ -86,6 +88,11 @@ export function WarRoom({
   useEffect(() => {
     if (selected) setReturnTo(null); // a return target is used once: choosing another conflict ends it
   }, [selected]);
+  const [region, setRegion] = useState<'world' | 'south-asia'>('world');
+  const pickRegion = (r: 'world' | 'south-asia') => {
+    setRegion(r);
+    if (r === 'south-asia') onFocusPlace({ ...SOUTH_ASIA_VIEW, place: 'South Asia' });
+  };
   const backS = useTime((s) => s.backS);
   const goLive = useTime((s) => s.goLive);
   return (
@@ -117,6 +124,13 @@ export function WarRoom({
           </button>
         </p>
       ) : null}
+      <div role="group" aria-label="Region" className="flex gap-2 border-b border-[var(--border)] px-5 py-2">
+        {(['world', 'south-asia'] as const).map((r) => (
+          <button key={r} type="button" aria-pressed={region === r} onClick={() => pickRegion(r)} className={`rounded-full border px-3 py-1 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.12em] ${region === r ? 'border-[var(--lime)] text-[var(--lime)]' : 'border-[var(--border-strong)] text-[var(--text-muted)] hover:text-[var(--lime)]'}`}>
+            {r === 'world' ? 'World' : 'South Asia'}
+          </button>
+        ))}
+      </div>
       <div className="@container min-h-0 flex-1 overflow-y-auto px-5 pb-6">
         <div role="status" aria-live="polite" data-war-status className={!file && !error ? 'pt-5 text-[14px] text-[var(--text-muted)]' : 'sr-only'}>
           {!file && !error ? <>Loading conflicts{'…'}</> : null}
@@ -129,6 +143,8 @@ export function WarRoom({
           <p className="pt-5 text-[14px] text-[var(--text-muted)]">No conflicts in this data.</p>
         ) : current ? (
           <ConflictView c={current} f={file} tl={tl} onBack={back} onDive={onDive} onFocusPlace={onFocusPlace} onHoverPin={onHoverPin} />
+        ) : region === 'south-asia' ? (
+          <RegionView f={file} onSelect={(id) => onSelect(id)} onDive={onDive} onMethod={onMethod ?? (() => {})} />
         ) : (
           <Overview f={file} tl={tl} onSelect={(id) => onSelect(id)} onDive={onDive} onFocusPlace={onFocusPlace} onHoverPin={onHoverPin} onMethod={onMethod} returnFocus={returnTo} />
         )}

@@ -42,6 +42,9 @@ import { ErrorBoundary } from './ui/ErrorBoundary';
 import { Unsupported } from './globe/Unsupported';
 import { SkipLink } from './ui/SkipLink';
 import { ShareButton } from './ui/ShareButton';
+import { WatchAlerts } from './ui/WatchAlerts';
+import { WatchPanel } from './ui/WatchPanel';
+import { useWatchlist } from './watchlist/watchlist';
 import { SoundToggle } from './ui/SoundToggle';
 import { StatusRegion, announce } from './ui/status';
 
@@ -138,6 +141,7 @@ export function App() {
   const latest = useRef(createLatest()); // only the newest selection may receive its detail
 
   useEffect(() => startEventService(BASE), []);
+  useEffect(() => useWatchlist.getState().hydrate(), []); // the watchlist is kept in this browser only
   // time travel is announced once the slider settles, never per frame
   useEffect(() => {
     let timer: number | undefined;
@@ -285,9 +289,11 @@ export function App() {
       <LiveCapitalLabels />
       <Reticle />
       <NightWatch active={watch.active} caption={watch.caption} />
+      <WatchAlerts />
       <TopBar>
         <CommandPalette onPick={(id) => void startDive(id)} />
         <SoundToggle />
+        <WatchPanel onOpen={(id) => void startDive(id)} />
         <ShareButton url={() => shareUrl({ origin: location.origin, pathname: location.pathname, id: dossierId, about, war, backS: useTime.getState().backS, nowS: Math.floor(Date.now() / 1000) })} />
         <button type="button" aria-pressed={warOpen} onClick={() => setWar((w) => (w === null ? '' : null))} className="rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)]">
           War room
@@ -316,7 +322,7 @@ export function App() {
                   setWar(null);
                   void startDive(id);
                 }}
-                onFocusPlace={(at) => setPlaceFocus(at ? { lat: at.lat, lon: at.lon, distance: 1.7, seq: ++placeSeq.current } : null)}
+                onFocusPlace={(at) => setPlaceFocus(at ? { lat: at.lat, lon: at.lon, distance: at.distance ?? 1.7, seq: ++placeSeq.current } : null)}
                 onHoverPin={setWarHover}
                 onMethod={() => openAbout(true)}
               />

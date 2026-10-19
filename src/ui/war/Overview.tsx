@@ -27,7 +27,7 @@ function Hero({ value }: { value: number }) {
   return <p className="font-[var(--font-body)] text-[clamp(52px,9vw,84px)] font-semibold leading-none tracking-tight">{int(useCountUp(value))}</p>;
 }
 
-export type PlaceHandler = (at: { lat: number; lon: number; place: string } | null) => void;
+export type PlaceHandler = (at: { lat: number; lon: number; place: string; distance?: number } | null) => void;
 
 // The world at a glance: a hero numeral, the stream of weekly deaths with the key events on it, bubbles and a league of the conflicts, the
 // countries, the newest key events and reports. The League is the text equivalent of the bubbles.
