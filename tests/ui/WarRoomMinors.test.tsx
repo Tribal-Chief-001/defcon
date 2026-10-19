@@ -26,6 +26,7 @@ const conflict = (o: Partial<Conflict> & { id: string; name: string }): Conflict
   geo: { lat: 48, lon: 37, spreadKm: 200, locatedShare: 0.9, cells: [[48.25, 37.25, 100]] },
   ...o,
 });
+const byKind = (state: number[], non: number[], one: number[]) => ({ state, 'non-state': non, 'one-sided': one });
 const quiet = conflict({ id: 'quiet', name: 'Quiet - War', trend: 'low data', deaths: { d30: R(0, 0, 0), d90: R(0, 0, 0), d365: R(130, 120, 140) }, events: { d30: 0, d90: 0, d365: 4 }, lastDate: '2026-05-01', weekly: new Array(52).fill(0).map((_, i) => (i === 10 ? 130 : 0)) });
 const spiky = conflict({ id: 'spiky', name: 'Spiky - Conflict', provisionalShare: 0.6, weekly: Array.from({ length: 52 }, (_, i) => (i === 30 ? 5000 : 40)) });
 const file = (): ConflictsFile => ({ generated: '2026-10-18', dataEnd: '2026-08-31', sources: ['t'], world: worldFixture(), conflicts: [conflict({ id: 'a', name: 'Alpha - Beta' }), quiet, spiky] });
@@ -138,5 +139,21 @@ describe('War room: timeline states', () => {
     expect(bubbles.every((b) => b.getAttribute('tabindex') === '-1')).toBe(true);
     const dots = screen.getAllByRole('button', { name: /\(confirmed\)|\(reported\)|\(disputed\)/ }).filter((b) => b.className.includes('absolute'));
     expect(dots.every((b) => b.getAttribute('tabindex') === '-1')).toBe(true);
+  });
+});
+
+describe('War room: a conflict\'s weekly chart by kind', () => {
+  it('stacks the weeks by kind of violence when the data has them, and keeps one layer when it does not', async () => {
+    const f = file();
+    const w = Array.from({ length: 52 }, (_, i) => i + 1);
+    f.conflicts[0] = conflict({ id: 'a', name: 'Alpha - Beta', weekly: w, weeklyByKind: byKind(w.map((v) => v - 1), w.map(() => 1), w.map(() => 0)) });
+    render(<Host load={async () => f} />);
+    await screen.findByRole('list', { name: /conflicts league/i });
+    await open(/Alpha - Beta/);
+    expect(document.querySelectorAll('[data-layer="state"], [data-layer="non-state"], [data-layer="one-sided"]').length).toBe(3);
+    cleanup();
+    await overview();
+    await open(/Alpha - Beta/);
+    expect(document.querySelectorAll('[data-layer="deaths"]').length).toBe(1);
   });
 });

@@ -175,7 +175,7 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
   for (const [rawName, evs] of groups) {
     const d30 = zero(), d90 = zero(), d365 = zero();
     const n = { d30: 0, d90: 0, d365: 0 };
-    const weekly = new Array<number>(52).fill(0);
+    const byKind: Record<Kind, number[]> = { state: new Array<number>(52).fill(0), 'non-state': new Array<number>(52).fill(0), 'one-sided': new Array<number>(52).fill(0) };
     const countries = new Map<string, { id: string | null; name: string; deaths365: number }>();
     let provisional = 0;
     const started = evs.filter((e) => e.ageD < 365); // events that started inside the window: they alone give the places, the latest list and the dates (an older event only contributes its share of deaths)
@@ -186,7 +186,7 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
       if (e.ageD < 365) n.d365++;
       if (e.ageD < 90) n.d90++;
       if (e.ageD < 30) n.d30++;
-      for (let i = 0; i < 52; i++) weekly[i]! += e.deaths.best * weekShare(e, lastDay, i); // 52 whole weeks; day 365 only counts in d365
+      for (let i = 0; i < 52; i++) byKind[e.kind][i]! += e.deaths.best * weekShare(e, lastDay, i); // 52 whole weeks; day 365 only counts in d365
       if (e.provisional && e.ageD < 365) provisional++;
       const key = e.row.country_id ?? e.row.country ?? '';
       const c = countries.get(key) ?? { id: opts.gwToId[e.row.country_id ?? ''] ?? null, name: e.row.country ?? 'Unknown', deaths365: 0 };
@@ -206,6 +206,7 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
     used.add(id);
 
     const trend: Conflict['trend'] = activityTrend(n.d30, n.d90);
+    const kinds: Record<Kind, number[]> = { state: byKind.state.map(Math.round), 'non-state': byKind['non-state'].map(Math.round), 'one-sided': byKind['one-sided'].map(Math.round) };
 
     const latest = started.map(toEvent).filter((e): e is ConflictEvent => e !== null).sort(newestFirst).slice(0, 12);
 
@@ -218,7 +219,8 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
       events: n,
       trend,
       lastDate: started.reduce((m, e) => (e.date > m ? e.date : m), ''),
-      weekly: weekly.map(Math.round),
+      weekly: kinds.state.map((v, i) => v + kinds['non-state'][i]! + kinds['one-sided'][i]!), // the total is the sum of the rounded kinds, so a stacked chart adds up exactly
+      weeklyByKind: kinds,
       latest,
       provisionalShare: started.length ? provisional / started.length : 0,
       geo: geoOf(started),

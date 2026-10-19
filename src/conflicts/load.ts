@@ -71,6 +71,7 @@ function valid(f: unknown): f is ConflictsFile {
       Array.isArray(c.weekly) &&
       c.weekly.length === 52 &&
       c.weekly.every(num) &&
+      ((c as { weeklyByKind?: unknown }).weeklyByKind === undefined || (!!(c as { weeklyByKind?: Record<string, unknown> }).weeklyByKind && KINDS.every((k) => weeks((c as { weeklyByKind: Record<string, unknown> }).weeklyByKind[k])))) &&
       validGeo((c as { geo?: unknown }).geo),
   );
 }

@@ -2,7 +2,7 @@ import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Conflict, ConflictsFile } from '../../conflicts/types';
 import type { TimelineFile } from '../../timeline/types';
 import { RangeBar } from '../../viz/RangeBar';
-import { StreamChart } from '../../viz/StreamChart';
+import { kindLayers, StreamChart } from '../../viz/StreamChart';
 import { useCountUp } from '../../viz/useCountUp';
 import { TimelineBlock, type TimelineRow } from '../TimelineBlock';
 import { rowKey } from './pins';
@@ -66,7 +66,7 @@ export function ConflictView({ c, f, tl, onBack, onDive, onFocusPlace, onHoverPi
 
       <Section title="Deaths per week, with the key events" note="Best-estimate deaths per week from a zero baseline. The dots are key events of the timeline: click one to find its card; events after the data end sit in the shaded band.">
         <StreamChart
-          layers={[{ key: 'deaths', name: 'Deaths per week', values: c.weekly, fill: 'var(--lime)', opacity: 0.75 }]}
+          layers={c.weeklyByKind ? kindLayers(c.weeklyByKind) : [{ key: 'deaths', name: 'Deaths per week', values: c.weekly, fill: 'var(--lime)', opacity: 0.75 }]}
           dataEnd={f.dataEnd}
           label="Deaths per week in this conflict"
           events={rows.map((r) => ({ date: r.entry.date, title: r.entry.title, status: r.entry.status }))}

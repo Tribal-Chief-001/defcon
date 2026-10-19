@@ -377,3 +377,15 @@ describe('conflictsFromRows: readable names, places and headlines (Plan 8 review
     expect(c!.latest[0]!.headline).toBe('');
   });
 });
+
+describe('conflictsFromRows: weekly deaths by kind per conflict (Plan 10 deferred)', () => {
+  it('splits a conflict\'s weekly deaths by kind of violence, and the weekly total is the sum of the kinds', () => {
+    const [c] = one([row({ ago: 1, best: 30, type_of_violence: '1' }), row({ ago: 1, best: 20, type_of_violence: '3' }), row({ ago: 8, best: 7, type_of_violence: '1' }), row({ ago: 100, best: 200, type_of_violence: '2' })]);
+    const k = c!.weeklyByKind!;
+    expect(k.state[51]).toBe(30);
+    expect(k['one-sided'][51]).toBe(20);
+    expect(k.state[50]).toBe(7);
+    expect(k['non-state'].reduce((a, b) => a + b, 0)).toBe(200);
+    for (let i = 0; i < 52; i++) expect(c!.weekly[i]).toBe(k.state[i]! + k['non-state'][i]! + k['one-sided'][i]!);
+  });
+});

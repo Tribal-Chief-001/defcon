@@ -39,6 +39,7 @@ describe('loadConflicts', () => {
     ['a geo with a malformed cell', { ...good, conflicts: [{ ...good.conflicts[0], geo: { lat: 1, lon: 1, spreadKm: 50, locatedShare: 1, cells: [[1, 2]] } }] }, true],
     ['a world with a short weekly list', { ...good, world: { ...worldFixture(), weekly: [1] } }, true],
     ['a world with a non-finite total', { ...good, world: { ...worldFixture(), deaths: { ...worldFixture().deaths, d90: { best: null, low: 0, high: 0 } } } }, true],
+    ['a weekly-by-kind with a short list', { ...good, conflicts: [{ ...good.conflicts[0], weeklyByKind: { state: [1], 'non-state': [1], 'one-sided': [1] } }] }, true],
     ['a data end that is not a real date', { ...good, dataEnd: '2026-13-45' }, true],
     ['a conflict last date that is not a real date', { ...good, conflicts: [{ ...good.conflicts[0], lastDate: '2026-02-30' }] }, true],
     ['an event without an id', { ...good, conflicts: [{ ...good.conflicts[0], latest: [{ ...ev, id: undefined }] }] }, true],
@@ -70,5 +71,9 @@ describe('loadConflicts', () => {
     const real = JSON.parse((await import('node:fs')).readFileSync('public/data/conflicts.json', 'utf8'));
     vi.stubGlobal('fetch', reply(real));
     expect((await loadConflicts()).conflicts.length).toBeGreaterThan(50);
+  });
+  it('accepts a file whose conflicts have no weeklyByKind (an older file)', async () => {
+    vi.stubGlobal('fetch', reply(good));
+    expect((await loadConflicts()).conflicts[0]!.weeklyByKind).toBeUndefined();
   });
 });

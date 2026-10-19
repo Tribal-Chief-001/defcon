@@ -34,6 +34,7 @@ export type Conflict = {
   trend: 'rising' | 'steady' | 'falling' | 'low data';
   lastDate: string;
   weekly: number[]; // 52 weeks of best deaths, oldest first; the last week ends at the data end
+  weeklyByKind?: Record<Kind, number[]>; // the same weeks split by kind of violence; they add up to `weekly` (absent in older files)
   latest: ConflictEvent[]; // newest first, at most 12
   provisionalShare: number; // 0..1, share of the 365-day events that are provisional
   geo: Geo | null; // null when no event has a usable location

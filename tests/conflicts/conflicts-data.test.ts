@@ -107,4 +107,10 @@ describe('public/data/conflicts.json', () => {
     const w = file.world;
     for (let i = 0; i < 52; i++) expect(w.weeklyByKind.state[i]! + w.weeklyByKind['non-state'][i]! + w.weeklyByKind['one-sided'][i]!).toBe(w.weekly[i]);
   });
+  it('has per-conflict weekly deaths by kind that add up to the weekly series', () => {
+    for (const c of file.conflicts) {
+      expect(c.weeklyByKind, c.id).toBeTruthy();
+      for (let i = 0; i < 52; i++) expect(c.weeklyByKind!.state[i]! + c.weeklyByKind!['non-state'][i]! + c.weeklyByKind!['one-sided'][i]!, `${c.id} week ${i}`).toBe(c.weekly[i]);
+    }
+  });
 });
