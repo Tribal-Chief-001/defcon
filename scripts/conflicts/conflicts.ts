@@ -200,9 +200,11 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
     const main = countryList[0]?.name ?? 'unknown';
     // UCDP candidate files anonymise some actors as XXX<number>: keep the code visible, it is all the data says
     const collapsed = collapseRepeated(rawName);
-    const name = rawName === '' ? `Unnamed conflict (${main})` : /^XXX\d+/.test(collapsed) ? `${collapsed} (${main})` : collapsed;
-    let id = slug(name);
-    for (let i = 2; used.has(id); i++) id = `${slug(name)}-${i}`;
+    const nameOf = (n: string) => (n === '' ? `Unnamed conflict (${main})` : /^XXX\d+/.test(n) ? `${n} (${main})` : n);
+    const name = nameOf(collapsed);
+    // the id comes from the uncollapsed name: it is unique, does not depend on the row order and keeps old links working
+    let id = slug(nameOf(rawName));
+    for (let i = 2; used.has(id); i++) id = `${slug(nameOf(rawName))}-${i}`;
     used.add(id);
 
     const trend: Conflict['trend'] = activityTrend(n.d30, n.d90);
@@ -227,7 +229,14 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
     });
   }
   const world = worldOf(all, conflicts.length, opts.gwToId, lastDay);
-  conflicts.sort((a, b) => b.deaths.d90.best - a.deaths.d90.best || a.name.localeCompare(b.name));
+  conflicts.sort((a, b) => b.deaths.d90.best - a.deaths.d90.best || b.deaths.d365.best - a.deaths.d365.best || a.id.localeCompare(b.id));
+  // two conflicts can end up with the same display name once repeated codes are collapsed: the later one is told apart ("· 2")
+  const seen = new Map<string, number>();
+  for (const c of conflicts) {
+    const n = (seen.get(c.name) ?? 0) + 1;
+    seen.set(c.name, n);
+    if (n > 1) c.name = `${c.name} · ${n}`;
+  }
   return { generated: opts.generated, dataEnd: new Date(opts.dataEndS * 1000).toISOString().slice(0, 10), sources: opts.sources, conflicts, world };
 }
 

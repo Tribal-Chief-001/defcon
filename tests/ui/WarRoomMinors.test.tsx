@@ -100,6 +100,19 @@ describe('War room: selection and focus', () => {
     await screen.findByRole('list', { name: /conflicts league/i });
     expect((document.activeElement as HTMLElement).textContent).toMatch(/Alpha - Beta/);
   });
+  it('does not steal focus after Back when the room returns to the overview some other way (a stale return target)', async () => {
+    const p = props();
+    const { rerender } = render(<WarRoom {...p} selected={null} />);
+    await screen.findByRole('list', { name: /conflicts league/i });
+    rerender(<WarRoom {...p} selected="a" />);
+    await screen.findByRole('heading', { name: /Alpha - Beta/ });
+    fireEvent.click(screen.getByRole('button', { name: /World overview/ })); // Back: the target is A
+    rerender(<WarRoom {...p} selected="spiky" />);
+    await screen.findByRole('heading', { name: /Spiky - Conflict/ });
+    rerender(<WarRoom {...p} selected={null} />); // back to the overview without Back (history)
+    await screen.findByRole('list', { name: /conflicts league/i });
+    expect(document.activeElement?.getAttribute('data-conflict-row')).not.toBe('a'); // the row of the conflict Back once came from
+  });
   it('has a live region from the first render, empty once loaded', async () => {
     render(<WarRoom {...props({ load: () => new Promise(() => {}) })} />);
     expect(screen.getByRole('region', { name: 'War room' }).querySelector('[data-war-status]')!.textContent).toMatch(/loading conflicts/i);

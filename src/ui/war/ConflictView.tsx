@@ -58,7 +58,7 @@ export function ConflictView({ c, f, tl, onBack, onDive, onFocusPlace, onHoverPi
         {c.provisionalShare > 0 ? ` · ${Math.round(c.provisionalShare * 100)}% provisional` : ''}
       </p>
 
-      <div className="mt-6 grid grid-cols-1 gap-5 sm:grid-cols-3">
+      <div className="mt-6 grid grid-cols-1 gap-5 @[460px]:grid-cols-3">
         <Window title="Last 30 days" r={c.deaths.d30} events={c.events.d30} to={f.dataEnd} max={max} />
         <Window title="Last 90 days" r={c.deaths.d90} events={c.events.d90} to={f.dataEnd} max={max} />
         <Window title="Last 365 days" r={c.deaths.d365} events={c.events.d365} to={f.dataEnd} max={max} />

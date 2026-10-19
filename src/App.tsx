@@ -211,6 +211,7 @@ export function App() {
       const { country, about: wantAbout, war: wantWar } = parseHash(location.hash);
       setAbout(wantAbout === true);
       setWar(wantWar ?? null);
+      setPlaceFocus(null); // a hash navigation is a new selection: the place asked for before no longer applies
       if (wantAbout || wantWar !== undefined) return; // an overlay sits on top of whatever is open
       if (country && country !== diveIdRef.current) void startDive(country);
       else if (!country && dossierIdRef.current) exitDive();

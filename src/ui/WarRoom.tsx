@@ -83,6 +83,9 @@ export function WarRoom({
   useEffect(() => {
     if (file && selected && !current) onSelect(null);
   }, [file, selected, current, onSelect]);
+  useEffect(() => {
+    if (selected) setReturnTo(null); // a return target is used once: choosing another conflict ends it
+  }, [selected]);
   const backS = useTime((s) => s.backS);
   const goLive = useTime((s) => s.goLive);
   return (
@@ -114,7 +117,7 @@ export function WarRoom({
           </button>
         </p>
       ) : null}
-      <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-6">
+      <div className="@container min-h-0 flex-1 overflow-y-auto px-5 pb-6">
         <div role="status" aria-live="polite" data-war-status className={!file && !error ? 'pt-5 text-[14px] text-[var(--text-muted)]' : 'sr-only'}>
           {!file && !error ? <>Loading conflicts{'…'}</> : null}
         </div>

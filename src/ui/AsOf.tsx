@@ -24,17 +24,18 @@ export function AsOf({ nowS: fixedNowS }: { nowS?: number }) {
     if (lastPill.current !== null && lastPill.current !== pill) announce(`Data ${pill.toLowerCase()}`);
     lastPill.current = pill;
   }, [pill]);
+  const notes = [
+    status === 'error' && snap ? <span key="r" className="text-[var(--orange)]">refresh failed, showing last data</span> : null,
+    archiveError && snap ? <span key="a">archive unavailable</span> : null,
+    status === 'error' && !snap ? <span key="e" title={error}>run npm run data:build</span> : null,
+  ].filter(Boolean);
   return (
     <div className="pointer-events-none relative flex flex-col items-end gap-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.18em] text-[var(--text-muted)]">
       <div className="flex items-center gap-2">
         <span>{f ? f.label : 'NO EVENT DATA'}</span>
         <span className={`rounded-full border px-2.5 py-1 ${alert ? 'border-[var(--orange)] text-[var(--orange)]' : 'border-[var(--border-strong)] text-[var(--lime)]'}`}>{pill}</span>
       </div>
-      <div className="flex flex-col items-end gap-0.5 whitespace-nowrap">
-        {status === 'error' && snap ? <span className="text-[var(--orange)]">refresh failed, showing last data</span> : null}
-        {archiveError && snap ? <span>archive unavailable</span> : null}
-        {status === 'error' && !snap ? <span title={error}>run npm run data:build</span> : null}
-      </div>
+      {notes.length > 0 ? <div className="flex flex-col items-end gap-0.5 whitespace-nowrap">{notes}</div> : null}
     </div>
   );
 }

@@ -35,6 +35,11 @@ describe('AsOf', () => {
     render(<AsOf nowS={NOW} />);
     expect(screen.getByText('NO DATA')).toBeTruthy();
   });
+  it('renders no empty notes block (and so no extra gap) when there is nothing to say', () => {
+    useEvents.setState({ recent: snapAt(NOW - 600), status: 'idle' } as never);
+    const { container } = render(<AsOf nowS={NOW} />);
+    expect(container.firstElementChild!.children.length).toBe(1); // only the pill row
+  });
   it('puts the error notes in the normal flow of the header, so the docked War room cannot cover them (Plan 10 review minor)', () => {
     useEvents.setState({ recent: snapAt(NOW - 3600), status: 'error', error: 'x' } as never);
     render(<AsOf nowS={NOW} />);

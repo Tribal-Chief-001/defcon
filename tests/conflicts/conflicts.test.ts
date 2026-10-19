@@ -357,6 +357,19 @@ describe('conflictsFromRows: readable names, places and headlines (Plan 8 review
     const [d] = one([row({ ago: 1, best: 200, conflict_name: 'XXX100 - XXX200', country: 'Colombia' })]);
     expect(d!.name).toBe('XXX100 - XXX200 (Colombia)');
   });
+  it('keeps the old id of a conflict whose collapsed name collides with another one, and tells the two apart by name (finding)', () => {
+    const rows = [row({ ago: 1, best: 300, conflict_name: 'XXX100', country: 'Colombia' }), row({ ago: 2, best: 200, conflict_name: 'XXX100 - XXX100', country: 'Colombia' })];
+    const a = one(rows);
+    const b = one([...rows].reverse()); // the row order must not decide the ids
+    const idsOf = (cs: typeof a) => Object.fromEntries(cs.map((c) => [c.deaths.d365.best, c.id]));
+    expect(idsOf(a)).toEqual(idsOf(b));
+    expect(idsOf(a)[300]).toBe('xxx100-colombia');
+    expect(idsOf(a)[200]).toBe('xxx100-xxx100-colombia'); // the id of the uncollapsed name, so old links keep working
+    const names = a.map((c) => c.name);
+    expect(new Set(names).size).toBe(2);
+    expect(names).toContain('XXX100 (Colombia)');
+    expect(names.some((n) => /^XXX100 \(Colombia\) · 2$/.test(n))).toBe(true);
+  });
   it('collapses whitespace in a place and cuts it at 120 characters with an ellipsis', () => {
     const long = 'A very long description of a place '.repeat(8);
     const [c] = one([row({ ago: 1, best: 200, where_description: long, adm_1: 'Region' })]);

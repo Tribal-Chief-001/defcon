@@ -81,7 +81,7 @@ export function Overview({ f, tl, onSelect, onDive, onFocusPlace, onHoverPin, on
             <span key={k.k} style={{ width: `${(w.byKind[k.k].d365.best / total365) * 100}%`, background: k.fill }} />
           ))}
         </div>
-        <ul className="mt-3 grid gap-3 sm:grid-cols-3">
+        <ul className="mt-3 grid gap-3 @[460px]:grid-cols-3">
           {KIND_BAR.map((k) => (
             <li key={k.k} className="text-[13px]">
               <span className="flex items-center gap-2">
