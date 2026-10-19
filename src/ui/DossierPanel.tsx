@@ -10,6 +10,7 @@ import type { IndicesFile } from '../indices/types';
 import { DisplacementBlock } from './DisplacementBlock';
 import { Field } from './Field';
 import { IndexCard } from './IndexCard';
+import { WatchToggle } from './WatchToggle';
 import { RelationsBlock } from './RelationsBlock';
 import { Sparkline } from './Sparkline';
 
@@ -93,6 +94,7 @@ export function DossierPanel({ countryId, onClose, nowS: fixedNowS, onMethod }: 
       <div className="mt-3 flex flex-wrap gap-2 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em]">
         <span className="rounded-full border border-[var(--border-strong)] px-2.5 py-1">{d.type}</span>
         {d.continent ? <span className="rounded-full border border-[var(--border-strong)] px-2.5 py-1">{d.continent}</span> : null}
+        <WatchToggle countryId={d.id} name={d.name} />
       </div>
 
       {indices ? <IndexCard index={indexFor(indices, d.id)} countryId={d.id} model={indices.model} dataEnd={indices.dataEnd} rankedTotal={indices.countries.filter((c) => c.fatality.rank !== null).length} onMethod={onMethod ?? (() => {})} /> : null}
