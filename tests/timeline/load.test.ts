@@ -28,6 +28,10 @@ describe('loadTimeline', () => {
     ['an entry with an unknown status', { ...good, theatres: [{ ...good.theatres[0], entries: [{ ...good.theatres[0]!.entries[0], status: 'maybe' }] }] }, true],
     ['an entry with a non-array sources', { ...good, theatres: [{ ...good.theatres[0], entries: [{ ...good.theatres[0]!.entries[0], sources: 'x' }] }] }, true],
     ['an entry with a bad place', { ...good, theatres: [{ ...good.theatres[0], entries: [{ ...good.theatres[0]!.entries[0], at: { lat: 'x', lon: 1, place: 'p' } }] }] }, true],
+    ['an entry with empty sources', { ...good, theatres: [{ ...good.theatres[0], entries: [{ ...good.theatres[0]!.entries[0], sources: [] }] }] }, true],
+    ['an entry with an empty summary', { ...good, theatres: [{ ...good.theatres[0], entries: [{ ...good.theatres[0]!.entries[0], summary: '' }] }] }, true],
+    ['a theatre whose conflicts are not text', { ...good, theatres: [{ ...good.theatres[0], conflicts: [1, null] }] }, true],
+    ['an entry date that is not a real date', { ...good, theatres: [{ ...good.theatres[0], entries: [{ ...good.theatres[0]!.entries[0], date: '2026-13-01' }] }] }, true],
     ['a source without an https url', { ...good, theatres: [{ ...good.theatres[0], entries: [{ ...good.theatres[0]!.entries[0], sources: [{ ...good.theatres[0]!.entries[0]!.sources[0], url: 'javascript:alert(1)' }] }] }] }, true],
   ])('gives null for %s and does not cache the failure', async (_n, body, ok) => {
     vi.stubGlobal('fetch', reply(body, ok));
@@ -38,5 +42,10 @@ describe('loadTimeline', () => {
   it('gives null when the network fails', async () => {
     vi.stubGlobal('fetch', vi.fn(async () => Promise.reject(new TypeError('offline'))));
     expect(await loadTimeline()).toBeNull();
+  });
+  it('accepts the committed timeline.json', async () => {
+    const real = JSON.parse((await import('node:fs')).readFileSync('public/data/timeline.json', 'utf8'));
+    vi.stubGlobal('fetch', reply(real));
+    expect((await loadTimeline())?.theatres.length).toBeGreaterThan(2);
   });
 });

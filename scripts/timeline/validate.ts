@@ -3,15 +3,17 @@ import type { TimelineFile } from '../../src/timeline/types';
 const STATUS = ['confirmed', 'reported', 'disputed'];
 // hosts seen in search results that are content farms or personal mirrors, never acceptable as a source
 const BLOCKED = ['duckdns.org', 'buymeacoffee.com', 'codejungle.org', 'thottingal.in', 'socialpruf.com', 'blogspot.com', 'wordpress.com'];
-const TWO_LEVEL = new Set(['co.uk', 'org.uk', 'com.au', 'co.in', 'co.il', 'com.tr', 'co.za']);
+const TWO_LEVEL = new Set(['co.uk', 'org.uk', 'gov.uk', 'ac.uk', 'com.au', 'org.au', 'co.in', 'co.il', 'org.il', 'gov.il', 'ac.il', 'com.tr', 'co.za', 'com.ua', 'co.jp', 'or.jp', 'com.pk', 'com.br', 'co.nz', 'co.ke', 'com.eg', 'com.ng']);
+// one organisation that publishes under several domains counts once (a source from bbc.co.uk and one from bbc.com are not independent)
+const SAME_ORG: Record<string, string> = { 'bbc.co.uk': 'bbc.com', 'bbci.co.uk': 'bbc.com', 'aljazeera.net': 'aljazeera.com', 'ap.org': 'apnews.com', 'guardian.co.uk': 'theguardian.com', 'timesofisrael.com': 'timesofisrael.com' };
 
-const isDate = (s: unknown): s is string => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && new Date(`${s}T00:00:00Z`).toISOString().slice(0, 10) === s;
+const isDate = (s: unknown): s is string => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(`${s}T00:00:00Z`)) && new Date(`${s}T00:00:00Z`).toISOString().slice(0, 10) === s; // month 13 is NaN, not a throw
 const addDays = (s: string, n: number) => new Date(Date.parse(`${s}T00:00:00Z`) + n * 86400000).toISOString().slice(0, 10);
 const words = (s: string) => s.trim().split(/\s+/).filter(Boolean).length;
 
 // the organisation behind a URL: the registrable domain (uk.reuters.com and www.reuters.com are both reuters.com)
 export function registrable(host: string): string {
-  const p = host.toLowerCase().replace(/^www\./, '').split('.');
+  const p = host.toLowerCase().replace(/\.$/, '').replace(/^www\d*\./, '').split('.');
   const two = p.slice(-2).join('.');
   return TWO_LEVEL.has(two) ? p.slice(-3).join('.') : two;
 }
@@ -48,6 +50,7 @@ export function validateTimeline(f: TimelineFile, opts: { conflictIds: Set<strin
       }
       if (!e.title?.trim() || e.title.length > 100) bad(`${at}: title must be 1-100 characters`);
       if (!e.summary?.trim() || e.summary.length > 450 || words(e.summary) > 60) bad(`${at}: summary must be 1-60 words and at most 450 characters`);
+      for (const m of (e.summary ?? '').matchAll(/["“]([^"”]+)["”]/g)) if (words(m[1]!) > 10) bad(`${at}: summary quotes more than 10 words in a row (paraphrase it)`);
       if (!STATUS.includes(e.status)) bad(`${at}: unknown status ${e.status}`);
       if (e.at !== undefined) {
         if (!Number.isFinite(e.at.lat) || Math.abs(e.at.lat) > 90) bad(`${at}: at.lat must be within -90..90`);
@@ -76,7 +79,10 @@ export function validateTimeline(f: TimelineFile, opts: { conflictIds: Set<strin
         if (host && BLOCKED.some((b) => host === b || host.endsWith(`.${b}`))) bad(`${at}: blocked source host ${host}`);
         if (urls.has(s.url)) bad(`${at}: duplicate url ${s.url}`);
         urls.add(s.url);
-        if (host) orgs.add(registrable(host));
+        if (host) {
+          const r = registrable(host);
+          orgs.add(SAME_ORG[r] ?? r);
+        }
         outlets.add((s.outlet ?? '').trim().toLowerCase());
         if (!isDate(s.published)) bad(`${at}: source published is not a date`);
         else {

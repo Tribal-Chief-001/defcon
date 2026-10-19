@@ -2,7 +2,7 @@ import type { TimelineFile } from './types';
 
 let cached: Promise<TimelineFile | null> | null = null;
 
-const date = (s: unknown) => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s);
+const date = (s: unknown) => typeof s === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(s) && !Number.isNaN(Date.parse(`${s}T00:00:00Z`)) && new Date(`${s}T00:00:00Z`).toISOString().slice(0, 10) === s;
 const text = (s: unknown) => typeof s === 'string' && s.length > 0;
 
 function valid(f: unknown): f is TimelineFile {
@@ -14,16 +14,18 @@ function valid(f: unknown): f is TimelineFile {
       text(t.key) &&
       text(t.title) &&
       Array.isArray(t.conflicts) &&
+      t.conflicts.every(text) &&
       Array.isArray(t.entries) &&
       t.entries.every(
         (e) =>
           !!e &&
           date(e.date) &&
           text(e.title) &&
-          typeof e.summary === 'string' &&
+          text(e.summary) &&
           ['confirmed', 'reported', 'disputed'].includes(e.status) &&
           (e.at === undefined || (!!e.at && Number.isFinite(e.at.lat) && Number.isFinite(e.at.lon) && text(e.at.place))) &&
           Array.isArray(e.sources) &&
+          e.sources.length > 0 &&
           e.sources.every((s) => !!s && text(s.outlet) && text(s.title) && typeof s.url === 'string' && /^https:\/\//.test(s.url) && date(s.published)),
       ),
   );

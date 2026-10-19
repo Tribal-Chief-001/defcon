@@ -349,3 +349,31 @@ describe('conflictsFromRows: events that cover several days (finding: candidate 
     expect(c!.events).toEqual({ d30: 2, d90: 3, d365: 3 });
   });
 });
+
+describe('conflictsFromRows: readable names, places and headlines (Plan 8 review minors)', () => {
+  it('collapses a repeated code in the name of an unnamed conflict', () => {
+    const [c] = one([row({ ago: 1, best: 200, conflict_name: 'XXX100 - XXX100', country: 'Colombia' })]);
+    expect(c!.name).toBe('XXX100 (Colombia)');
+    const [d] = one([row({ ago: 1, best: 200, conflict_name: 'XXX100 - XXX200', country: 'Colombia' })]);
+    expect(d!.name).toBe('XXX100 - XXX200 (Colombia)');
+  });
+  it('collapses whitespace in a place and cuts it at 120 characters with an ellipsis', () => {
+    const long = 'A very long description of a place '.repeat(8);
+    const [c] = one([row({ ago: 1, best: 200, where_description: long, adm_1: 'Region' })]);
+    const place = c!.latest[0]!.place;
+    expect(place.length).toBeLessThanOrEqual(120);
+    expect(place.endsWith('…')).toBe(true);
+    expect(place).not.toMatch(/\s{2,}/);
+    const [d] = one([row({ ago: 1, best: 200, where_description: '  Kherson \n  city ', adm_1: 'Kherson oblast' })]);
+    expect(d!.latest[0]!.place).toBe('Kherson city, Kherson oblast, Ukraine');
+  });
+  it('uses the first real part of a joined headline, collapses whitespace and marks a cut with an ellipsis', () => {
+    const [a] = one([row({ ago: 1, best: 200, source_headline: '2026-08-30; Shelling   hits a market ; Another report' })]);
+    expect(a!.latest[0]!.headline).toBe('Shelling hits a market');
+    const [b] = one([row({ ago: 1, best: 200, source_headline: 'x'.repeat(260) })]);
+    expect(b!.latest[0]!.headline.length).toBe(200);
+    expect(b!.latest[0]!.headline.endsWith('…')).toBe(true);
+    const [c] = one([row({ ago: 1, best: 200, source_headline: '30 August 2026' })]);
+    expect(c!.latest[0]!.headline).toBe('');
+  });
+});

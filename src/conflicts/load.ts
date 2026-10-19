@@ -5,6 +5,14 @@ let cached: Promise<ConflictsFile> | null = null;
 
 const num = (v: unknown) => typeof v === 'number' && Number.isFinite(v);
 const range = (r: unknown) => !!r && typeof r === 'object' && num((r as Record<string, unknown>).best) && num((r as Record<string, unknown>).low) && num((r as Record<string, unknown>).high);
+const text = (v: unknown) => typeof v === 'string';
+// a real calendar date (2026-02-30 and 2026-13-45 are not)
+const realDate = (v: unknown) => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v) && !Number.isNaN(Date.parse(`${v}T00:00:00Z`)) && new Date(`${v}T00:00:00Z`).toISOString().slice(0, 10) === v;
+const KINDS = ['state', 'non-state', 'one-sided'];
+const event = (e: unknown) => {
+  const x = e as Record<string, unknown> | null;
+  return !!x && text(x.id) && realDate(x.date) && text(x.place) && text(x.country) && num(x.lat) && num(x.lon) && num(x.precision) && KINDS.includes(x.kind as string) && range(x.deaths) && text(x.headline) && Array.isArray(x.sources) && x.sources.every(text) && typeof x.provisional === 'boolean';
+};
 const TRENDS = ['rising', 'steady', 'falling', 'low data'];
 
 const weeks = (a: unknown) => Array.isArray(a) && a.length === 52 && a.every(num);
@@ -29,14 +37,16 @@ function validWorld(w: unknown): boolean {
     !!x.weeklyByKind &&
     (['state', 'non-state', 'one-sided'] as const).every((k) => weeks(x.weeklyByKind![k])) &&
     Array.isArray(x.countries) &&
+    x.countries.every((k) => !!k && text(k.name) && (k.id === null || text(k.id)) && num(k.deaths90) && num(k.deaths365)) &&
     Array.isArray(x.latest) &&
+    x.latest.every(event) &&
     num(x.conflictsListed)
   );
 }
 
 function valid(f: unknown): f is ConflictsFile {
   const x = f as Partial<ConflictsFile> | null;
-  if (!x || typeof x !== 'object' || typeof x.dataEnd !== 'string' || !/^\d{4}-\d{2}-\d{2}$/.test(x.dataEnd) || !Array.isArray(x.conflicts) || !validWorld(x.world)) return false;
+  if (!x || typeof x !== 'object' || !realDate(x.dataEnd) || !Array.isArray(x.conflicts) || !validWorld(x.world)) return false;
   return x.conflicts.every(
     (c) =>
       !!c &&
@@ -46,7 +56,9 @@ function valid(f: unknown): f is ConflictsFile {
       Array.isArray(c.latest) &&
       Array.isArray(c.kinds) &&
       TRENDS.includes(c.trend) &&
-      typeof c.lastDate === 'string' &&
+      realDate(c.lastDate) &&
+      c.latest.every(event) &&
+      c.countries.every((k) => !!k && text(k.name) && num(k.deaths365)) &&
       num(c.provisionalShare) &&
       !!c.deaths &&
       range(c.deaths.d30) &&

@@ -24,6 +24,12 @@ const zero = (): Range => ({ best: 0, low: 0, high: 0 });
 const add = (a: Range, r: Range) => ((a.best += r.best), (a.low += r.low), (a.high += r.high));
 
 export const WORLD_ID = 'world'; // reserved for the World overview page
+const tidy = (s: string | undefined, max = Infinity) => {
+  const t = (s ?? '').replace(/\s+/g, ' ').trim();
+  return t.length > max ? `${t.slice(0, max - 1).trimEnd()}…` : t;
+};
+// "XXX100 - XXX100" is one code, not two
+const collapseRepeated = (name: string) => name.split(' - ').filter((p, i, a) => i === 0 || p !== a[i - 1]).join(' - ');
 const DATE_ONLY = /^(\d{4}-\d{2}-\d{2}|\d{1,2}\s+[A-Za-z]+\s+\d{4})$/; // some UCDP candidate headlines are just the date
 
 type Ev = { id: string; date: string; ageD: number; span: Span; row: GedRow; kind: Kind; deaths: Range; provisional: boolean };
@@ -119,18 +125,19 @@ function toEvent(e: Ev): ConflictEvent | null {
   const lat = num(e.row.latitude);
   const lon = num(e.row.longitude);
   if (lat === null || lon === null) return null;
-  const headline = (e.row.source_headline ?? '').trim();
+  // UCDP joins the headlines of several sources with ";": the first real one stands for the event
+  const headline = (e.row.source_headline ?? '').split(';').map((p) => tidy(p)).find((p) => p !== '' && !DATE_ONLY.test(p)) ?? '';
   return {
     id: e.id,
     date: e.date,
-    place: [...new Set([e.row.where_description, e.row.adm_1, e.row.country].map((s) => (s ?? '').trim()).filter(Boolean))].join(', '),
+    place: tidy([...new Set([e.row.where_description, e.row.adm_1, e.row.country].map((s) => tidy(s)).filter(Boolean))].join(', '), 120),
     country: e.row.country ?? '',
     lat,
     lon,
     precision: Math.min(7, Math.max(1, Math.round(num(e.row.where_prec) ?? 5))),
     kind: e.kind,
     deaths: e.deaths,
-    headline: DATE_ONLY.test(headline) ? '' : headline.slice(0, 200),
+    headline: tidy(headline, 200),
     sources: [...new Set((e.row.source_office ?? '').split(';').map((s) => s.trim()).filter(Boolean))],
     provisional: e.provisional,
   };
@@ -192,7 +199,8 @@ export function conflictsFromRows(input: { row: GedRow; provisional: boolean }[]
     const countryList = [...countries.values()].sort((a, b) => b.deaths365 - a.deaths365 || a.name.localeCompare(b.name));
     const main = countryList[0]?.name ?? 'unknown';
     // UCDP candidate files anonymise some actors as XXX<number>: keep the code visible, it is all the data says
-    const name = rawName === '' ? `Unnamed conflict (${main})` : /^XXX\d+/.test(rawName) ? `${rawName} (${main})` : rawName;
+    const collapsed = collapseRepeated(rawName);
+    const name = rawName === '' ? `Unnamed conflict (${main})` : /^XXX\d+/.test(collapsed) ? `${collapsed} (${main})` : collapsed;
     let id = slug(name);
     for (let i = 2; used.has(id); i++) id = `${slug(name)}-${i}`;
     used.add(id);

@@ -8,6 +8,7 @@ import type { GedRow } from '../conflicts/conflicts';
 import { resolveGw } from '../relations/gw-ids';
 import type { CountryIndex, IndicesFile, Risk } from '../../src/indices/types';
 import { bandOf, countryStats, dfiRange, momentumOf, per100k, type Stats } from './indices';
+import { capDataEnd } from '../lib/dates';
 import { backtest, bootstrapPair, rollingBacktest, confidenceOf, contributions, FEATURES, featureVector, fitTwo, predictOne, type TrainRow } from './model';
 import { aggregate, buildPanel, type GedEv, ym } from './panel';
 import { latestBefore, latestPublished, parseWbHist } from './structural';
@@ -41,6 +42,8 @@ async function main() {
       if (d >= '2016-01-01') rows.push({ row: Object.fromEntries(FIELDS.map((f) => [f, r[f]])), provisional });
     }
   }
+  maxDate = capDataEnd(maxDate, new Date().toISOString().slice(0, 10)); // one bad future date must not move the data end
+  if (!maxDate) throw new Error('no UCDP rows found: run npm run data:ucdp first');
   const END = ym(+maxDate.slice(0, 4), +maxDate.slice(5, 7));
   const dataEndS = Date.UTC(+maxDate.slice(0, 4), +maxDate.slice(5, 7) - 1, +maxDate.slice(8, 10)) / 1000;
   const { gwToId, unmapped } = resolveGw(gwNames, countries);

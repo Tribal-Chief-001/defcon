@@ -3,6 +3,7 @@
 import { createReadStream, readFileSync, writeFileSync } from 'node:fs';
 import { parse } from 'csv-parse';
 import { resolveGw } from '../relations/gw-ids';
+import { capDataEnd } from '../lib/dates';
 import { conflictsFromRows, type GedRow } from './conflicts';
 
 const KEEP_FROM = '2025-01-01'; // the tracker needs 365 days before the data end; this leaves room
@@ -25,6 +26,7 @@ async function main() {
       rows.push({ row: Object.fromEntries(FIELDS.map((f) => [f, r[f]])), provisional });
     }
   }
+  maxDate = capDataEnd(maxDate, new Date().toISOString().slice(0, 10)); // one bad future date must not move the data end
   if (!maxDate) throw new Error('no UCDP rows found: run npm run data:ucdp first');
   const { gwToId, unmapped } = resolveGw(gwNames, countries);
   const out = conflictsFromRows(rows, {

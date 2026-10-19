@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { validateTimeline } from '../../scripts/timeline/validate';
+import { registrable, validateTimeline } from '../../scripts/timeline/validate';
 import type { TimelineEntry, TimelineFile, TimelineSource } from '../../src/timeline/types';
 
 const src = (o: Partial<TimelineSource> = {}): TimelineSource => ({ outlet: 'Reuters', title: 'A report', url: 'https://www.reuters.com/world/a-report/', published: '2026-03-01', verified: 'date and claim read on the page', ...o });
@@ -68,5 +68,35 @@ describe('validateTimeline', () => {
     expect(only([src({ outlet: 'BBC', url: 'https://www.bbc.co.uk/news/x' }), src({ outlet: 'Guardian', url: 'https://www.theguardian.com/world/x' })])).toBe('');
     expect(problems(file([entry({ status: 'reported', sources: [src()] })]))).toEqual([]); // one source is fine for reported
     expect(problems(file([entry({ status: 'disputed', sources: [src()] })])).join()).toMatch(/disputed needs 2/);
+  });
+});
+
+describe('validateTimeline: hardening (Plan 9 review minors)', () => {
+  it('returns a problem instead of throwing for month 13 or month 00', () => {
+    expect(() => problems(file([entry({ date: '2026-13-01' })]))).not.toThrow();
+    expect(problems(file([entry({ date: '2026-13-01' })])).join()).toMatch(/not a valid date/);
+    expect(problems(file([entry({ date: '2026-00-10' })])).join()).toMatch(/not a valid date/);
+    expect(problems({ ...file(), checkedAt: '2026-13-01' }).join()).toMatch(/checkedAt/);
+  });
+  it('knows more two-level suffixes and ignores a trailing dot', () => {
+    expect(registrable('www.pravda.com.ua')).toBe('pravda.com.ua');
+    expect(registrable('www.mfa.gov.il')).toBe('mfa.gov.il');
+    expect(registrable('assets.publishing.service.gov.uk')).toBe('service.gov.uk');
+    expect(registrable('www.ox.ac.uk')).toBe('ox.ac.uk');
+    expect(registrable('www3.nhk.or.jp')).toBe('nhk.or.jp');
+    expect(registrable('www.dawn.com.pk')).toBe('dawn.com.pk');
+    expect(registrable('www.reuters.com.')).toBe('reuters.com');
+  });
+  it('counts one organisation under different domains once', () => {
+    const only = (sources: TimelineSource[]) => problems(file([entry({ sources })])).join();
+    expect(only([src({ outlet: 'BBC', url: 'https://www.bbc.com/news/a' }), src({ outlet: 'BBC News', url: 'https://www.bbc.co.uk/news/b' })])).toMatch(/confirmed needs 2/);
+    expect(only([src({ outlet: 'Al Jazeera', url: 'https://www.aljazeera.com/a' }), src({ outlet: 'Al Jazeera English', url: 'https://www.aljazeera.net/b' })])).toMatch(/confirmed needs 2/);
+    expect(only([src({ outlet: 'AP', url: 'https://apnews.com/a' }), src({ outlet: 'Associated Press', url: 'https://www.ap.org/b' })])).toMatch(/confirmed needs 2/);
+    expect(only([src({ outlet: 'BBC', url: 'https://www.bbc.com/news/a' }), src({ outlet: 'Al Jazeera', url: 'https://www.aljazeera.com/b' })])).toBe('');
+  });
+  it('flags a summary that quotes more than 10 words in a row', () => {
+    const q = (s: string) => problems(file([entry({ summary: s })])).join();
+    expect(q('He said "the army will hold every position along the whole front line until further notice" on Monday.')).toMatch(/quotes more than 10 words/);
+    expect(q('He said "hold every position" on Monday and "will not retreat" on Tuesday.')).toBe('');
   });
 });
