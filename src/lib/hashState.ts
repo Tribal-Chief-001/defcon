@@ -4,7 +4,7 @@
 // moment are accepted; anything else makes the whole link invalid.
 const RE = /^#c=([A-Za-z0-9]{3})$/;
 const WAR = /^#war(?:=([a-z0-9-]{1,60}))?$/;
-const MOMENT = /^(.*?)(?:&t=(\d{9,11}))?$/;
+const MOMENT = /^([\s\S]*?)(?:&t=(\d{9,11}))?$/; // [\s\S], not `.`: a line break must not make the match fail
 const MAX_T = 4_102_444_800; // 2100-01-01
 export type Hash = { country: string | null; about?: true; war?: string; t?: number };
 

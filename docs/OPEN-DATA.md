@@ -2,7 +2,7 @@
 
 Defcon has no server. Everything the site shows comes from static files under `/data/` that you may download and reuse (with the licences below). The same files are what the site reads, so what you download is what you see. The War room and the Index board also have **Download CSV** buttons (conflicts, and the indices of every country), built in your browser from these files.
 
-Base URL: `https://defcon-roan.vercel.app/data/` (the files are in `public/data/` of the repository).
+Base URL: `https://defcon-roan.vercel.app/data/` (the committed files are in `public/data/` of the repository; `signals.json` and the event snapshot are built by the ingest workflow every 3 hours and are not in git).
 
 | File | What it holds | Updated | Source and licence |
 |---|---|---|---|

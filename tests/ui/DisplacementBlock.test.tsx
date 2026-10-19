@@ -24,12 +24,13 @@ describe('DisplacementBlock', () => {
     expect(t).toMatch(/Refugees hosted here.*20,869/);
     expect(t).toMatch(/not conflict deaths/i);
   });
-  it('writes "not reported" for a figure UNHCR does not report, and keeps a real 0 as 0', async () => {
+  it('writes "none reported" for a 0 (UNHCR\'s API writes 0 where it has no figure) and "not reported" for a missing one, never a bare 0 (review finding)', async () => {
     render(<DisplacementBlock iso3="ABW" />);
     await screen.findByRole('region', { name: /displacement/i });
     const t = region().textContent ?? '';
     expect(t).toMatch(/Displaced inside the country.*not reported/);
-    expect(t).toMatch(/Refugees from this country.*\b0\b/);
+    expect(t).toMatch(/Refugees from this country.*none reported/);
+    expect(t).not.toMatch(/Refugees from this country\s*0\b/);
     expect(t).toMatch(/Refugees hosted here.*not reported/);
   });
   it('shows only what exists for a country that only hosts, and a plain line for a country UNHCR has nothing on', async () => {
@@ -51,6 +52,11 @@ describe('DisplacementBlock', () => {
     expect(links).toContain('https://www.unhcr.org/what-we-do/data-and-publications/data-and-statistics/terms-use-datasets');
     expect(links).toContain('https://www.unhcr.org/refugee-statistics/methodology/');
     expect(region().textContent).not.toMatch(/endorse|approved by|in partnership/i);
+  });
+  it('is not shown for a territory that shares its parent\'s ISO3 code (Ashmore and Cartier is not Australia)', async () => {
+    const { container } = render(<DisplacementBlock iso3="AFG" territory />);
+    await new Promise((r) => setTimeout(r, 10));
+    expect(container.textContent).toBe('');
   });
   it('renders nothing for a country without an ISO3 code and nothing when the file cannot be loaded', async () => {
     const { container } = render(<DisplacementBlock iso3={null} />);

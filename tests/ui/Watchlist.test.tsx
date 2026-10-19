@@ -111,6 +111,50 @@ describe('WatchPanel', () => {
   });
 });
 
+describe('WatchAlerts and WatchPanel: review findings', () => {
+  it('does not crash when the Notification constructor throws (Android Chrome: Illegal constructor), and still announces', async () => {
+    const N = Object.assign(vi.fn(() => { throw new TypeError('Illegal constructor'); }), { permission: 'granted', requestPermission: vi.fn() });
+    vi.stubGlobal('Notification', N);
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => true });
+    useWatchlist.setState({ ids: ['UKR'], seen: { UKR: NOW - 3600 } });
+    render(<WatchAlerts />);
+    act(() => useEvents.setState({ recent: snap([{ c: 'UKR', t: NOW - 60 }]), status: 'ok' } as never));
+    await waitFor(() => expect(useStatus.getState().message).toBe('1 new event in Ukraine'));
+    Object.defineProperty(document, 'hidden', { configurable: true, get: () => false });
+  });
+  it('announces only the countries whose count grew, not every watched country', async () => {
+    useWatchlist.setState({ ids: ['UKR', 'IND'], seen: { UKR: NOW - 3600, IND: NOW - 3600 } });
+    render(<WatchAlerts />);
+    act(() => useEvents.setState({ recent: snap([{ c: 'UKR', t: NOW - 60 }]), status: 'ok' } as never));
+    await waitFor(() => expect(useStatus.getState().message).toBe('1 new event in Ukraine'));
+    act(() => useEvents.setState({ recent: snap([{ c: 'UKR', t: NOW - 60 }, { c: 'IND', t: NOW - 30 }]), status: 'ok' } as never));
+    await waitFor(() => expect(useStatus.getState().message).toBe('1 new event in India'));
+  });
+  it('Esc in the Watching panel closes only the panel (not the dossier or the War room behind it) and returns focus to its button', async () => {
+    useWatchlist.setState({ ids: ['UKR'], seen: { UKR: NOW } });
+    const outer = vi.fn();
+    window.addEventListener('keydown', outer);
+    render(<WatchPanel onOpen={() => {}} />);
+    const trigger = screen.getByRole('button', { name: /watching/i });
+    fireEvent.click(trigger);
+    const panel = await screen.findByRole('region', { name: /^watching$/i });
+    fireEvent.keyDown(within(panel).getAllByRole('button')[0]!, { key: 'Escape' });
+    expect(screen.queryByRole('region', { name: /^watching$/i })).toBeNull();
+    expect(outer).not.toHaveBeenCalled();
+    expect(document.activeElement).toBe(screen.getByRole('button', { name: /watching/i }));
+    window.removeEventListener('keydown', outer);
+  });
+  it('enables notifications also where requestPermission uses the old callback style (returns nothing)', async () => {
+    const N = Object.assign(vi.fn(), { permission: 'default', requestPermission: vi.fn(() => { (N as unknown as { permission: string }).permission = 'granted'; }) });
+    vi.stubGlobal('Notification', N);
+    useWatchlist.setState({ ids: ['UKR'], seen: { UKR: NOW } });
+    render(<WatchPanel onOpen={() => {}} />);
+    fireEvent.click(screen.getByRole('button', { name: /watching/i }));
+    fireEvent.click(await screen.findByRole('button', { name: /enable notifications/i }));
+    await waitFor(() => expect(screen.getByRole('region', { name: /^watching$/i }).textContent).toMatch(/notifications are on/i));
+  });
+});
+
 describe('WatchAlerts', () => {
   it('announces new events of a watched country when a snapshot arrives, once, and not for what was already seen', async () => {
     useWatchlist.setState({ ids: ['UKR'], seen: { UKR: NOW - 3600 } });

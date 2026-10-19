@@ -91,7 +91,8 @@ export function WarRoom({
   const [region, setRegion] = useState<'world' | 'south-asia'>('world');
   const pickRegion = (r: 'world' | 'south-asia') => {
     setRegion(r);
-    if (r === 'south-asia') onFocusPlace({ ...SOUTH_ASIA_VIEW, place: 'South Asia' });
+    if (selected) onSelect(null); // choosing a region leaves an open conflict
+    onFocusPlace(r === 'south-asia' ? { ...SOUTH_ASIA_VIEW, place: 'South Asia' } : null); // World releases the camera
   };
   const backS = useTime((s) => s.backS);
   const goLive = useTime((s) => s.goLive);
@@ -144,7 +145,7 @@ export function WarRoom({
         ) : current ? (
           <ConflictView c={current} f={file} tl={tl} onBack={back} onDive={onDive} onFocusPlace={onFocusPlace} onHoverPin={onHoverPin} />
         ) : region === 'south-asia' ? (
-          <RegionView f={file} onSelect={(id) => onSelect(id)} onDive={onDive} onMethod={onMethod ?? (() => {})} />
+          <RegionView f={file} onSelect={(id) => onSelect(id)} onDive={onDive} onMethod={onMethod ?? (() => {})} returnFocus={returnTo} />
         ) : (
           <Overview f={file} tl={tl} onSelect={(id) => onSelect(id)} onDive={onDive} onFocusPlace={onFocusPlace} onHoverPin={onHoverPin} onMethod={onMethod} returnFocus={returnTo} />
         )}

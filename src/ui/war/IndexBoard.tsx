@@ -113,13 +113,17 @@ export function IndexBoard({ onDive, onMethod, ids }: { onDive: (countryId: stri
         })}
       </ol>
 
+      {ids ? null : (
+        <>
       <h5 className={`${label} mt-8`}>The world's deaths per month, ten years</h5>
-      <div className="mt-2 [&>svg]:h-auto [&>svg]:w-full">
-        <Spark data={world} width={600} height={90} what="World deaths per month, last 10 years" />
-      </div>
-      <p className="mt-1 font-[var(--font-mono)] text-[11.5px] text-[var(--text-muted)]">
-        {first} to {monthLabel(file.seriesEnd, 0)} · peak {int(peak)} in {monthLabel(file.seriesEnd, world.length - 1 - peakAt)} · 2026 months are provisional
-      </p>
+          <div className="mt-2 [&>svg]:h-auto [&>svg]:w-full">
+            <Spark data={world} width={600} height={90} what="World deaths per month, last 10 years" />
+          </div>
+          <p className="mt-1 font-[var(--font-mono)] text-[11.5px] text-[var(--text-muted)]">
+            {first} to {monthLabel(file.seriesEnd, 0)} · peak {int(peak)} in {monthLabel(file.seriesEnd, world.length - 1 - peakAt)} · 2026 months are provisional
+          </p>
+        </>
+      )}
 
       <div className="mt-4 flex flex-wrap items-center gap-4">
         <ExportButton label="indices of every country" filename={`defcon-indices-${file.dataEnd}.csv`} build={() => indicesCsv(file, names)} />

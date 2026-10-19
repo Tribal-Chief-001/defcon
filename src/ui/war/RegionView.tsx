@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useEffect, useMemo, useRef } from 'react';
 import type { ConflictsFile } from '../../conflicts/types';
 import { conflictsInRegion, regionTotals, SOUTH_ASIA } from '../../regions';
 import { IndexBoard } from './IndexBoard';
@@ -8,11 +8,15 @@ const NAMES = 'Afghanistan, Bangladesh, Bhutan, India, Maldives, Nepal, Pakistan
 
 // The South Asia lens of the War room: what the data says about the eight SAARC member states, from the data already loaded. It is a
 // filter, not a map: nothing on the globe changes except the view.
-export function RegionView({ f, onSelect, onDive, onMethod }: { f: ConflictsFile; onSelect: (id: string) => void; onDive: (id: string) => void; onMethod: () => void }) {
+export function RegionView({ f, onSelect, onDive, onMethod, returnFocus }: { f: ConflictsFile; onSelect: (id: string) => void; onDive: (id: string) => void; onMethod: () => void; returnFocus?: string | null }) {
+  const root = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (returnFocus) root.current?.querySelector<HTMLElement>(`[data-conflict-row="${CSS.escape(returnFocus)}"]`)?.focus(); // Back returns to the row it left
+  }, [returnFocus]);
   const inRegion = useMemo(() => conflictsInRegion(f.conflicts, SOUTH_ASIA), [f.conflicts]);
   const totals = useMemo(() => regionTotals(f.conflicts, SOUTH_ASIA), [f.conflicts]);
   return (
-    <section aria-label="South Asia" className="pb-2">
+    <section ref={root} aria-label="South Asia" className="pb-2">
       <h3 className="sr-only">South Asia</h3>
       <p className="mt-6 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.18em] text-[var(--text-muted)]">South Asia · last 365 days to {f.dataEnd}</p>
       <p className="mt-2 font-[var(--font-body)] text-[clamp(44px,8vw,72px)] font-semibold leading-none tracking-tight">{int(totals.deaths365)}</p>

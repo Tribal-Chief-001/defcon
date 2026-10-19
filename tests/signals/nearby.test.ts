@@ -26,6 +26,13 @@ describe('nearbySignals', () => {
     expect(quake.seismic).toHaveLength(1);
     expect(nearbySignals(f, { lat: 35.2, lon: 60.3, timeS: GEN - 3600 - 4 * 3600 }).seismic).toEqual([]);
   });
+  it('matches a seismic explosion to a human-coded event (dated by day) within a day, without minutes', () => {
+    const human = { lat: 35.2, lon: 60.3, timeS: GEN - 3600 - 20 * 3600, human: true };
+    const n = nearbySignals(f, human);
+    expect(n.seismic).toHaveLength(1);
+    expect(n.seismic[0]!.minutes).toBeNull();
+    expect(nearbySignals(f, { ...human, human: false }).seismic).toEqual([]); // an auto-coded event has a time of day: 3 hours
+  });
   it('says "none" for an event inside the window with nothing near it, and "older" for an event older than the 7-day window', () => {
     expect(nearbySignals(f, at({ lat: -30, lon: 100 })).state).toBe('none');
     expect(nearbySignals(f, at({ timeS: GEN - 9 * 86400 })).state).toBe('older');

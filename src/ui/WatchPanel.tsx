@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { loadIndex } from '../dossier/load';
 import { useEvents } from '../events/store';
 import { newEventCounts, useWatchlist } from '../watchlist/watchlist';
@@ -14,10 +14,11 @@ export function WatchPanel({ onOpen, nowS }: { onOpen: (id: string) => void; now
   const markSeen = useWatchlist((s) => s.markSeen);
   const { recent, archive } = useEvents();
   const [open, setOpen] = useState(false);
+  const trigger = useRef<HTMLButtonElement>(null);
   const [names, setNames] = useState<Map<string, string>>(new Map());
   const [perm, setPerm] = useState<string>(() => (typeof Notification === 'undefined' ? 'unsupported' : Notification.permission));
   useEffect(() => {
-    void loadIndex().then((ix) => setNames(new Map(ix.map((e) => [e.id, e.name]))));
+    void loadIndex().then((ix) => setNames(new Map(ix.map((e) => [e.id, e.name]))), () => undefined);
   }, []);
   const now = nowS ?? Math.floor(Date.now() / 1000);
   const counts = useMemo(() => new Map(newEventCounts([recent, archive], { ids, seen }, now).map((c) => [c.id, c.count])), [recent, archive, ids, seen, now]);
@@ -26,14 +27,19 @@ export function WatchPanel({ onOpen, nowS }: { onOpen: (id: string) => void; now
   const name = (id: string) => names.get(id) ?? id;
   return (
     <div className="relative">
-      <button type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)]">
+      <button ref={trigger} type="button" aria-expanded={open} onClick={() => setOpen((o) => !o)} className="rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)]">
         {total > 0 ? `Watching (${total} new)` : `Watching (${ids.length})`}
       </button>
       {open ? (
         <section
           role="region"
           aria-label="Watching"
-          onKeyDown={(e) => e.key === 'Escape' && setOpen(false)}
+          onKeyDown={(e) => {
+            if (e.key !== 'Escape') return;
+            e.stopPropagation(); // Esc closes this panel only, not the dossier or the War room behind it
+            setOpen(false);
+            trigger.current?.focus();
+          }}
           className="pointer-events-auto absolute left-0 top-[calc(100%+8px)] z-30 w-[min(340px,calc(100vw-8vw))] rounded-[20px] border border-[var(--border)] bg-black/80 p-4 backdrop-blur-xl"
         >
           <div className="flex items-center justify-between gap-3">
@@ -66,7 +72,10 @@ export function WatchPanel({ onOpen, nowS }: { onOpen: (id: string) => void; now
             })}
           </ul>
           {perm === 'default' ? (
-            <button type="button" className={`${btn} mt-3`} onClick={() => void Notification.requestPermission().then(setPerm)}>
+            <button type="button" className={`${btn} mt-3`} onClick={() => {
+                // older Safari returns nothing (callback style): read the permission afterwards in either case
+                void Promise.resolve(Notification.requestPermission()).then(() => setPerm(Notification.permission), () => setPerm(Notification.permission));
+              }}>
               Enable notifications
             </button>
           ) : perm === 'granted' ? (

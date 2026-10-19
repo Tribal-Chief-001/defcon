@@ -12,9 +12,7 @@ export function downloadText(filename: string, text: string, mime = 'text/csv;ch
   a.style.display = 'none';
   document.body.appendChild(a);
   a.click();
-  setTimeout(() => {
-    a.remove();
-    URL.revokeObjectURL(url);
-  }, 0);
+  setTimeout(() => a.remove(), 0);
+  setTimeout(() => URL.revokeObjectURL(url), 1500); // not at once: Firefox and Safari can cancel a download whose URL is revoked early
   return true;
 }

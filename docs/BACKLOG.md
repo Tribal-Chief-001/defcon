@@ -210,4 +210,5 @@ Still open (needs a person, hardware or research, or was judged not worth it):
 - Watchlist: countries only (radius alerts and "notify me by e-mail" need a server); notifications only while a tab is open.
 - Share: `#e=<event id>` links (an event card) were not built; only the moment, the country and the conflict.
 - Items 11 (Indicators desk) and 13 (Story mode) of the v1.1 list have no plan.
+- Review minors of Plan 15 not done: after a `hashchange` to a link with another moment for the same country the address bar keeps the old `&t=` (harmless: the moment is applied); two browser tabs overwrite each other's watchlist (a `storage` event listener would merge them); UNHCR's Serbia row includes Kosovo and is shown for Serbia only; the seismic `none` wording does not distinguish "no event" from "feed covers only 7 days" beyond the new sentence.
 

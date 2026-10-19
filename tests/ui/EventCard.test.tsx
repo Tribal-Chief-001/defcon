@@ -104,6 +104,10 @@ describe('EventCard: evidence trail', () => {
     expect(u).toMatch(/human-coded by UCDP/i);
     expect(u).toMatch(/exact place/i);
     expect(u).toMatch(/no sources listed/i);
+    expect(u).not.toMatch(/from the sources listed above/i); // there are none
+    cleanup();
+    card({ human: true, sources: [{ name: 'A' }] });
+    expect(trail().textContent).toMatch(/from the sources listed above/i);
   });
 
   it('lists the signals near the event as context, with distances and never as confirmation', async () => {
@@ -122,6 +126,7 @@ describe('EventCard: evidence trail', () => {
     card({ at: { lat: -30, lon: 100 } });
     expect(await screen.findByText(/no signal near this event/i)).toBeTruthy();
     expect(trail().textContent).toMatch(/proves nothing either way/i);
+    expect(trail().textContent).toMatch(/fire detections cover the last 24 hours/i);
     cleanup();
     card({ at: { lat: 12.8, lon: 13.8 }, timeS: GEN - 9 * 86400 });
     expect(await screen.findByText(/older than the 7 days/i)).toBeTruthy();

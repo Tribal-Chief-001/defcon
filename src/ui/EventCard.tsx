@@ -36,13 +36,13 @@ function EvidenceTrail({ detail, info, at }: { detail: Detail; info: EventInfo; 
       live = false;
     };
   }, []);
-  const near = useMemo(() => (signals && at ? nearbySignals(signals, { lat: at.lat, lon: at.lon, timeS: info.timeS }) : null), [signals, at, info.timeS]);
+  const near = useMemo(() => (signals && at ? nearbySignals(signals, { lat: at.lat, lon: at.lon, timeS: info.timeS, human: info.human }) : null), [signals, at, info.timeS]);
   const n = detail.sources.length;
   return (
     <section aria-label="Evidence trail" className="mt-4 border-t border-[var(--border)] pt-3">
       <h3 className="font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.18em] text-[var(--text-muted)]">Evidence trail</h3>
       <ul className="mt-2 space-y-1.5 text-[12.5px] leading-snug text-[var(--text-muted)]">
-        <li>{info.human ? 'Human-coded by UCDP researchers from the sources listed above.' : 'Auto-coded from a news report (GDELT): not reviewed by a person, so the place and the counts can be wrong.'}</li>
+        <li>{info.human ? (n > 0 ? 'Human-coded by UCDP researchers from the sources listed above.' : 'Human-coded by UCDP researchers.') : 'Auto-coded from a news report (GDELT): not reviewed by a person, so the place and the counts can be wrong.'}</li>
         <li>Place given as {PRECISION_TEXT[info.precision as 1 | 2 | 3 | 4 | 5] ?? 'a place of unknown precision'}.</li>
         <li>
           {n === 0 ? 'No sources listed.' : `${n} ${n === 1 ? 'source' : 'sources'} listed.`}
@@ -53,11 +53,11 @@ function EvidenceTrail({ detail, info, at }: { detail: Detail; info: EventInfo; 
         ) : near!.state === 'older' ? (
           <li>This event is older than the {signals.windows.seismicDays} days the signals cover.</li>
         ) : near!.state === 'none' ? (
-          <li>No signal near this event in the data. Signals are sparse: this proves nothing either way.</li>
+          <li>No signal near this event in the data. Signals are sparse: this proves nothing either way. Fire detections cover the last 24 hours, seismic events and disaster alerts the last 7 days.</li>
         ) : (
           <>
             {near!.fires.slice(0, 2).map((x) => (
-              <li key={`${x.cell.lat},${x.cell.lon}`}>
+              <li key={`${x.cell.conflictId}:${x.cell.lat},${x.cell.lon}`}>
                 Satellite fire detections ({x.cell.count}) in a cell about {Math.round(x.km)} km away, within 2 days. A fire has many causes.
               </li>
             ))}
@@ -68,7 +68,7 @@ function EvidenceTrail({ detail, info, at }: { detail: Detail; info: EventInfo; 
             ))}
             {near!.seismic.slice(0, 2).map((x) => (
               <li key={x.event.id}>
-                Seismic explosion {x.event.mag === null ? '' : `M ${x.event.mag.toFixed(1)} `}about {Math.round(x.km)} km away, {x.minutes} min apart.
+                Seismic explosion {x.event.mag === null ? '' : `M ${x.event.mag.toFixed(1)} `}about {Math.round(x.km)} km away, {x.minutes === null ? 'the same day' : `${x.minutes} min apart`}.
               </li>
             ))}
             <li className="text-[var(--text-faint)]">Context from the Signals feed, not confirmation.</li>

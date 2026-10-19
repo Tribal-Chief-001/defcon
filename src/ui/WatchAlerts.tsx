@@ -18,12 +18,16 @@ export function WatchAlerts() {
   useEffect(() => {
     if (!names) return;
     const counts = newEventCounts([recent, archive], { ids, seen }, Math.floor(Date.now() / 1000));
-    const grew = counts.some((c) => c.count > (last.current[c.id] ?? 0));
+    const grew = counts.filter((c) => c.count > (last.current[c.id] ?? 0)); // only the countries with something new since the last announcement
     last.current = Object.fromEntries(counts.map((c) => [c.id, c.count]));
-    if (!grew) return;
-    const text = alertText(counts, names);
+    if (grew.length === 0) return;
+    const text = alertText(grew, names);
     announce(text);
-    if (typeof Notification !== 'undefined' && Notification.permission === 'granted' && document.hidden) new Notification('Defcon', { body: text, tag: 'defcon-watch' });
+    try {
+      if (typeof Notification !== 'undefined' && Notification.permission === 'granted' && document.hidden) new Notification('Defcon', { body: text, tag: 'defcon-watch' });
+    } catch {
+      /* some browsers (Android Chrome) refuse the constructor: the announcement above is enough */
+    }
   }, [recent, archive, ids, seen, names]);
   return null;
 }

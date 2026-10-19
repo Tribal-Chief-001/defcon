@@ -81,4 +81,27 @@ describe('War room: the South Asia lens', () => {
     expect(view.textContent).toMatch(/lens only filters the data/i);
     expect((await axe.run(view, { rules: { 'color-contrast': { enabled: false }, region: { enabled: false } } })).violations.map((v) => v.id)).toEqual([]);
   });
+
+  it('going back to World clears the place focus (the camera goes back), and choosing a region leaves an open conflict', async () => {
+    const p = await open(props());
+    fireEvent.click(screen.getByRole('button', { name: 'South Asia' }));
+    await screen.findByRole('region', { name: /south asia/i });
+    fireEvent.click(screen.getByRole('button', { name: 'World' }));
+    expect(p.onFocusPlace).toHaveBeenLastCalledWith(null);
+    cleanup();
+    const q = props({ selected: 'pk' });
+    render(<WarRoom {...q} />);
+    await screen.findByRole('heading', { name: /Pakistan: Government/ });
+    fireEvent.click(screen.getByRole('button', { name: 'South Asia' }));
+    expect(q.onSelect).toHaveBeenCalledWith(null);
+  });
+  it('shows no world-wide chart under the lens, and Back from a conflict returns focus to its row', async () => {
+    const q = props();
+    render(<WarRoom {...q} />);
+    await screen.findByRole('list', { name: /conflicts league/i });
+    fireEvent.click(screen.getByRole('button', { name: 'South Asia' }));
+    const view = await screen.findByRole('region', { name: /south asia/i });
+    expect(view.textContent).not.toMatch(/world's deaths per month/i);
+    expect(screen.queryByRole('img', { name: /World deaths per month/i })).toBeNull();
+  });
 });

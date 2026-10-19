@@ -30,6 +30,14 @@ describe('downloadText', () => {
     expect(new TextDecoder().decode(bytes.slice(3))).toBe('é,1\n');
     await new Promise((r) => setTimeout(r, 5));
     expect(document.querySelector('a[download]')).toBeNull(); // the link is removed again
+    expect(URL.revokeObjectURL).not.toHaveBeenCalled(); // not at once: Firefox and Safari can cancel a download whose URL is revoked early
+    vi.useFakeTimers();
+    downloadText('b.csv', 'x');
+    vi.advanceTimersByTime(1100);
+    expect(URL.revokeObjectURL).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1000);
+    expect(URL.revokeObjectURL).toHaveBeenCalled();
+    vi.useRealTimers();
   });
   it('returns false instead of throwing where object URLs are not available', () => {
     (URL as unknown as { createObjectURL?: unknown }).createObjectURL = undefined;

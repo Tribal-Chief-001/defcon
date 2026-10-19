@@ -68,3 +68,10 @@ describe('hash state: a moment (&t=<unix seconds>)', () => {
     expect(parseHash(formatHash('FJI', false, null, 1790000123))).toEqual({ country: 'FJI', t: 1790000123 });
   });
 });
+
+describe('hash state: odd characters', () => {
+  it('never throws, also for line breaks and line separators inside the hash', () => {
+    for (const h of ['#c=IND\n', '#c=IND\u2028&t=1790000000', '\n', '#war=a\r\n&t=1790000000']) expect(() => parseHash(h)).not.toThrow();
+    expect(parseHash('#c=IND\n')).toEqual({ country: null });
+  });
+});

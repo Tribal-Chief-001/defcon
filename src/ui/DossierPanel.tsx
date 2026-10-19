@@ -99,7 +99,7 @@ export function DossierPanel({ countryId, onClose, nowS: fixedNowS, onMethod }: 
 
       {indices ? <IndexCard index={indexFor(indices, d.id)} countryId={d.id} model={indices.model} dataEnd={indices.dataEnd} rankedTotal={indices.countries.filter((c) => c.fatality.rank !== null).length} onMethod={onMethod ?? (() => {})} /> : null}
 
-      <DisplacementBlock iso3={d.iso3} />
+      <DisplacementBlock iso3={d.iso3} territory={d.type === 'Dependency' || d.type === 'Indeterminate'} />
 
       <div className="mt-4 border-t border-[var(--border)]">
         <div className="grid grid-cols-[92px_1fr] gap-3 border-b border-[var(--border)] py-2 text-[13px]">
