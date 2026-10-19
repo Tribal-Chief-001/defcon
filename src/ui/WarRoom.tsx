@@ -1,4 +1,5 @@
 import { useEffect, useRef, useState } from 'react';
+import { useTime } from '../time/store';
 import { loadConflicts } from '../conflicts/load';
 import type { ConflictsFile } from '../conflicts/types';
 import { loadTimeline } from '../timeline/load';
@@ -73,12 +74,22 @@ export function WarRoom({
   }, []);
 
   const current = file?.conflicts.find((c) => c.id === selected) ?? null;
-  const back = () => onSelect(null);
+  const [returnTo, setReturnTo] = useState<string | null>(null); // the conflict Back came from: its row gets the focus again
+  const back = () => {
+    setReturnTo(selected);
+    onSelect(null);
+  };
+  // an id that is not in the data (an old link) is no selection: clear it so the address and the room agree
+  useEffect(() => {
+    if (file && selected && !current) onSelect(null);
+  }, [file, selected, current, onSelect]);
+  const backS = useTime((s) => s.backS);
+  const goLive = useTime((s) => s.goLive);
   return (
     <section
       role="region"
       aria-label="War room"
-      className="fixed z-20 flex flex-col overflow-hidden border-[var(--border)] bg-black/75 backdrop-blur-xl max-[1099px]:inset-x-0 max-[1099px]:bottom-0 max-[1099px]:h-[62vh] max-[1099px]:rounded-t-[24px] max-[1099px]:border-t min-[1100px]:bottom-0 min-[1100px]:right-0 min-[1100px]:top-[calc(4.25rem+var(--safe-top))] min-[1100px]:w-[min(46vw,720px)] min-[1100px]:border-l"
+      className="fixed z-20 flex flex-col overflow-hidden border-[var(--border)] bg-black/75 backdrop-blur-xl max-[1099px]:inset-x-0 max-[1099px]:bottom-0 max-[1099px]:h-[62vh] max-[1099px]:rounded-t-[24px] max-[1099px]:border-t min-[1100px]:bottom-0 min-[1100px]:right-0 min-[1100px]:top-[calc(4.25rem+var(--safe-top))] min-[1100px]:w-[min(46vw,720px)] min-[1100px]:border-l max-[1099px]:pb-[var(--safe-bottom)]"
     >
       <header className="flex items-start justify-between gap-4 border-b border-[var(--border)] px-5 pb-4 pt-5">
         <div>
@@ -88,27 +99,35 @@ export function WarRoom({
           <p className="mt-2 hidden max-w-[56ch] text-[13px] text-[var(--text-muted)] min-[600px]:block">
             Human-coded UCDP data{file ? ` through ${date(file.dataEnd)}` : ''}; 2026 rows are provisional and get revised. Deaths are estimates: the best figure with a low{'–'}high range. Newer events are on the globe and are auto-coded.
           </p>
+          <p className="mt-2 hidden max-w-[56ch] text-[12.5px] text-[var(--text-muted)] min-[600px]:block">The pulsing rings on the globe mark conflicts with deaths in the last 90 days of this data; they are not live activity.</p>
           <p className="mt-2 max-w-[56ch] text-[12.5px] text-[var(--text-muted)] min-[600px]:hidden">Human-coded UCDP data{file ? ` to ${date(file.dataEnd)}` : ''}. Estimates; 2026 provisional.</p>
         </div>
         <button type="button" onClick={onClose} aria-label="Close War room" className="shrink-0 rounded-full border border-[var(--border-strong)] px-3 py-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] hover:text-[var(--lime)]">
           Close
         </button>
       </header>
+      {backS > 0 ? (
+        <p className="flex items-center justify-between gap-3 border-b border-[var(--border)] px-5 py-2 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.12em] text-[var(--text-muted)]">
+          <span>Time travel is on: the globe shows {backS >= 86400 ? `${Math.round(backS / 86400)} d` : `${Math.max(1, Math.round(backS / 3600))} h`} ago.</span>
+          <button type="button" onClick={goLive} className="rounded-full border border-[var(--border-strong)] px-3 py-1 text-[var(--lime)]">
+            Back to live
+          </button>
+        </p>
+      ) : null}
       <div className="min-h-0 flex-1 overflow-y-auto px-5 pb-6">
+        <div role="status" aria-live="polite" data-war-status className={!file && !error ? 'pt-5 text-[14px] text-[var(--text-muted)]' : 'sr-only'}>
+          {!file && !error ? <>Loading conflicts{'…'}</> : null}
+        </div>
         {error ? (
           <p role="alert" className="pt-5 text-[14px]">
             {error}. The globe still works; try again later.
           </p>
-        ) : !file ? (
-          <p role="status" className="pt-5 text-[14px] text-[var(--text-muted)]">
-            Loading conflicts{'…'}
-          </p>
-        ) : file.conflicts.length === 0 ? (
+        ) : !file ? null : file.conflicts.length === 0 ? (
           <p className="pt-5 text-[14px] text-[var(--text-muted)]">No conflicts in this data.</p>
         ) : current ? (
           <ConflictView c={current} f={file} tl={tl} onBack={back} onDive={onDive} onFocusPlace={onFocusPlace} onHoverPin={onHoverPin} />
         ) : (
-          <Overview f={file} tl={tl} onSelect={(id) => onSelect(id)} onDive={onDive} onFocusPlace={onFocusPlace} onHoverPin={onHoverPin} onMethod={onMethod} />
+          <Overview f={file} tl={tl} onSelect={(id) => onSelect(id)} onDive={onDive} onFocusPlace={onFocusPlace} onHoverPin={onHoverPin} onMethod={onMethod} returnFocus={returnTo} />
         )}
         <footer className="mt-12 border-t border-[var(--border)] pt-4 font-[var(--font-mono)] text-[11.5px] leading-relaxed text-[var(--text-muted)]">
         Source: UCDP Georeferenced Event Dataset (GED) 26.1 and UCDP Candidate Events, CC BY 4.0,{' '}

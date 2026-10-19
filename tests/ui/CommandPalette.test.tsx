@@ -31,6 +31,19 @@ describe('CommandPalette: the shortcut listener (finding: a real Ctrl+K sometime
   });
 });
 
+describe('CommandPalette: with another dialog open (Plan 8 review minor)', () => {
+  it('does not open on top of another dialog', () => {
+    render(
+      <>
+        <div role="dialog" aria-label="About and sources" />
+        <CommandPalette index={index} onPick={() => {}} />
+      </>,
+    );
+    open();
+    expect(screen.queryByRole('dialog', { name: /search countries/i })).toBeNull();
+  });
+});
+
 describe('CommandPalette', () => {
   it('opens with Ctrl+K and with Cmd+K, focuses the input, and closes with Esc', () => {
     render(<CommandPalette index={index} onPick={() => {}} />);

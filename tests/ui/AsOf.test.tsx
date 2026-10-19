@@ -35,6 +35,12 @@ describe('AsOf', () => {
     render(<AsOf nowS={NOW} />);
     expect(screen.getByText('NO DATA')).toBeTruthy();
   });
+  it('puts the error notes in the normal flow of the header, so the docked War room cannot cover them (Plan 10 review minor)', () => {
+    useEvents.setState({ recent: snapAt(NOW - 3600), status: 'error', error: 'x' } as never);
+    render(<AsOf nowS={NOW} />);
+    const note = screen.getByText(/refresh failed/i);
+    expect(note.parentElement!.className).not.toMatch(/\babsolute\b/);
+  });
   it('keeps showing data with a note when a later refresh failed', () => {
     useEvents.setState({ recent: snapAt(NOW - 600), status: 'error', error: 'recent.meta.json: HTTP 404' });
     render(<AsOf nowS={NOW} />);

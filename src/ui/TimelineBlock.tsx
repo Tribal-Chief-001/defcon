@@ -40,7 +40,7 @@ export function TimelineBlock({ rows, checkedAt, showTheatre = false, limit, lim
     .map((x) => x.r)
     .slice(0, limit ?? rows.length);
   return (
-    <section role="region" aria-label="Key events, sourced">
+    <section aria-label="Key events, sourced">
       <h4 className={`${label} mb-1`}>Key events (sourced)</h4>
       <p className="mb-2 text-[13px] text-[var(--text-muted)]">
         Checked {fmtDate(checkedAt)}{age > 30 ? ` (${age} days ago: events after that date are not listed)` : ''}. Confirmed: two independent outlets report the event. Reported: one source. Disputed: sources or parties differ. Figures and claims are attributed to whoever made them and are not verified. Curated from news reports, not from UCDP.

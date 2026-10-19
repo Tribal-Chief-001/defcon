@@ -30,7 +30,7 @@ export function AsOf({ nowS: fixedNowS }: { nowS?: number }) {
         <span>{f ? f.label : 'NO EVENT DATA'}</span>
         <span className={`rounded-full border px-2.5 py-1 ${alert ? 'border-[var(--orange)] text-[var(--orange)]' : 'border-[var(--border-strong)] text-[var(--lime)]'}`}>{pill}</span>
       </div>
-      <div className="absolute right-0 top-full mt-2 flex flex-col items-end gap-1 whitespace-nowrap">
+      <div className="flex flex-col items-end gap-0.5 whitespace-nowrap">
         {status === 'error' && snap ? <span className="text-[var(--orange)]">refresh failed, showing last data</span> : null}
         {archiveError && snap ? <span>archive unavailable</span> : null}
         {status === 'error' && !snap ? <span title={error}>run npm run data:build</span> : null}

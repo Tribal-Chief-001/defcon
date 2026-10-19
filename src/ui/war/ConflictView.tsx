@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Conflict, ConflictsFile } from '../../conflicts/types';
 import type { TimelineFile } from '../../timeline/types';
 import { RangeBar } from '../../viz/RangeBar';
@@ -9,7 +9,7 @@ import { rowKey } from './pins';
 import { EventList } from './EventList';
 import type { PlaceHandler } from './Overview';
 import { entriesFor, pinnedRows } from './pins';
-import { date, int, label, Section, span, TREND } from './parts';
+import { date, int, label, Section, span, TREND, trendWord } from './parts';
 
 const KIND_NAME = { state: 'State-based', 'non-state': 'Non-state', 'one-sided': 'One-sided' } as const;
 
@@ -34,12 +34,17 @@ function Window({ title, r, events, to, max }: { title: string; r: Conflict['dea
 // editorial timeline (with "show on the map") and the latest events. Pins on the globe follow the timeline entries that have a place.
 export function ConflictView({ c, f, tl, onBack, onDive, onFocusPlace, onHoverPin }: { c: Conflict; f: ConflictsFile; tl: TimelineFile | null | undefined; onBack: () => void; onDive: (id: string) => void; onFocusPlace: PlaceHandler; onHoverPin: (i: number | null) => void }) {
   const [highlight, setHighlight] = useState<string | undefined>();
+  const head = useRef<HTMLHeadingElement>(null);
+  useEffect(() => head.current?.focus({ preventScroll: true }), [c.id]); // a conflict that opens takes the keyboard focus
   const mine = (tl?.theatres ?? []).filter((t) => t.conflicts.includes(c.id));
   const all = useMemo(() => entriesFor(tl, c.id), [tl, c.id]);
   const pins = useMemo(() => pinnedRows(all), [all]);
   const rows: TimelineRow[] = all.map((r) => ({ ...r, pinIndex: r.entry.at ? pins.indexOf(r) : undefined }));
   const max = Math.max(1, c.deaths.d365.high);
   const share = c.countries.reduce((s, k) => s + k.deaths365, 0) || 1;
+  const live = c.weekly.filter((v) => v > 0);
+  const peak = Math.max(0, ...c.weekly);
+  const spiky = live.length >= 8 && peak > 4 * (live.reduce((t, v) => t + v, 0) - peak) / Math.max(1, live.length - 1);
   const placedPct = c.geo ? Math.round(c.geo.locatedShare * 100) : null;
 
   return (
@@ -47,9 +52,9 @@ export function ConflictView({ c, f, tl, onBack, onDive, onFocusPlace, onHoverPi
       <button type="button" onClick={onBack} className="mt-5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] hover:text-[var(--lime)]">
         {'←'} World overview
       </button>
-      <h3 className="mt-3 font-[var(--font-display)] text-[clamp(30px,5vw,44px)] font-extrabold leading-[1.05] tracking-tight">{c.name}</h3>
+      <h3 ref={head} tabIndex={-1} className="mt-3 font-[var(--font-display)] text-[clamp(30px,5vw,44px)] font-extrabold leading-[1.05] tracking-tight outline-none">{c.name}</h3>
       <p className={`${label} mt-3`}>
-        {c.kinds.map((k) => KIND_NAME[k]).join(' · ')} · activity trend <span className={TREND[c.trend]}>{c.trend}</span> · last event {date(c.lastDate)}
+        {c.kinds.map((k) => KIND_NAME[k]).join(' · ')} · {c.deaths.d90.best <= 0 ? <span className={TREND[c.trend]}>{trendWord(c)}</span> : <>activity trend <span className={TREND[c.trend]}>{c.trend}</span> · last event {date(c.lastDate)}</>}
         {c.provisionalShare > 0 ? ` · ${Math.round(c.provisionalShare * 100)}% provisional` : ''}
       </p>
 
@@ -73,6 +78,8 @@ export function ConflictView({ c, f, tl, onBack, onDive, onFocusPlace, onHoverPi
           }}
           onEventHover={(i) => onHoverPin(i === null ? null : (rows[i]?.pinIndex ?? null))}
         />
+        {spiky ? <p className="mt-2 max-w-[62ch] text-[12.5px] text-[var(--text-muted)]">A large claim recorded on a single date can make one week spike; the chart is faithful to the data.</p> : null}
+        {c.provisionalShare >= 0.5 ? <p className="mt-2 max-w-[62ch] text-[12.5px] text-[var(--text-muted)]">The newest weeks are mostly provisional UCDP rows and may be revised, so they can look lower or higher than they end up.</p> : null}
       </Section>
 
       <Section title="Countries in the data">
@@ -104,9 +111,7 @@ export function ConflictView({ c, f, tl, onBack, onDive, onFocusPlace, onHoverPi
       </Section>
 
       <div className="mt-10">
-        {tl === null ? (
-          <p className="text-[14px] text-[var(--text-muted)]">Timeline unavailable.</p>
-        ) : mine.length > 0 && tl ? (
+        {mine.length > 0 && tl ? (
           <TimelineBlock rows={rows} checkedAt={tl.checkedAt} limits={tl.limits} notes={mine.flatMap((t) => (t.note ? [t.note] : []))} highlight={highlight} onShowOnMap={(at) => onFocusPlace(at)} onHoverPin={onHoverPin} />
         ) : null}
       </div>

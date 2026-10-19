@@ -21,3 +21,6 @@ export function Section({ title, children, note }: { title: string; children: Re
     </div>
   );
 }
+
+// the word for a conflict's activity: a conflict with no deaths in the last 90 days says so, with its last event, instead of "low data"
+export const trendWord = (c: Pick<Conflict, 'trend' | 'deaths' | 'lastDate'>) => (c.deaths.d90.best <= 0 ? `no deaths in 90 days, last event ${date(c.lastDate)}` : c.trend);

@@ -101,5 +101,16 @@ describe('checkBudgets', () => {
       expect(r.failures.join(' ')).toMatch(/JS total/);
     });
   });
-});
 
+  it('has a size budget for conflicts.json (180 KB gzip) and indices.json (60 KB gzip)', () => {
+    const [dist, data] = make(1000);
+    writeFileSync(join(data, 'conflicts.json'), randomBytes(150_000));
+    writeFileSync(join(data, 'indices.json'), randomBytes(50_000));
+    expect(checkBudgets(dist, data).failures).toEqual([]);
+    writeFileSync(join(data, 'conflicts.json'), randomBytes(200_000));
+    expect(checkBudgets(dist, data).failures.join()).toMatch(/conflicts\.json/);
+    writeFileSync(join(data, 'conflicts.json'), randomBytes(1000));
+    writeFileSync(join(data, 'indices.json'), randomBytes(70_000));
+    expect(checkBudgets(dist, data).failures.join()).toMatch(/indices\.json/);
+  });
+});

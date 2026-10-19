@@ -84,7 +84,7 @@ export function StreamChart({ layers, dataEnd, events = [], onEventClick, onEven
       </p>
       <div ref={box} className="relative" onPointerMove={(e) => onMove(e.clientX)} onPointerLeave={() => setIdx(null)}>
         <svg viewBox={`0 0 ${W} ${height}`} className="block w-full" aria-hidden="true">
-          {[0, yMax / 2, yMax].map((t, i) => (
+          {(Number.isInteger(yMax / 2) ? [0, yMax / 2, yMax] : [0, yMax]).map((t, i) => ( // never a fractional tick such as 0.5 or 2.5
             <g key={i}>
               <line x1={PAD.l} x2={W - PAD.r} y1={y(t)} y2={y(t)} stroke="var(--border)" strokeWidth="1" />
               <text data-ytick x={PAD.l - 6} y={y(t) + 4} textAnchor="end" className="fill-[var(--text-muted)] font-[var(--font-mono)] text-[11px]">
@@ -106,6 +106,7 @@ export function StreamChart({ layers, dataEnd, events = [], onEventClick, onEven
           {monthTicks(dataEnd).map((t) => (
             <text key={t.i} x={xs[t.i]} y={height - 6} textAnchor="middle" className="fill-[var(--text-muted)] font-[var(--font-mono)] text-[11px]">
               {t.label}
+              {t.year ? ` ’${t.year}` : ''}
             </text>
           ))}
           {placed.map(({ e, index }) => (
@@ -117,6 +118,7 @@ export function StreamChart({ layers, dataEnd, events = [], onEventClick, onEven
           <button
             key={index}
             type="button"
+            tabIndex={-1} // the key-events list below is the keyboard equivalent
             aria-label={`${fmtDate(e.date)}: ${e.title} (${e.status})`}
             onClick={() => onEventClick?.(index)}
             onMouseEnter={() => onEventHover?.(index)}

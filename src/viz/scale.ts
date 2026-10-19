@@ -19,12 +19,13 @@ export const addDays = (iso: string, n: number) => new Date(Date.parse(`${iso}T0
 export const weekEnd = (dataEnd: string, i: number) => addDays(dataEnd, -(51 - i) * 7);
 
 // the weeks where a new month begins (by the week's end date), for the x axis
-export function monthTicks(dataEnd: string): { i: number; label: string }[] {
-  const out: { i: number; label: string }[] = [];
+// the first tick and every January also carry the two-digit year, so the axis says which year it is
+export function monthTicks(dataEnd: string): { i: number; label: string; year?: string }[] {
+  const out: { i: number; label: string; year?: string }[] = [];
   let prev = weekEnd(dataEnd, 0).slice(5, 7);
   for (let i = 1; i < 52; i++) {
     const m = weekEnd(dataEnd, i).slice(5, 7);
-    if (m !== prev) out.push({ i, label: MON[Number(m) - 1]! });
+    if (m !== prev) out.push({ i, label: MON[Number(m) - 1]!, ...(out.length === 0 || m === '01' ? { year: weekEnd(dataEnd, i).slice(2, 4) } : {}) });
     prev = m;
   }
   return out;

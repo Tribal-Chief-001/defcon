@@ -197,3 +197,20 @@ describe('StreamChart', () => {
   });
 });
 
+describe('StreamChart axes (Plan 10 review minors)', () => {
+  const layer = (v: number[]) => [{ key: 'k', name: 'k', values: v, fill: 'red', opacity: 1 }];
+  it('never prints a fractional tick such as 0.5 or 2.5 for tiny values', () => {
+    for (const peak of [1, 3, 5]) {
+      const { container, unmount } = render(<StreamChart layers={layer(new Array(52).fill(0).map((_, i) => (i === 20 ? peak : 0)))} dataEnd="2026-08-31" />);
+      const ticks = [...container.querySelectorAll('[data-ytick]')].map((t) => t.textContent ?? '');
+      expect(ticks.every((t) => /^\d+(\.\d)?k?$/.test(t) && !/\.5$/.test(t) || t === '0'), `peak ${peak}: ${ticks.join(',')}`).toBe(true);
+      unmount();
+    }
+  });
+  it('names the year on the first month label and on every January', () => {
+    const { container } = render(<StreamChart layers={layer(new Array(52).fill(3))} dataEnd="2026-08-31" />);
+    const labels = [...container.querySelectorAll('svg text')].map((t) => t.textContent ?? '');
+    expect(labels.some((t) => /^Jan .?26$/.test(t))).toBe(true);
+    expect(labels.some((t) => /^[A-Z][a-z]{2} .?25$/.test(t))).toBe(true); // the first label of the window carries its year
+  });
+});

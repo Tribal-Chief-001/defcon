@@ -1,4 +1,4 @@
-import { useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { ConflictsFile, Kind } from '../../conflicts/types';
 import type { TimelineFile } from '../../timeline/types';
 import { Bubbles } from '../../viz/Bubbles';
@@ -11,7 +11,7 @@ import { TimelineBlock, type TimelineRow } from '../TimelineBlock';
 import { EventList } from './EventList';
 import { IndexBoard } from './IndexBoard';
 import { NewsReports } from './NewsReports';
-import { date, int, Section, span, TREND } from './parts';
+import { date, int, Section, span, TREND, trendWord } from './parts';
 
 const KIND_BAR: { k: Kind; name: string; note: string; fill: string }[] = [
   { k: 'state', name: 'State-based', note: 'a government is one side', fill: 'var(--lime)' },
@@ -21,15 +21,19 @@ const KIND_BAR: { k: Kind; name: string; note: string; fill: string }[] = [
 
 // the headline numeral counts up on its own, so the animation re-renders only this component
 function Hero({ value }: { value: number }) {
-  return <h3 className="font-[var(--font-body)] text-[clamp(52px,9vw,84px)] font-semibold leading-none tracking-tight">{int(useCountUp(value))}</h3>;
+  return <p className="font-[var(--font-body)] text-[clamp(52px,9vw,84px)] font-semibold leading-none tracking-tight">{int(useCountUp(value))}</p>;
 }
 
 export type PlaceHandler = (at: { lat: number; lon: number; place: string } | null) => void;
 
 // The world at a glance: a hero numeral, the stream of weekly deaths with the key events on it, bubbles and a league of the conflicts, the
 // countries, the newest key events and reports. The League is the text equivalent of the bubbles.
-export function Overview({ f, tl, onSelect, onDive, onFocusPlace, onHoverPin, onMethod }: { f: ConflictsFile; tl: TimelineFile | null | undefined; onSelect: (id: string) => void; onDive: (id: string) => void; onFocusPlace: PlaceHandler; onHoverPin: (i: number | null) => void; onMethod?: () => void }) {
+export function Overview({ f, tl, onSelect, onDive, onFocusPlace, onHoverPin, onMethod, returnFocus }: { f: ConflictsFile; tl: TimelineFile | null | undefined; onSelect: (id: string) => void; onDive: (id: string) => void; onFocusPlace: PlaceHandler; onHoverPin: (i: number | null) => void; onMethod?: () => void; returnFocus?: string | null }) {
   const w = f.world;
+  const root = useRef<HTMLDivElement>(null);
+  useEffect(() => {
+    if (returnFocus) root.current?.querySelector<HTMLElement>(`[data-conflict-row="${CSS.escape(returnFocus)}"]`)?.focus({ preventScroll: false }); // Back returns to the row it left
+  }, [returnFocus]);
   const [q, setQ] = useState('');
   const [highlight, setHighlight] = useState<string | undefined>();
   const rows = useMemo<(TimelineRow & { conflictId: string | undefined })[]>(
@@ -46,7 +50,8 @@ export function Overview({ f, tl, onSelect, onDive, onFocusPlace, onHoverPin, on
   const total365 = Math.max(1, KIND_BAR.reduce((s, k) => s + w.byKind[k.k].d365.best, 0));
 
   return (
-    <div>
+    <div ref={root}>
+      <h3 className="sr-only">World overview</h3>
       <p className="mt-6 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.18em] text-[var(--text-muted)]">Organised violence · last 365 days to {date(f.dataEnd)}</p>
       <div className="mt-2 flex flex-wrap items-center gap-x-8 gap-y-4">
         <div>
@@ -116,11 +121,11 @@ export function Overview({ f, tl, onSelect, onDive, onFocusPlace, onHoverPin, on
         <ul aria-label="Conflicts league" className="flex flex-col">
           {league.map((c, i) => (
             <li key={c.id}>
-              <button type="button" onClick={() => onSelect(c.id)} className="grid w-full gap-1 border-t border-[var(--border)] px-1 py-3 text-left hover:bg-white/5">
+              <button type="button" data-conflict-row={c.id} onClick={() => onSelect(c.id)} className="grid w-full gap-1 border-t border-[var(--border)] px-1 py-3 text-left hover:bg-white/5">
                 <span className="flex items-baseline gap-3">
                   <span className="w-[22px] font-[var(--font-mono)] text-[12px] text-[var(--text-faint)]">{i + 1}</span>
                   <span className="flex-1 text-[15px]">{c.name}</span>
-                  <span className={`font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.12em] ${TREND[c.trend]}`}>{c.trend}</span>
+                  <span className={`font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.12em] ${TREND[c.trend]}`}>{c.deaths.d90.best <= 0 ? 'no deaths in 90 d' : trendWord(c)}</span>
                   <span className="font-[var(--font-mono)] text-[13px]">{int(c.deaths.d90.best)}</span>
                 </span>
                 <span className="flex items-center gap-3 pl-[34px]">
@@ -146,9 +151,9 @@ export function Overview({ f, tl, onSelect, onDive, onFocusPlace, onHoverPin, on
           <ul aria-label="All conflicts" tabIndex={0} className="max-h-[340px] overflow-y-auto rounded-[12px] outline-none focus-visible:ring-1 focus-visible:ring-[var(--lime)]">
             {matches.map((c) => (
               <li key={c.id}>
-                <button type="button" onClick={() => onSelect(c.id)} className="flex w-full items-baseline gap-3 border-t border-[var(--border)] px-1 py-2 text-left text-[14px] hover:bg-white/5">
+                <button type="button" data-conflict-row={c.id} onClick={() => onSelect(c.id)} className="flex w-full items-baseline gap-3 border-t border-[var(--border)] px-1 py-2 text-left text-[14px] hover:bg-white/5">
                   <span className="flex-1">{c.name}</span>
-                  <span className={`font-[var(--font-mono)] text-[11px] uppercase tracking-[0.12em] ${TREND[c.trend]}`}>{c.trend}</span>
+                  <span className={`font-[var(--font-mono)] text-[11px] uppercase tracking-[0.12em] ${TREND[c.trend]}`}>{c.deaths.d90.best <= 0 ? 'no deaths in 90 d' : c.trend}</span>
                   <span className="w-[64px] text-right font-[var(--font-mono)] text-[12.5px]">{int(c.deaths.d365.best)}</span>
                 </button>
               </li>
@@ -190,7 +195,11 @@ export function Overview({ f, tl, onSelect, onDive, onFocusPlace, onHoverPin, on
             onShowOnMap={(at) => onFocusPlace(at)}
             onHoverPin={onHoverPin}
           />
-        ) : null}
+        ) : (
+          <p className="text-[14px] text-[var(--text-muted)]">
+            Loading the timeline{'…'}
+          </p>
+        )}
       </div>
 
       <Section title="Newest reports from the news, last 7 days (auto-coded)">

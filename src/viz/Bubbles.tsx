@@ -30,6 +30,7 @@ export function Bubbles({ items, selected, onSelect, height = 300, label = 'Conf
           <button
             key={c.id}
             type="button"
+            tabIndex={-1} // the league table below is the keyboard equivalent
             aria-pressed={on}
             aria-label={`${it.name}: ${int(it.value)} deaths in 365 days, activity ${it.trend}`}
             title={`${it.name}: ${int(it.value)}`}

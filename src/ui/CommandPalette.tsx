@@ -37,7 +37,7 @@ export function CommandPalette({ onPick, index: given }: { onPick: (id: string) 
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        toggle.current();
+        if (!document.querySelector('[role="dialog"]:not([aria-label="Search countries"])')) toggle.current(); // not on top of About or another dialog
       }
     };
     window.addEventListener('keydown', onKey);

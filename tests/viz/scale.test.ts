@@ -44,6 +44,9 @@ describe('dates', () => {
     expect(t.every((x) => x.i >= 0 && x.i <= 51)).toBe(true);
     expect(t.map((x) => x.i)).toEqual([...t.map((x) => x.i)].sort((a, b) => a - b));
     expect(t.some((x) => x.label === 'Jan')).toBe(true);
+    expect(t[0]!.year).toBe('25'); // the first tick names its year
+    expect(t.find((x) => x.label === 'Jan')!.year).toBe('26');
+    expect(t.filter((x) => x.year).length).toBe(2); // no other tick repeats the year
   });
 });
 

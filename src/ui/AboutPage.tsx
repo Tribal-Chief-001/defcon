@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from 'react';
 import { useEvents } from '../events/store';
 import { errorLog } from '../lib/errorLog';
 import { MethodSection } from './MethodSection';
+import { useDialog } from './useDialog';
 
 const utcDate = (s: number) => (Number.isFinite(s) ? new Date(s * 1000).toISOString().slice(0, 10) : 'unknown');
 const isHttps = (u?: string) => !!u && /^https:\/\//i.test(u);
@@ -14,51 +15,21 @@ const STATIC_SOURCES: { name: string; use: string; licence: string; url: string 
   { name: 'UCDP Georeferenced Event Dataset (state-based dyads)', use: 'active disputes between governments', licence: 'CC BY 4.0', url: 'https://ucdp.uu.se/downloads/' },
 ];
 
-const FOCUSABLE = 'a[href], button:not([disabled]), [tabindex]:not([tabindex="-1"])';
-
 // About and Sources: what this is, the map policy, every data source with licence and age, what the data does not cover, privacy.
 // A modal dialog: focus moves in, Tab stays inside, Esc closes and focus returns to the opener.
 export function AboutPage({ onClose, toMethod = false }: { onClose: () => void; toMethod?: boolean }) {
   const { recent, archive } = useEvents();
   const sources = (recent ?? archive)?.meta.sources ?? [];
   const box = useRef<HTMLDivElement>(null);
-  const opener = useRef<Element | null>(null);
   const [copied, setCopied] = useState(false);
   const diagnostics = errorLog.format();
 
-  // keys are handled on the window while the dialog is open: after a click on plain text focus falls back to the page, where an
-  // onKeyDown on the box would never fire (Esc would do nothing and Tab would walk into the page behind the dialog)
-  const onCloseRef = useRef(onClose);
-  onCloseRef.current = onClose;
+  // the dialog keyboard rules (focus in, Tab trapped, Esc closes, focus back to the opener) are shared with the War room
+  useDialog(box, onClose);
+  // "How computed" opens the page at its method; this effect runs after useDialog's, whose focus() would otherwise leave the page at the top
   useEffect(() => {
-    opener.current = document.activeElement;
-    box.current?.querySelector<HTMLElement>('button')?.focus({ preventScroll: toMethod });
-    if (toMethod) box.current?.querySelector('[data-method]')?.scrollIntoView?.({ block: 'start' }); // "How computed" opens the page at its method
-    const onKey = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        e.stopPropagation();
-        onCloseRef.current();
-      } else if (e.key === 'Tab' && box.current) {
-        const f = Array.from(box.current.querySelectorAll<HTMLElement>(FOCUSABLE));
-        if (!f.length) return;
-        const first = f[0]!;
-        const last = f[f.length - 1]!;
-        const inside = box.current.contains(document.activeElement);
-        if (!inside || (e.shiftKey && document.activeElement === first)) {
-          e.preventDefault();
-          (e.shiftKey ? last : first).focus();
-        } else if (!e.shiftKey && document.activeElement === last) {
-          e.preventDefault();
-          first.focus();
-        }
-      }
-    };
-    window.addEventListener('keydown', onKey);
-    return () => {
-      window.removeEventListener('keydown', onKey);
-      (opener.current as HTMLElement | null)?.focus?.();
-    };
-  }, []);
+    if (toMethod) box.current?.querySelector('[data-method]')?.scrollIntoView?.({ block: 'start' });
+  }, [toMethod]);
 
   const link = (url: string, text: string) =>
     isHttps(url) ? (
