@@ -184,6 +184,17 @@ Cadence: the scheduled ingest runs every 3 hours (D-047), so "live" means at mos
 | Licence | derived from CC BY 4.0 data (UCDP, World Bank WGI and WDI); attribution on the About page |
 | Not included | countries without a UCDP record (shown as "not modelled", never "low"), protests, onset forecasts |
 
+## Signals (Plan 14, built at ingest time)
+
+| Item | Value |
+|------|-------|
+| File | `public/data/signals.json` (about 48 KB, 6 KB gzipped; built in CI by `npm run data:signals` before the site is built, gitignored like the events snapshot; budget 60 KB gzip) |
+| Sources | USGS earthquake feed `all_week.geojson` (explosion-type events of magnitude 2 or more, public domain, credit U.S. Geological Survey); GDACS `rss_7d.xml` (Orange and Red alerts, CC BY 4.0 with credit to GDACS); NASA FIRMS `SUOMI_VIIRS_C2_Global_24h.csv` (high and nominal confidence detections, open data with the FIRMS/LANCE/ESDIS acknowledgement) |
+| What is kept | explosion-type seismic events; Orange and Red disaster alerts; fire detections aggregated into 0.5-degree cells inside or next to the conflict areas (cells with 3 or more UCDP deaths of `conflicts.json`), top 300 cells |
+| Failure | each source is fetched with a 30 s timeout, no redirects and a 15 MB cap; a source that is down, slow, returns HTML or is too large is reported (`ok: false`, `error`) and does not fail the run; a malformed result does (`scripts/signals/validate.ts`) |
+| Not used | IODA (no terms found), IMF PortWatch (bulk download forbidden), GPSJAM (no reuse terms), Cloudflare Radar (token, CC BY-NC), OONI (CC BY-NC-SA); see LICENCE-CHECK-v1.1 |
+| Meaning | context only: a fire has many causes and a seismic explosion is not a strike; signals never change a conflict number or an index |
+
 ## Refreshing UCDP data (Plan 12)
 
 | Item | Value |

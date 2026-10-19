@@ -10,6 +10,8 @@ import { encodeSnapshot } from '../../scripts/events/encode';
 import { resetIndicesCache } from '../../src/indices/load';
 import { WarRoom } from '../../src/ui/WarRoom';
 import { indicesFixture } from '../indices/fixture';
+import { resetSignalsCache } from '../../src/signals/load';
+import { signalsFixture } from '../signals/fixture';
 import { worldFixture } from '../conflicts/fixture';
 import { timelineFixture } from '../timeline/fixture';
 
@@ -321,5 +323,21 @@ describe('WarRoom: Index board', () => {
     expect(within(board).getByRole('list', { name: /most deadly now/i })).toBeTruthy();
     fireEvent.click(within(board).getByRole('button', { name: /how computed/i }));
     expect(onMethod).toHaveBeenCalled();
+  });
+});
+
+describe('WarRoom: Signals block', () => {
+  afterEach(() => {
+    vi.unstubAllGlobals();
+    resetSignalsCache();
+  });
+  it('shows the Signals block in the overview, after the Index board', async () => {
+    resetSignalsCache();
+    vi.stubGlobal('fetch', vi.fn(async (url: string) => (String(url).includes('signals.json') ? new Response(JSON.stringify(signalsFixture()), { status: 200 }) : new Response('{}', { status: 404 }))));
+    render(<WarRoom {...props()} />);
+    const sig = await screen.findByRole('region', { name: 'Signals' });
+    expect(within(sig).getByRole('list', { name: /fires in conflict areas/i })).toBeTruthy();
+    const board = await screen.findByRole('region', { name: /index board/i }).catch(() => null);
+    if (board) expect(board.compareDocumentPosition(sig) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
   });
 });

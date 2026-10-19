@@ -147,3 +147,14 @@ describe('AboutPage: opening at the method (finding: "How computed" landed at th
     expect(scrolled).toHaveLength(0);
   });
 });
+
+describe('AboutPage: the Signals sources', () => {
+  it('lists USGS, GDACS and NASA FIRMS with their licences', () => {
+    render(<AboutPage onClose={() => {}} />);
+    const t = screen.getByRole('dialog').textContent ?? '';
+    expect(t).toMatch(/USGS earthquake feed/);
+    expect(t).toMatch(/public domain, credit U\.S\. Geological Survey/);
+    expect(t).toMatch(/GDACS.*CC BY 4\.0|CC BY 4\.0, credit to GDACS/);
+    expect(t).toMatch(/NASA FIRMS.*open data|NASA open data, acknowledgement requested/);
+  });
+});

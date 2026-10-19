@@ -10,6 +10,7 @@ import { useCountUp } from '../../viz/useCountUp';
 import { TimelineBlock, type TimelineRow } from '../TimelineBlock';
 import { EventList } from './EventList';
 import { IndexBoard } from './IndexBoard';
+import { SignalsBlock } from './SignalsBlock';
 import { NewsReports } from './NewsReports';
 import { date, int, Section, span, TREND, trendWord } from './parts';
 
@@ -74,6 +75,8 @@ export function Overview({ f, tl, onSelect, onDive, onFocusPlace, onHoverPin, on
       </div>
 
       <IndexBoard onDive={onDive} onMethod={onMethod ?? (() => {})} />
+
+      <SignalsBlock onFocusPlace={onFocusPlace} />
 
       <Section title="By kind of violence, last 365 days">
         <div className="flex h-[10px] w-full overflow-hidden rounded-full border border-[var(--border)]" role="img" aria-label={KIND_BAR.map((k) => `${k.name} ${int(w.byKind[k.k].d365.best)}`).join(', ')}>

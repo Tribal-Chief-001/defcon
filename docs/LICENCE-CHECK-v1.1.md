@@ -44,3 +44,17 @@ Method: official terms pages read by fetch agents and, for JavaScript-only pages
 - Model-training rights: none of the pages addresses them except ACLED's EULA.
 - Several fetches were done by sub-agents (text summarised by a model); IODA, PortWatch and UNHCR pages I read myself in the browser.
 - Read next in a normal browser: FIRMS citation page, USGS policies, PortWatch dataset licence, IODA API/terms, UNHCR Refugee Data Finder licence.
+
+## Update 2026-10-19 (Plans 14 and 15): pages read in the built-in browser and by fetch agents
+
+| Source | What was read | Result |
+|---|---|---|
+| **USGS** | www.usgs.gov/information-policies-and-instructions/copyrights-and-credits (read in full) | "USGS-authored or produced data and information are considered to be in the U.S. Public Domain"; credit requested: "U.S. Geological Survey". The earthquake feed pages carry no licence of their own. **Usable.** The `all_week` feed carries `explosion`, `quarry blast` and `ice quake` types besides earthquakes (counted on a live feed: 1,774 earthquakes, 21 quarry blasts, 9 explosions, 3 ice quakes in one week). |
+| **GDACS** | the RSS `rss_7d.xml` (each item has an acknowledgement), the EC legal notice, the feed reference page | Each item: "Copyright notice: European Union (CC BY 4.0), reuse is allowed, provided appropriate credit to GDACS is given". The channel element says `public domain`, which conflicts; the stricter CC BY 4.0 credit is followed. **Usable with credit.** GeoJSON API not read (JavaScript page); the RSS is used. |
+| **NASA FIRMS** | earthdata.nasa.gov/data/tools/firms (read in the browser), firms.modaps.eosdis.nasa.gov/active_fire/ | "NASA supports full and open sharing of data" with an acknowledgement text (FIRMS, LANCE, ESDIS) and a disclaimer ("as is"). The page says an Earthdata login is needed for downloads, but the 24 h CSV files (`.../data/active_fire/suomi-npp-viirs-c2/csv/SUOMI_VIIRS_C2_Global_24h.csv`, 4.3 MB) answered HTTP 200 without a login or key on 2026-10-19. **Usable** (keyless today; if NASA starts requiring a login the Signals step reports FIRMS as unavailable). |
+| **UNHCR** | www.unhcr.org/refugee-statistics/methodology and www.unhcr.org/terms-and-conditions-data.html (read in full) | "Except where otherwise provided, the datasets made available by UNHCR on the UNHCR Refugee Population Statistics Database are licensed under ... CC BY 4.0"; attribution "UNHCR Refugee Population Statistics Database"; a link to the Terms of Use for Datasets must accompany shared data; no implied endorsement; APIs may be used (item 8); third-party datasets may carry other terms. **Usable with that attribution** (this lifts the earlier "do not ingest" row: that was the general website terms, which the dataset terms override). |
+| **IMF PortWatch** | www.imf.org/en/About/Copyright-and-Terms | General IMF data may be reused with a source line, but "The IMF prohibits bulk download of information by automated technology without explicit permission". **Not used.** |
+| **IODA** | the site and the API root (empty pages), `/v2/outages/events` without parameters (HTTP 400) | No terms or licence found. **Not used.** |
+
+Still not used, unchanged: GPSJAM (no reuse terms), Cloudflare Radar (account token, CC BY-NC), OONI (CC BY-NC-SA), EMSC (CC BY 4.0, duplicates USGS here).
+

@@ -12,6 +12,9 @@ const STATIC_SOURCES: { name: string; use: string; licence: string; url: string 
   { name: 'World Bank, World Development Indicators', use: 'population, area, GDP, military spending (SIPRI via World Bank)', licence: 'CC BY 4.0', url: 'https://datatopics.worldbank.org/world-development-indicators/' },
   { name: 'CIA World Factbook (archived mirror)', use: 'government type, languages, independence, organisations; discontinued 2026-02-04, data of 2026-01-22', licence: 'public domain', url: 'https://github.com/factbook/factbook.json' },
   { name: 'United Nations and NATO official member lists', use: 'membership flags, formal alliances', licence: 'facts, linked', url: 'https://www.un.org/en/about-us/member-states' },
+  { name: 'USGS earthquake feed (Signals: explosion-type seismic events)', use: 'context signals in the War room', licence: 'public domain, credit U.S. Geological Survey', url: 'https://earthquake.usgs.gov/earthquakes/feed/' },
+  { name: 'GDACS, Global Disaster Alert and Coordination System (Signals)', use: 'Orange and Red disaster alerts, context in the War room', licence: 'CC BY 4.0, credit to GDACS', url: 'https://www.gdacs.org/' },
+  { name: "NASA FIRMS, Fire Information for Resource Management System (Signals)", use: 'fire detections near conflict areas, context in the War room', licence: 'NASA open data, acknowledgement requested', url: 'https://firms.modaps.eosdis.nasa.gov/' },
   { name: 'UCDP Georeferenced Event Dataset (state-based dyads)', use: 'active disputes between governments', licence: 'CC BY 4.0', url: 'https://ucdp.uu.se/downloads/' },
 ];
 
