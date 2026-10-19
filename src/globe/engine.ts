@@ -9,7 +9,8 @@ import { buildBorderPositions, buildCountryPositions } from './borderGeometry';
 import type { Relations } from '../relations/types';
 import { createArcLayer } from './arcLayer';
 import { createWarLayer } from './warLayer';
-import { cullLabels, haloRadiusPx, type WarLabelPos, type WarState } from './warGeometry';
+import { createFocusQueue } from './focusQueue';
+import { cullLabels, haloRadiusPx, pickHalo, type HaloTarget, type WarLabelPos, type WarState } from './warGeometry';
 import { easeDive } from './dive';
 import { TIERS, createQualityGovernor, type Tier } from '../perf/quality';
 import { buildDensity } from './grain';
@@ -26,6 +27,7 @@ export type GlobeHandle = {
   setEvents(list: EventAttrs[]): void;
   setWar(state: WarState): void;
   onWarLabels(cb: (labels: WarLabelPos[]) => void): () => void;
+  onWarPick(cb: (conflictId: string) => void): () => void; // a click inside a conflict's halo
   setEventMarker(lat: number | null, lon?: number): void;
   dive(id: string | null, target?: { lat: number; lon: number; distance: number }): void;
   setFraming(x: number, y: number): void;
@@ -320,7 +322,7 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   type View = { yaw: number; pitch: number; distance: number };
   let diveId: string | null = null;
   let anim: { t0: number; from: View; to: View } | null = null;
-  let pendingFocus: { lat: number; lon: number; distance: number } | null = null;
+  const focusQueue = createFocusQueue();
   let pendingDive: { id: string | null; target?: { lat: number; lon: number; distance: number } } | null = null;
   let dimT = 0;
   let outlineT = 1;
@@ -471,6 +473,12 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       const r = canvas.getBoundingClientRect();
       const mx = e.clientX - r.left;
       const my = e.clientY - r.top;
+      const halo = warPickListeners.size > 0 ? pickHalo(haloTargets(), mx, my) : null;
+      if (halo) {
+        // a halo of the open War room wins over the marker and the country under it: it selects the conflict and never dives
+        warPickListeners.forEach((cb) => cb(halo));
+        return;
+      }
       let near: (typeof shown)[number] | undefined;
       let best = MARKER_HIT_PX;
       for (const m of shown) {
@@ -547,6 +555,22 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
   const warListeners = new Set<(l: WarLabelPos[]) => void>();
   let warNow: WarState | null = null;
   let warKey = '';
+  const warPickListeners = new Set<(id: string) => void>();
+  // every conflict halo that faces the camera, in canvas CSS px (for picking; the labels use only the top ranks)
+  const haloTargets = (): HaloTarget[] => {
+    if (!warNow?.active) return [];
+    const w = canvas.clientWidth || 1;
+    const h = canvas.clientHeight || 1;
+    globe.updateMatrixWorld();
+    const out: HaloTarget[] = [];
+    for (const c of warNow.conflicts) {
+      v3.set(...latLonToVec3(c.lat, c.lon, R_LABEL)).applyMatrix4(globe.matrixWorld);
+      if (v3.dot(camera.position) <= 1.02) continue;
+      v3.project(camera);
+      out.push({ id: c.id, x: (v3.x * 0.5 + 0.5) * w, y: (-v3.y * 0.5 + 0.5) * h, r: haloRadiusPx(c.deaths365) });
+    }
+    return out;
+  };
   const emitWarLabels = () => {
     if (warListeners.size === 0) return;
     const out: WarLabelPos[] = [];
@@ -602,11 +626,8 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
       frame = { x: frame.x + dx * k, y: frame.y + dy * k };
       applyFraming();
     }
-    if (pendingFocus && boot.done) {
-      const p = pendingFocus;
-      pendingFocus = null;
-      flyToView(p);
-    }
+    const queued = focusQueue.take(boot.done);
+    if (queued) flyToView(queued);
     if (pendingDive && boot.done) {
       const p = pendingDive;
       pendingDive = null;
@@ -703,11 +724,9 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     },
     focus(t) {
       holdSpin = t !== null;
-      if (t && Number.isFinite(t.lat) && Number.isFinite(t.lon)) {
-        // before the sonar boot is done the flight waits (a #war deep link asks for it on load) and is not cancelled by a later focus(null)
-        if (boot.done) flyToView(t);
-        else pendingFocus = t;
-      }
+      // before the sonar boot is done the flight waits (a #war deep link asks for it on load); focus(null) withdraws a waiting flight
+      const now = focusQueue.request(t, boot.done);
+      if (now) flyToView(now);
     },
     setSunTime(unixS) {
       terminator.update(unixS);
@@ -756,6 +775,10 @@ export function createGlobe(opts: GlobeOptions): GlobeHandle {
     onWarLabels(cb) {
       warListeners.add(cb);
       return () => void warListeners.delete(cb);
+    },
+    onWarPick(cb) {
+      warPickListeners.add(cb);
+      return () => void warPickListeners.delete(cb);
     },
     onCursor(cb) {
       cursorListeners.add(cb);

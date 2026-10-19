@@ -124,8 +124,14 @@ export function App() {
     hadSelection.current = has;
   }, [warOpen, warSelected]);
   // a place chosen on a timeline card ("Show on the map") wins until another conflict is selected or the room closes
-  const [placeFocus, setPlaceFocus] = useState<{ lat: number; lon: number; distance: number } | null>(null);
-  useEffect(() => setPlaceFocus(null), [warSelected, warOpen]);
+  const [placeFocus, setPlaceFocus] = useState<{ lat: number; lon: number; distance: number; seq: number } | null>(null);
+  const placeSeq = useRef(0);
+  useEffect(() => setPlaceFocus(null), [warOpen]);
+  // choosing a conflict (from the room or by clicking its halo) clears the place; a place asked for in the same click (a timeline stem) is set after and wins
+  const selectConflict = (id: string | null) => {
+    setWar(id ?? '');
+    setPlaceFocus(null);
+  };
   useEffect(() => setWarHover(null), [warSelected, warOpen]);
   const latest = useRef(createLatest()); // only the newest selection may receive its detail
 
@@ -265,7 +271,7 @@ export function App() {
       <SkipLink />
       <StatusRegion />
       <ErrorBoundary where="globe" fallback={<Unsupported reason="failed" />}>
-        <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : watch.marker} focus={watch.focus ?? placeFocus ?? warFocus ?? railFocus} dive={dive} framing={framing} onLabels={setLabels} war={warState} onWarLabels={warLabelBus.set} restoreKey={restoreKey} />
+        <GlobeCanvas onPick={onPick} marker={sel ? { lat: sel.lat, lon: sel.lon } : watch.marker} focus={watch.focus ?? placeFocus ?? warFocus ?? railFocus} dive={dive} framing={framing} onLabels={setLabels} war={warState} onWarLabels={warLabelBus.set} onWarPick={selectConflict} restoreKey={restoreKey} />
       </ErrorBoundary>
       <HudFrame />
       <LiveCapitalLabels />
@@ -295,13 +301,13 @@ export function App() {
             <ErrorBoundary where="war" onReset={() => setWar(null)}>
               <WarRoom
                 selected={war || null}
-                onSelect={(id) => setWar(id ?? '')}
+                onSelect={selectConflict}
                 onClose={() => setWar(null)}
                 onDive={(id) => {
                   setWar(null);
                   void startDive(id);
                 }}
-                onFocusPlace={(at) => setPlaceFocus(at ? { lat: at.lat, lon: at.lon, distance: 1.7 } : null)}
+                onFocusPlace={(at) => setPlaceFocus(at ? { lat: at.lat, lon: at.lon, distance: 1.7, seq: ++placeSeq.current } : null)}
                 onHoverPin={setWarHover}
                 onMethod={() => openAbout(true)}
               />

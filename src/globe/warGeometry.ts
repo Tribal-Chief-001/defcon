@@ -79,3 +79,18 @@ export function cullLabels(labels: WarLabelPos[], opts: { minY: number }): WarLa
   }
   return placed.map((p) => p.l);
 }
+
+export type HaloTarget = { id: string; x: number; y: number; r: number };
+// The conflict whose halo (radius in CSS px plus a small margin) contains the point; the nearest centre wins, so a small halo inside a big
+// one can still be picked. Null when none does or the input is not finite.
+export function pickHalo(targets: HaloTarget[], x: number, y: number, margin = 4): string | null {
+  if (!Number.isFinite(x) || !Number.isFinite(y)) return null;
+  let best: string | null = null;
+  let bestD = Infinity;
+  for (const t of targets) {
+    if (![t.x, t.y, t.r].every(Number.isFinite)) continue;
+    const d = Math.hypot(t.x - x, t.y - y);
+    if (d <= t.r + margin && d < bestD) [best, bestD] = [t.id, d];
+  }
+  return best;
+}

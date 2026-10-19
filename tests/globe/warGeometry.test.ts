@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import type { Conflict, Range } from '../../src/conflicts/types';
-import { circlePoints, cullLabels, distanceKm, focusDistance, haloRadiusPx, toWarConflicts, type WarLabelPos } from '../../src/globe/warGeometry';
+import { circlePoints, cullLabels, distanceKm, focusDistance, haloRadiusPx, pickHalo, toWarConflicts, type WarLabelPos } from '../../src/globe/warGeometry';
 
 describe('circlePoints', () => {
   it('lies on the great circle at the requested radius around the centre', () => {
@@ -83,3 +83,25 @@ describe('cullLabels', () => {
   });
 });
 
+describe('pickHalo (Plan 10 deferred: a halo on the globe selects its conflict)', () => {
+  const t = [
+    { id: 'big', x: 100, y: 100, r: 30 },
+    { id: 'small', x: 120, y: 100, r: 10 },
+    { id: 'far', x: 400, y: 300, r: 12 },
+  ];
+  it('returns the conflict whose halo contains the point, with a few pixels of margin', () => {
+    expect(pickHalo(t, 400, 300)).toBe('far');
+    expect(pickHalo(t, 400 + 15, 300)).toBe('far'); // 12 px halo plus the margin
+    expect(pickHalo(t, 400 + 17, 300)).toBeNull();
+  });
+  it('prefers the nearest centre when halos overlap, so a small halo inside a big one can be picked', () => {
+    expect(pickHalo(t, 121, 100)).toBe('small');
+    expect(pickHalo(t, 90, 100)).toBe('big');
+  });
+  it('is null for no targets, an empty area and non-finite input', () => {
+    expect(pickHalo([], 1, 1)).toBeNull();
+    expect(pickHalo(t, 250, 50)).toBeNull();
+    expect(pickHalo(t, Number.NaN, 1)).toBeNull();
+    expect(pickHalo([{ id: 'x', x: Number.NaN, y: 1, r: 5 }], 1, 1)).toBeNull();
+  });
+});
