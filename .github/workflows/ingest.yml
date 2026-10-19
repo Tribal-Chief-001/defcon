@@ -45,7 +45,7 @@ jobs:
       - run: npm run data:gdelt -- --days 7
       - name: Drop GDELT files older than 8 days from the cache
         run: find data/raw/gdelt -type f -mtime +8 -delete
-      - name: Signals (context feeds: fires near conflicts, disaster alerts, explosion-type seismic events)
+      - name: Signals, context feeds (fires near conflicts, disaster alerts, explosion-type seismic events)
         # a source that is down is reported inside signals.json and does not fail the run; a malformed result does
         run: npm run data:signals
       - run: npm run data:build

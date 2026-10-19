@@ -7,6 +7,14 @@ const text = (f: string) => readFileSync(`${DIR}/${f}`, 'utf8');
 
 import { runBodies, steps, workflowProblems } from './workflowRules';
 
+// a plain (unquoted) YAML scalar must not contain ": " or " #": GitHub rejects the whole file ("workflow file issue") and the ingest never runs
+describe.each(files)('%s: plain YAML scalars', (f) => {
+  it('has no name, run or if value with an unquoted ": " or " #" inside', () => {
+    const bad = text(f).split('\n').filter((l) => /^\s*(?:-\s+)?(name|if|uses):\s+[^"'|>\s]/.test(l)).filter((l) => /^\s*(?:-\s+)?(?:name|if|uses):\s+(.*)$/.exec(l)![1]!.match(/: | #(?!\s*v?\d)/) && !/^\s*(?:-\s+)?uses:/.test(l));
+    expect(bad).toEqual([]);
+  });
+});
+
 describe.each(files)('%s', (f) => {
   it('follows every workflow rule (pinned SHAs, least privilege, no injection, secrets only in step env, timeout)', () => {
     expect(workflowProblems(text(f))).toEqual([]);
