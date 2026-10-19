@@ -1,6 +1,9 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import type { Detail, Kind } from '../events/types';
 import { prefersReducedMotion } from '../lib/motion';
+import { loadSignals } from '../signals/load';
+import { nearbySignals, PRECISION_TEXT } from '../signals/nearby';
+import type { SignalsFile } from '../signals/types';
 import { useTime } from '../time/store';
 import { redactionFor } from './redaction';
 
@@ -22,7 +25,61 @@ const Bar = ({ progress }: { progress: number }) => (
   <span data-bar aria-hidden="true" className="mt-1 block h-[3px] bg-[var(--text-muted)]" style={{ width: `${Math.round((1 - progress) * 100)}%`, transition: prefersReducedMotion() ? 'none' : 'width 600ms cubic-bezier(0.16, 1, 0.3, 1)' }} />
 );
 
-export function EventCard({ detail, info, nowS = Math.floor(Date.now() / 1000), onClose }: { detail: Detail | null; info: EventInfo; nowS?: number; onClose: () => void }) {
+// "Evidence trail": how the event was coded, how precise its place is, its sources, and what the Signals feed has near it. Signals are
+// context only: they never confirm an event and an empty result proves nothing either way.
+function EvidenceTrail({ detail, info, at }: { detail: Detail; info: EventInfo; at?: { lat: number; lon: number } }) {
+  const [signals, setSignals] = useState<SignalsFile | null | undefined>(undefined);
+  useEffect(() => {
+    let live = true;
+    void loadSignals().then((f) => live && setSignals(f));
+    return () => {
+      live = false;
+    };
+  }, []);
+  const near = useMemo(() => (signals && at ? nearbySignals(signals, { lat: at.lat, lon: at.lon, timeS: info.timeS }) : null), [signals, at, info.timeS]);
+  const n = detail.sources.length;
+  return (
+    <section aria-label="Evidence trail" className="mt-4 border-t border-[var(--border)] pt-3">
+      <h3 className="font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.18em] text-[var(--text-muted)]">Evidence trail</h3>
+      <ul className="mt-2 space-y-1.5 text-[12.5px] leading-snug text-[var(--text-muted)]">
+        <li>{info.human ? 'Human-coded by UCDP researchers from the sources listed above.' : 'Auto-coded from a news report (GDELT): not reviewed by a person, so the place and the counts can be wrong.'}</li>
+        <li>Place given as {PRECISION_TEXT[info.precision as 1 | 2 | 3 | 4 | 5] ?? 'a place of unknown precision'}.</li>
+        <li>
+          {n === 0 ? 'No sources listed.' : `${n} ${n === 1 ? 'source' : 'sources'} listed.`}
+          {detail.alsoIds.length > 0 ? ` Merged with ${detail.alsoIds.length} other ${detail.alsoIds.length === 1 ? 'report' : 'reports'} of the same event.` : ''}
+        </li>
+        {signals === undefined || !at ? null : signals === null ? (
+          <li>The signals are unavailable right now.</li>
+        ) : near!.state === 'older' ? (
+          <li>This event is older than the {signals.windows.seismicDays} days the signals cover.</li>
+        ) : near!.state === 'none' ? (
+          <li>No signal near this event in the data. Signals are sparse: this proves nothing either way.</li>
+        ) : (
+          <>
+            {near!.fires.slice(0, 2).map((x) => (
+              <li key={`${x.cell.lat},${x.cell.lon}`}>
+                Satellite fire detections ({x.cell.count}) in a cell about {Math.round(x.km)} km away, within 2 days. A fire has many causes.
+              </li>
+            ))}
+            {near!.disasters.slice(0, 2).map((x) => (
+              <li key={x.alert.id}>
+                {x.alert.alert} disaster alert about {Math.round(x.km)} km away: {x.alert.title}
+              </li>
+            ))}
+            {near!.seismic.slice(0, 2).map((x) => (
+              <li key={x.event.id}>
+                Seismic explosion {x.event.mag === null ? '' : `M ${x.event.mag.toFixed(1)} `}about {Math.round(x.km)} km away, {x.minutes} min apart.
+              </li>
+            ))}
+            <li className="text-[var(--text-faint)]">Context from the Signals feed, not confirmation.</li>
+          </>
+        )}
+      </ul>
+    </section>
+  );
+}
+
+export function EventCard({ detail, info, at, nowS = Math.floor(Date.now() / 1000), onClose }: { detail: Detail | null; info: EventInfo; at?: { lat: number; lon: number }; nowS?: number; onClose: () => void }) {
   const backS = useTime((s) => s.backS);
   const card = useRef<HTMLElement>(null);
   useEffect(() => {
@@ -81,6 +138,7 @@ export function EventCard({ detail, info, nowS = Math.floor(Date.now() / 1000), 
               <Bar progress={progress} />
             </dd>
           </dl>
+          <EvidenceTrail detail={detail} info={info} at={at} />
           <p className="mt-3 font-[var(--font-mono)] text-[11px] uppercase tracking-[0.12em] text-[var(--text-faint)]">
             File: {progress >= 1 ? 'declassified' : progress <= 0 ? 'classified' : 'declassifying'} (cosmetic: every detail is shown)
           </p>

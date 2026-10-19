@@ -343,6 +343,7 @@ export function App() {
           <EventCard
             detail={sel.detail}
             info={sel.info}
+            at={{ lat: sel.lat, lon: sel.lon }}
             onClose={() => {
               latest.current.next();
               setSel(null);

@@ -1,8 +1,12 @@
 // @vitest-environment jsdom
 import { cleanup, render, screen } from '@testing-library/react';
-import { afterEach, describe, expect, it } from 'vitest';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { signalsFixture } from '../signals/fixture';
 import { EventCard } from '../../src/ui/EventCard';
 import type { Detail } from '../../src/events/types';
+
+const mocks = vi.hoisted(() => ({ loadSignals: vi.fn() }));
+vi.mock('../../src/signals/load', () => ({ loadSignals: mocks.loadSignals }));
 
 const NOW = Date.UTC(2026, 9, 18, 12) / 1000;
 const detail: Detail = {
@@ -10,6 +14,7 @@ const detail: Detail = {
   sources: [{ name: 'example.com', url: 'https://example.com/story' }, { name: 'Reuters' }], alsoIds: ['gdelt:1', 'gdelt:2'],
 };
 const info = { kind: 'armed' as const, severity: 3 as const, human: false, timeS: NOW - 2 * 3600, precision: 2, country: 'AFG' };
+beforeEach(() => mocks.loadSignals.mockReset().mockResolvedValue(null));
 afterEach(cleanup);
 
 describe('EventCard', () => {
@@ -77,5 +82,52 @@ describe('EventCard', () => {
     unmount();
     expect(document.activeElement).toBe(canvas);
     canvas.remove();
+  });
+});
+
+describe('EventCard: evidence trail', () => {
+  const GEN = Date.parse(signalsFixture().generated) / 1000;
+  const card = (o: { human?: boolean; at?: { lat: number; lon: number }; timeS?: number; precision?: number; alsoIds?: string[]; sources?: Detail['sources'] } = {}) =>
+    render(<EventCard detail={{ ...detail, sources: o.sources ?? detail.sources, alsoIds: o.alsoIds ?? detail.alsoIds }} info={{ ...info, human: o.human ?? false, timeS: o.timeS ?? GEN - 3600, precision: o.precision ?? 2 }} at={o.at} nowS={GEN} onClose={() => {}} />);
+  const trail = () => screen.getByRole('region', { name: /evidence trail/i });
+
+  it('says how the event was coded, how precise its place is, and how many sources and merged reports it has', () => {
+    card({ human: false, precision: 5, alsoIds: ['a', 'b'] });
+    const t = trail().textContent ?? '';
+    expect(t).toMatch(/auto-coded from a news report.*not reviewed by a person/i);
+    expect(t).toMatch(/only a region or country/i);
+    expect(t).toMatch(/2 sources listed/);
+    expect(t).toMatch(/merged with 2 other reports/i);
+    cleanup();
+    card({ human: true, precision: 1, sources: [], alsoIds: [] });
+    const u = trail().textContent ?? '';
+    expect(u).toMatch(/human-coded by UCDP/i);
+    expect(u).toMatch(/exact place/i);
+    expect(u).toMatch(/no sources listed/i);
+  });
+
+  it('lists the signals near the event as context, with distances and never as confirmation', async () => {
+    mocks.loadSignals.mockResolvedValue(signalsFixture());
+    card({ at: { lat: 12.8, lon: 13.8 } });
+    expect(await screen.findByText(/fire detections/i)).toBeTruthy();
+    const t = trail().textContent ?? '';
+    expect(t).toMatch(/km away/);
+    expect(t).toMatch(/a fire has many causes/i);
+    expect(t).toMatch(/not confirmation/i);
+    expect(t).not.toMatch(/confirmed|proves an|verified/i);
+  });
+
+  it('says plainly when nothing is near, when the event is older than the signals, and when the signals are unavailable', async () => {
+    mocks.loadSignals.mockResolvedValue(signalsFixture());
+    card({ at: { lat: -30, lon: 100 } });
+    expect(await screen.findByText(/no signal near this event/i)).toBeTruthy();
+    expect(trail().textContent).toMatch(/proves nothing either way/i);
+    cleanup();
+    card({ at: { lat: 12.8, lon: 13.8 }, timeS: GEN - 9 * 86400 });
+    expect(await screen.findByText(/older than the 7 days/i)).toBeTruthy();
+    cleanup();
+    mocks.loadSignals.mockResolvedValue(null);
+    card({ at: { lat: 12.8, lon: 13.8 } });
+    expect(await screen.findByText(/signals are unavailable/i)).toBeTruthy();
   });
 });
