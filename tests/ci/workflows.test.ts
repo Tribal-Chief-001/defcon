@@ -76,3 +76,13 @@ describe('data-updates.yml (the monthly alert for newer UCDP data and an old tim
     expect(t).toMatch(/npm run data:timeline-age/);
   });
 });
+
+describe('ingest.yml: the signals step', () => {
+  const t = text('ingest.yml');
+  it('builds the signals before the site is built, and never uses continue-on-error (a down source is handled inside the script)', () => {
+    const i = t.indexOf('npm run data:signals');
+    expect(i).toBeGreaterThan(0);
+    expect(i).toBeLessThan(t.indexOf('- run: npm run build'));
+    expect(t.slice(i - 400, i + 200)).not.toMatch(/continue-on-error/);
+  });
+});

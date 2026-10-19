@@ -102,6 +102,13 @@ describe('checkBudgets', () => {
     });
   });
 
+  it('has a size budget for signals.json (60 KB gzip)', () => {
+    const [dist, data] = make(1000);
+    writeFileSync(join(data, 'signals.json'), randomBytes(50_000));
+    expect(checkBudgets(dist, data).failures).toEqual([]);
+    writeFileSync(join(data, 'signals.json'), randomBytes(70_000));
+    expect(checkBudgets(dist, data).failures.join()).toMatch(/signals\.json/);
+  });
   it('has a size budget for conflicts.json (180 KB gzip) and indices.json (60 KB gzip)', () => {
     const [dist, data] = make(1000);
     writeFileSync(join(data, 'conflicts.json'), randomBytes(150_000));
