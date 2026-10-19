@@ -11,6 +11,26 @@ afterEach(cleanup);
 const open = () => fireEvent.keyDown(window, { key: 'k', ctrlKey: true });
 const input = () => screen.getByRole('combobox') as HTMLInputElement;
 
+describe('CommandPalette: the shortcut listener (finding: a real Ctrl+K sometimes did not open it)', () => {
+  it('registers the window keydown listener once and keeps it across re-renders, instead of removing and re-adding it on every render', () => {
+    const add = vi.spyOn(window, 'addEventListener');
+    const remove = vi.spyOn(window, 'removeEventListener');
+    const { rerender, unmount } = render(<CommandPalette index={index} onPick={() => {}} />);
+    open();
+    fireEvent.keyDown(window, { key: 'k', ctrlKey: true });
+    rerender(<CommandPalette index={index.slice(0, 2)} onPick={() => {}} />);
+    open();
+    const keydowns = (spy: { mock: { calls: unknown[][] } }) => spy.mock.calls.filter((c) => c[0] === 'keydown').length;
+    expect(keydowns(add)).toBe(1);
+    expect(keydowns(remove)).toBe(0);
+    expect(screen.getByRole('dialog')).toBeTruthy(); // and it still toggles with the latest state
+    unmount();
+    expect(keydowns(remove)).toBe(1);
+    add.mockRestore();
+    remove.mockRestore();
+  });
+});
+
 describe('CommandPalette', () => {
   it('opens with Ctrl+K and with Cmd+K, focuses the input, and closes with Esc', () => {
     render(<CommandPalette index={index} onPick={() => {}} />);

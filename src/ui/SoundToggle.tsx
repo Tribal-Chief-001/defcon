@@ -12,9 +12,13 @@ export function SoundToggle() {
     <button
       type="button"
       aria-pressed={enabled}
+      title="A soft ping for new events when the data refreshes, for events passing while the timeline plays, and when Night Watch arrives"
       onClick={() => {
         const on = !enabled;
-        if (on) sonar.unlock();
+        if (on) {
+          sonar.unlock();
+          sonar.ping(2, 0); // a soft confirmation: otherwise nothing sounds until an event arrives and "on" feels broken
+        }
         setEnabled(on);
         saveSound(on);
       }}

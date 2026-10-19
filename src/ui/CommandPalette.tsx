@@ -30,17 +30,19 @@ export function CommandPalette({ onPick, index: given }: { onPick: (id: string) 
     (before.current as HTMLElement | null)?.focus?.();
   };
 
+  // one listener for the life of the palette; it calls the latest toggle through a ref (re-registering it on every render left gaps)
+  const toggle = useRef(() => {});
+  toggle.current = () => (open ? hide() : show());
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => {
       if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
         e.preventDefault();
-        if (open) hide();
-        else show();
+        toggle.current();
       }
     };
     window.addEventListener('keydown', onKey);
     return () => window.removeEventListener('keydown', onKey);
-  });
+  }, []);
   useEffect(() => {
     if (open) inputRef.current?.focus();
   }, [open]);

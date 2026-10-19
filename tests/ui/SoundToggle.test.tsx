@@ -14,10 +14,26 @@ beforeEach(() => {
     Object.assign(this, { state: 'running', currentTime: 0, destination: {}, resume: async () => {}, close: async () => {}, createGain: () => ({}), createOscillator: () => ({}) });
   });
   vi.stubGlobal('AudioContext', ctor);
+  vi.spyOn(sonar, 'ping').mockImplementation(() => {});
 });
 afterEach(() => {
   cleanup();
+  vi.restoreAllMocks();
   vi.unstubAllGlobals();
+});
+
+describe('SoundToggle: a click must be audible (finding: no sound came out until an event arrived)', () => {
+  it('plays one soft confirmation ping when it is switched on, and none when it is switched off', () => {
+    render(<SoundToggle />);
+    fireEvent.click(screen.getByRole('button', { name: /sound/i }));
+    expect(sonar.ping).toHaveBeenCalledTimes(1);
+    fireEvent.click(screen.getByRole('button', { name: /sound/i }));
+    expect(sonar.ping).toHaveBeenCalledTimes(1);
+  });
+  it('says what will make a sound, in its title', () => {
+    render(<SoundToggle />);
+    expect(screen.getByRole('button', { name: /sound/i }).getAttribute('title')).toMatch(/new events.*Play.*Night Watch/i);
+  });
 });
 
 describe('SoundToggle', () => {
