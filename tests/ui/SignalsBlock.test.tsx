@@ -18,6 +18,37 @@ const show = async (f: SignalsFile | null = signalsFixture(), onFocusPlace = vi.
   return onFocusPlace;
 };
 
+describe('SignalsBlock: totals and age (review findings)', () => {
+  it('lists the per-conflict totals from the uncapped count, with the busiest cell on the map', async () => {
+    const f = signalsFixture();
+    f.fireTotals = [
+      { conflictId: 'sudan', conflict: 'Sudan: Government', detections: 900, cells: 40, frp: 120, lat: 14.25, lon: 31.75 },
+      { conflictId: 'ru', conflict: 'Russia - Ukraine', detections: 2, cells: 1, frp: 5, lat: 48.25, lon: 37.25 },
+    ];
+    const onFocusPlace = await show(f);
+    const rows = within(screen.getByRole('list', { name: /fires in conflict areas/i })).getAllByRole('listitem');
+    expect(rows[0]!.textContent).toMatch(/Sudan: Government.*900 detections.*40 cells/);
+    expect(rows[1]!.textContent).toMatch(/Russia - Ukraine.*2 detections/);
+    fireEvent.click(within(rows[1]!).getByRole('button', { name: /show on the map/i }));
+    expect(onFocusPlace).toHaveBeenCalledWith({ lat: 48.25, lon: 37.25, place: 'Russia - Ukraine (most fire detections)' });
+    expect(screen.getByRole('region', { name: /signals/i }).textContent).toMatch(/most detections are vegetation fires/i);
+  });
+  it('says how old the update is, and warns when it is over 12 hours old', async () => {
+    mocks.loadSignals.mockResolvedValue(signalsFixture());
+    const { rerender } = render(<SignalsBlock onFocusPlace={() => {}} nowS={Date.UTC(2026, 9, 19, 8, 34) / 1000} />);
+    await screen.findByRole('region', { name: /signals/i });
+    expect(screen.getByRole('region', { name: /signals/i }).textContent).toMatch(/built 2 h ago/i);
+    expect(screen.getByRole('region', { name: /signals/i }).textContent).not.toMatch(/out of date/i);
+    rerender(<SignalsBlock onFocusPlace={() => {}} nowS={Date.UTC(2026, 9, 20, 8, 34) / 1000} />);
+    expect(screen.getByRole('region', { name: /signals/i }).textContent).toMatch(/built 26 h ago.*out of date/i);
+  });
+  it('links the licence text of a source that has one', async () => {
+    await show();
+    const a = screen.getAllByRole('link', { name: /licence/i }).map((x) => (x as HTMLAnchorElement).href);
+    expect(a).toContain('https://creativecommons.org/licenses/by/4.0/');
+  });
+});
+
 describe('SignalsBlock', () => {
   it('says what signals are and are not: context, not confirmed events, and no effect on any number or index', async () => {
     await show();
@@ -62,6 +93,7 @@ describe('SignalsBlock', () => {
     const f = signalsFixture();
     f.seismic = [];
     f.fires = [];
+    f.fireTotals = [];
     f.sources[0]!.count = 0;
     f.sources[2]!.count = 0;
     await show(f);

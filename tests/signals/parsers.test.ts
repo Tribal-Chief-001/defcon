@@ -52,6 +52,13 @@ describe('parseGdacsRss', () => {
     expect(parseGdacsRss('')).toEqual([]);
     expect(parseGdacsRss('<rss><channel><item><title>x</title><gdacs:alertlevel>Red</gdacs:alertlevel></item></channel></rss>')).toEqual([]);
   });
+  it('is fast on a body full of unclosed <item> tags (no quadratic scan) and drops duplicate event ids', () => {
+    const t0 = Date.now();
+    expect(parseGdacsRss(`<rss><channel>${'<item>'.repeat(40000)}</channel></rss>`)).toEqual([]);
+    expect(Date.now() - t0).toBeLessThan(1500);
+    const one = fx('gdacs.xml').match(/<item>[\s\S]*?<\/item>/g)![1]!;
+    expect(parseGdacsRss(`<rss><channel>${one}${one}</channel></rss>`).length).toBe(1);
+  });
   it('drops a link that is not https on gdacs.org', () => {
     const item = (link: string) => `<rss><channel><item><title>Red flood in X</title><link>${link}</link><gdacs:eventtype>FL</gdacs:eventtype><gdacs:eventid>9</gdacs:eventid><gdacs:alertlevel>Red</gdacs:alertlevel><gdacs:country>X</gdacs:country><gdacs:fromdate>Mon, 19 Oct 2026 05:18:36 GMT</gdacs:fromdate><geo:Point><geo:lat>1</geo:lat><geo:long>2</geo:long></geo:Point></item></channel></rss>`;
     expect(parseGdacsRss(item('http://evil.example/x'))[0]!.url).toBe('https://www.gdacs.org/report.aspx?eventtype=FL&eventid=9');
@@ -67,11 +74,40 @@ describe('parseFirmsCsv', () => {
     // 2026-10-18 03:36 UTC
     expect(out[0]!.time).toBe(Date.UTC(2026, 9, 18, 3, 36) / 1000);
   });
+  it('rejects empty coordinate or power fields instead of reading them as 0 (a detection at 0,0)', () => {
+    const hdr = 'latitude,longitude,bright_ti4,scan,track,acq_date,acq_time,satellite,confidence,version,bright_ti5,frp,daynight';
+    expect(parseFirmsCsv(`${hdr}\n,10,300,0.4,0.4,2026-10-18,0336,N,nominal,2.0NRT,270,3.1,N\n10,,300,0.4,0.4,2026-10-18,0336,N,nominal,2.0NRT,270,3.1,N\n10,10,300,0.4,0.4,2026-10-18,0336,N,nominal,2.0NRT,270,,N`)).toEqual([]);
+  });
   it('skips bad rows and returns [] without the expected header', () => {
     const hdr = 'latitude,longitude,bright_ti4,scan,track,acq_date,acq_time,satellite,confidence,version,bright_ti5,frp,daynight';
     expect(parseFirmsCsv(`${hdr}\nx,10,300,0.4,0.4,2026-10-18,0336,N,nominal,2.0NRT,270,3.1,N\n95,10,300,0.4,0.4,2026-10-18,0336,N,nominal,2.0NRT,270,3.1,N\n10,10,300,0.4,0.4,2026-13-18,0336,N,nominal,2.0NRT,270,3.1,N\n10,10,300,0.4,0.4,2026-10-18,0336,N,h,2.0NRT,270,3.1,N`).length).toBe(1);
     expect(parseFirmsCsv('<html>not a csv</html>')).toEqual([]);
     expect(parseFirmsCsv('')).toEqual([]);
+  });
+});
+
+describe('aggregateFires: which conflict owns a cell (review finding)', () => {
+  const det = (lat: number, lon: number) => ({ lat, lon, frp: 1, time: 1.79e9 });
+  it('credits a cell to the conflict whose own cell it is, not to a neighbour scanned first', () => {
+    // A owns the cell at 10.25/10.25; B owns the cell directly south of it (9.75/10.25). The detection lies in A's own cell.
+    const a = { id: 'a', name: 'A', cells: [[10.25, 10.25, 50]] as [number, number, number][] };
+    const b = { id: 'b', name: 'B', cells: [[9.75, 10.25, 50]] as [number, number, number][] };
+    const out = aggregateFires([det(10.3, 10.3)], [b, a]);
+    expect(out[0]!.conflictId).toBe('a');
+    expect(aggregateFires([det(10.3, 10.3)], [a, b])[0]!.conflictId).toBe('a'); // not decided by the order
+  });
+  it('gives a cell claimed by two conflicts to the one with more deaths there, ties to the smaller id', () => {
+    const a = { id: 'a', name: 'A', cells: [[5.25, 5.25, 10]] as [number, number, number][] };
+    const b = { id: 'b', name: 'B', cells: [[5.25, 5.25, 90]] as [number, number, number][] };
+    expect(aggregateFires([det(5.3, 5.3)], [a, b])[0]!.conflictId).toBe('b');
+    const c = { id: 'c', name: 'C', cells: [[5.25, 5.25, 90]] as [number, number, number][] };
+    expect(aggregateFires([det(5.3, 5.3)], [c, b])[0]!.conflictId).toBe('b');
+  });
+  it('gives a neighbour cell to the nearest conflict cell (smallest distance), ties to the smaller id', () => {
+    const a = { id: 'a', name: 'A', cells: [[10.25, 10.25, 5]] as [number, number, number][] }; // north-west neighbour of the detection cell (9.75, 10.75)? no: directly diagonal
+    const b = { id: 'b', name: 'B', cells: [[9.75, 11.25, 5]] as [number, number, number][] }; // east neighbour (same latitude)
+    const out = aggregateFires([det(9.8, 10.8)], [a, b]);
+    expect(out[0]!.conflictId).toBe('b'); // the east neighbour is nearer than the diagonal one
   });
 });
 

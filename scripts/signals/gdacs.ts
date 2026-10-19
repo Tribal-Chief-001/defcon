@@ -12,8 +12,13 @@ const tag = (item: string, name: string): string => {
 export function parseGdacsRss(xml: string): DisasterSignal[] {
   if (!/<rss[\s>]/.test(xml)) return []; // an HTML error page or garbage is not a feed
   const out: DisasterSignal[] = [];
-  for (const m of xml.matchAll(/<item>[\s\S]*?<\/item>/g)) {
-    const item = m[0];
+  const seen = new Set<string>();
+  // items are found with indexOf, not a lazy regex: unclosed <item> tags would make that quadratic
+  for (let from = xml.indexOf('<item>'); from >= 0; ) {
+    const end = xml.indexOf('</item>', from);
+    if (end < 0) break;
+    const item = xml.slice(from, end + 7);
+    from = xml.indexOf('<item>', end + 7);
     const alert = tag(item, 'gdacs:alertlevel');
     const kind = tag(item, 'gdacs:eventtype');
     const eventId = tag(item, 'gdacs:eventid');
@@ -22,6 +27,8 @@ export function parseGdacsRss(xml: string): DisasterSignal[] {
     const time = Date.parse(tag(item, 'gdacs:fromdate') || tag(item, 'pubDate')) / 1000;
     if ((alert !== 'Orange' && alert !== 'Red') || !/^[A-Z]{2}$/.test(kind) || !/^\d{1,12}$/.test(eventId) || !Number.isFinite(lat) || !Number.isFinite(lon) || Math.abs(lat) > 90 || Math.abs(lon) > 180 || !Number.isFinite(time)) continue;
     const link = tag(item, 'link');
+    if (seen.has(`${kind}${eventId}`)) continue; // a repeated event id would be a duplicate list key
+    seen.add(`${kind}${eventId}`);
     out.push({
       id: `${kind}${eventId}`,
       time: Math.round(time),
@@ -29,7 +36,7 @@ export function parseGdacsRss(xml: string): DisasterSignal[] {
       lon,
       kind,
       alert,
-      title: tag(item, 'title').slice(0, 160),
+      title: ((t) => (t.length > 160 ? `${t.slice(0, 159)}…` : t))(tag(item, 'title')),
       country: tag(item, 'gdacs:country').slice(0, 80),
       url: /^https:\/\/www\.gdacs\.org\//.test(link) ? link : `https://www.gdacs.org/report.aspx?eventtype=${kind}&eventid=${eventId}`,
     });

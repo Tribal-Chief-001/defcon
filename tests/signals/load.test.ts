@@ -26,6 +26,8 @@ describe('loadSignals', () => {
     ['a disaster link that is not https', (f) => ((f.disasters[0]!.url = 'javascript:alert(1)'), f)],
     ['a disaster link on another host', (f) => ((f.disasters[0]!.url = 'https://evil.example/x'), f)],
     ['a seismic link on another host', (f) => ((f.seismic[0]!.url = 'https://evil.example/x'), f)],
+    ['a fire total with a non-finite count', (f) => ((f.fireTotals[0]!.detections = Number.NaN as number), f)],
+    ['a licence link that is not https', (f) => ((f.sources[1]!.licenceUrl = 'javascript:alert(1)'), f)],
     ['a latitude out of range', (f) => ((f.seismic[0]!.lat = 120), f)],
     ['an unknown alert level', (f) => (((f.disasters[0] as unknown as { alert: string }).alert = 'Purple'), f)],
   ];

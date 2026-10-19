@@ -83,6 +83,6 @@ describe('ingest.yml: the signals step', () => {
     const i = t.indexOf('npm run data:signals');
     expect(i).toBeGreaterThan(0);
     expect(i).toBeLessThan(t.indexOf('- run: npm run build'));
-    expect(t.slice(i - 400, i + 200)).not.toMatch(/continue-on-error/);
+    expect(t.slice(i - 400, i + 200)).not.toMatch(/continue-on-error|\|\|\s*true|if:\s*always\(\)/);
   });
 });

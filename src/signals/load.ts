@@ -12,11 +12,12 @@ const GDACS = /^https:\/\/www\.gdacs\.org\//;
 
 function valid(f: unknown): f is SignalsFile {
   const x = f as Partial<SignalsFile> | null;
-  if (!x || typeof x.generated !== 'string' || Number.isNaN(Date.parse(x.generated)) || !Array.isArray(x.sources) || !Array.isArray(x.seismic) || !Array.isArray(x.disasters) || !Array.isArray(x.fires)) return false;
+  if (!x || typeof x.generated !== 'string' || Number.isNaN(Date.parse(x.generated)) || !Array.isArray(x.sources) || !Array.isArray(x.seismic) || !Array.isArray(x.disasters) || !Array.isArray(x.fires) || !Array.isArray(x.fireTotals)) return false;
   return (
-    x.sources.every((s) => !!s && ['usgs', 'gdacs', 'firms'].includes(s.id) && text(s.name) && typeof s.ok === 'boolean' && num(s.count) && text(s.licence) && text(s.attribution) && typeof s.url === 'string' && /^https:\/\//.test(s.url)) &&
+    x.sources.every((s) => !!s && ['usgs', 'gdacs', 'firms'].includes(s.id) && text(s.name) && typeof s.ok === 'boolean' && num(s.count) && text(s.licence) && text(s.attribution) && typeof s.url === 'string' && /^https:\/\//.test(s.url) && (s.licenceUrl === undefined || (typeof s.licenceUrl === 'string' && /^https:\/\//.test(s.licenceUrl)))) &&
     x.seismic.every((s) => !!s && text(s.id) && point(s) && num(s.time) && (s.mag === null || num(s.mag)) && typeof s.place === 'string' && link(s.url, USGS)) &&
     x.disasters.every((d) => !!d && text(d.id) && point(d) && num(d.time) && ['Orange', 'Red'].includes(d.alert) && text(d.kind) && typeof d.title === 'string' && typeof d.country === 'string' && link(d.url, GDACS)) &&
+    x.fireTotals.every((t) => !!t && point(t) && num(t.detections) && t.detections > 0 && num(t.cells) && num(t.frp) && text(t.conflictId) && text(t.conflict)) &&
     x.fires.every((c) => !!c && point(c) && num(c.count) && c.count > 0 && num(c.frp) && num(c.latestS) && text(c.conflictId) && text(c.conflict))
   );
 }

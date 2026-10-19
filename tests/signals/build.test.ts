@@ -84,6 +84,31 @@ describe('buildSignals', () => {
   });
 });
 
+describe('buildSignals: totals, the cap and odd upstream data (review findings)', () => {
+  it('counts the detections of a conflict before any cap, so the totals stay true', async () => {
+    const rows = ['latitude,longitude,bright_ti4,scan,track,acq_date,acq_time,satellite,confidence,version,bright_ti5,frp,daynight'];
+    for (let i = 0; i < 12; i++) for (let k = 0; k <= i; k++) rows.push(`${50 + i * 0.5 + 0.1},${10.1},300,0.4,0.4,2026-10-18,0336,N,nominal,2.0NRT,270,${k + 1},N`); // cell i has i+1 detections
+    const cs = [{ id: 'big', name: 'Big', cells: Array.from({ length: 12 }, (_, i) => [50.25 + i * 0.5, 10.25, 9] as [number, number, number]) }];
+    const f = await build(router({ firms: () => ok(rows.join('\n'), 'text/csv') }) as never, { conflicts: cs, maxFireCells: 5 });
+    expect(f.fires.length).toBe(5); // the cell list is capped, after sorting
+    expect(f.fires[0]!.count).toBe(12);
+    expect(f.fireTotals).toEqual([expect.objectContaining({ conflictId: 'big', detections: 78, cells: 12, frp: 12 })]); // 1+2+...+12, all cells, strongest power 12
+    expect(f.fireTotals[0]).toMatchObject({ lat: 55.75, lon: 10.25 }); // the busiest cell
+  });
+  it('drops items dated more than a day in the future instead of failing the whole run', async () => {
+    const j = JSON.parse(fx('usgs.geojson')) as { features: { properties: { type: string; mag: number | null; time: number } }[] };
+    for (const f of j.features) if (f.properties.type === 'explosion') { f.properties.mag = 3; f.properties.time = (NOW + 5 * 86400) * 1000; }
+    const f = await build(router({ usgs: () => ok(JSON.stringify(j), 'application/json') }) as never);
+    expect(f.seismic).toEqual([]);
+    expect(validateSignals(f, NOW)).toEqual([]);
+  });
+  it('shows the FIRMS acknowledgement in full and links the GDACS licence', async () => {
+    const f = await build(router() as never);
+    expect(f.sources.find((s) => s.id === 'firms')!.attribution).toBe("We acknowledge the use of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Land, Atmosphere Near real-time Capability for Earth observations (LANCE) (https://earthdata.nasa.gov/lance) and NASA's Earth Science Data and Information System (ESDIS).");
+    expect(f.sources.find((s) => s.id === 'gdacs')!.licenceUrl).toBe('https://creativecommons.org/licenses/by/4.0/');
+  });
+});
+
 describe('validateSignals', () => {
   const bigBlast = () => {
     const j = JSON.parse(fx('usgs.geojson')) as { features: { properties: { type: string; mag: number | null } }[] };
@@ -97,7 +122,7 @@ describe('validateSignals', () => {
     const a = clone(); a.seismic[0]!.lat = 95; expect(validateSignals(a, NOW).join()).toMatch(/lat/);
     const b = clone(); b.disasters[0]!.url = 'http://x.example/a'; expect(validateSignals(b, NOW).join()).toMatch(/https/);
     const c = clone(); c.seismic[0]!.time = NOW + 10 * 86400; expect(validateSignals(c, NOW).join()).toMatch(/future/);
-    const d = clone(); d.fires = Array.from({ length: 401 }, () => d.fires[0]!); expect(validateSignals(d, NOW).join()).toMatch(/too many/);
+    const d = clone(); d.fires = Array.from({ length: 801 }, () => d.fires[0]!); expect(validateSignals(d, NOW).join()).toMatch(/too many/);
     const e = clone(); e.sources.push(e.sources[0]!); expect(validateSignals(e, NOW).join()).toMatch(/duplicate/);
   });
   it('requires the licence and attribution of every source and an ok flag that matches the data', async () => {

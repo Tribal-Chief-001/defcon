@@ -14,7 +14,7 @@ const link = 'underline decoration-[var(--border-strong)] underline-offset-2 hov
 
 // Context signals beside the conflict data: fires seen by satellites near conflict areas, humanitarian disaster alerts and explosion-type
 // seismic events. They are context, never evidence of an attack, and they change no number or index. Without the file the block says so.
-export function SignalsBlock({ onFocusPlace }: { onFocusPlace: PlaceHandler }) {
+export function SignalsBlock({ onFocusPlace, nowS }: { onFocusPlace: PlaceHandler; nowS?: number }) {
   const [file, setFile] = useState<SignalsFile | null | undefined>(undefined);
   useEffect(() => {
     let live = true;
@@ -24,25 +24,15 @@ export function SignalsBlock({ onFocusPlace }: { onFocusPlace: PlaceHandler }) {
     };
   }, []);
 
-  // fire cells grouped by conflict: detections, cells, the strongest radiative power and the busiest cell (the one the map flies to)
-  const byConflict = useMemo(() => {
-    const m = new Map<string, { id: string; name: string; count: number; cells: number; frp: number; best: { lat: number; lon: number; count: number } }>();
-    for (const c of file?.fires ?? []) {
-      const g = m.get(c.conflictId) ?? { id: c.conflictId, name: c.conflict, count: 0, cells: 0, frp: 0, best: { lat: c.lat, lon: c.lon, count: 0 } };
-      g.count += c.count;
-      g.cells++;
-      g.frp = Math.max(g.frp, c.frp);
-      if (c.count > g.best.count) g.best = { lat: c.lat, lon: c.lon, count: c.count };
-      m.set(c.conflictId, g);
-    }
-    return [...m.values()].sort((a, b) => b.count - a.count || a.name.localeCompare(b.name)).slice(0, 10);
-  }, [file]);
+  // the true totals per conflict (the file computes them before it caps its cell list)
+  const byConflict = useMemo(() => [...(file?.fireTotals ?? [])].sort((a, b) => b.detections - a.detections || a.conflict.localeCompare(b.conflict)).slice(0, 10), [file]);
 
   if (file === undefined) return <p className="mt-8 text-[13px] text-[var(--text-muted)]">Loading the signals{'…'}</p>;
   if (file === null) return <p className="mt-8 text-[13px] text-[var(--text-muted)]">The signals are unavailable right now. The rest of the room works without them.</p>;
   const src = (id: string) => file.sources.find((s) => s.id === id);
   const down = file.sources.filter((s) => !s.ok);
   const built = Date.parse(file.generated) / 1000;
+  const ageH = Math.max(0, Math.round(((nowS ?? Date.now() / 1000) - built) / 3600));
 
   return (
     <section aria-label="Signals" className="mt-10">
@@ -51,7 +41,7 @@ export function SignalsBlock({ onFocusPlace }: { onFocusPlace: PlaceHandler }) {
         <span aria-hidden="true" className="h-px flex-1 bg-[var(--border)]" />
       </h4>
       <p className="max-w-[62ch] text-[13px] text-[var(--text-muted)]">
-        Context, not conflict events: what satellites and sensors saw near the conflict areas and elsewhere. A fire has many causes (burning fields, gas flares, burning buildings), and a seismic explosion is not a strike. Signals never change a conflict number or an index. Updated {when(built)}.
+        Context, not conflict events: what satellites and sensors saw near the conflict areas and elsewhere. A fire has many causes (burning fields and bush, gas flares, burning buildings) and most detections are vegetation fires, so a count says little on its own; a seismic explosion is not a strike. Signals never change a conflict number or an index. Updated {when(built)}, built {ageH} h ago{ageH > 12 ? ': this update is out of date, newer data may exist' : ''}.
       </p>
       {down.length > 0 ? (
         <p className="mt-2 font-[var(--font-mono)] text-[12px] text-[var(--orange)]">
@@ -65,12 +55,12 @@ export function SignalsBlock({ onFocusPlace }: { onFocusPlace: PlaceHandler }) {
       ) : (
         <ul aria-label="Fires in conflict areas" className="mt-1 flex flex-col">
           {byConflict.map((g) => (
-            <li key={g.id} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-[var(--border)] py-2 text-[13px]">
-              <span className="min-w-0 flex-1">{g.name}</span>
+            <li key={g.conflictId} className="flex flex-wrap items-baseline gap-x-3 gap-y-1 border-t border-[var(--border)] py-2 text-[13px]">
+              <span className="min-w-0 flex-1">{g.conflict}</span>
               <span className="font-[var(--font-mono)] text-[12px] text-[var(--text-muted)]">
-                {int(g.count)} detections · {g.cells} {g.cells === 1 ? 'cell' : 'cells'} · strongest {int(Math.round(g.frp))} MW
+                {int(g.detections)} detections · {g.cells} {g.cells === 1 ? 'cell' : 'cells'} · strongest {int(Math.round(g.frp))} MW
               </span>
-              <button type="button" onClick={() => onFocusPlace({ lat: g.best.lat, lon: g.best.lon, place: `${g.name} (most fire detections)` })} className="font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.12em] text-[var(--lime)] hover:underline" aria-label={`Show on the map: ${g.name}`}>
+              <button type="button" onClick={() => onFocusPlace({ lat: g.lat, lon: g.lon, place: `${g.conflict} (most fire detections)` })} className="font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.12em] text-[var(--lime)] hover:underline" aria-label={`Show on the map: ${g.conflict}`}>
                 Show on the map
               </button>
             </li>
@@ -127,6 +117,14 @@ export function SignalsBlock({ onFocusPlace }: { onFocusPlace: PlaceHandler }) {
             <a href={s.url} target="_blank" rel="noopener noreferrer" className={link}>
               source
             </a>
+            {s.licenceUrl ? (
+              <>
+                {' · '}
+                <a href={s.licenceUrl} target="_blank" rel="noopener noreferrer" className={link}>
+                  licence
+                </a>
+              </>
+            ) : null}
           </li>
         ))}
       </ul>

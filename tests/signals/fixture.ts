@@ -6,13 +6,17 @@ export const signalsFixture = (): SignalsFile => ({
   windows: { seismicDays: 7, disasterDays: 7, fireHours: 24 },
   sources: [
     { id: 'usgs', name: 'USGS earthquake feed (explosion-type events)', ok: true, count: 1, fetchedS: T, licence: 'Public domain (U.S. Government work)', attribution: 'U.S. Geological Survey', url: 'https://earthquake.usgs.gov/earthquakes/feed/' },
-    { id: 'gdacs', name: 'GDACS disaster alerts (Orange and Red)', ok: true, count: 2, fetchedS: T, licence: 'CC BY 4.0 (European Union); credit to GDACS', attribution: 'Global Disaster Alert and Coordination System (GDACS)', url: 'https://www.gdacs.org/' },
+    { id: 'gdacs', name: 'GDACS disaster alerts (Orange and Red)', ok: true, count: 2, fetchedS: T, licence: 'CC BY 4.0 (European Union); credit to GDACS', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/', attribution: 'Global Disaster Alert and Coordination System (GDACS)', url: 'https://www.gdacs.org/' },
     { id: 'firms', name: 'NASA FIRMS thermal anomalies (VIIRS 375 m, last 24 hours)', ok: true, count: 3, fetchedS: T, licence: 'NASA open data; acknowledgement requested', attribution: "NASA's Fire Information for Resource Management System (FIRMS), part of NASA's LANCE and ESDIS", url: 'https://firms.modaps.eosdis.nasa.gov/' },
   ],
   seismic: [{ id: 'us1', time: T - 3600, lat: 35.1, lon: 60.2, mag: 3.4, type: 'explosion', place: '12 km N of Somewhere', url: 'https://earthquake.usgs.gov/earthquakes/eventpage/us1' }],
   disasters: [
     { id: 'TC1', time: T - 7200, lat: 14, lon: 144, kind: 'TC', alert: 'Red', title: 'Red notification for tropical cyclone TEST-26', country: 'Guam', url: 'https://www.gdacs.org/report.aspx?eventtype=TC&eventid=1' },
     { id: 'DR2', time: T - 86400, lat: 0, lon: 20, kind: 'DR', alert: 'Orange', title: 'Drought is on going in Testland', country: 'Testland', url: 'https://www.gdacs.org/report.aspx?eventtype=DR&eventid=2' },
+  ],
+  fireTotals: [
+    { conflictId: 'nigeria-is', conflict: 'Nigeria: Islamic State', detections: 222, cells: 2, frp: 112.5, lat: 12.75, lon: 13.75 },
+    { conflictId: 'sudan', conflict: 'Sudan: Government', detections: 90, cells: 1, frp: 55, lat: 14.25, lon: 31.75 },
   ],
   fires: [
     { lat: 12.75, lon: 13.75, count: 182, frp: 112.5, latestS: T - 1800, conflictId: 'nigeria-is', conflict: 'Nigeria: Islamic State' },

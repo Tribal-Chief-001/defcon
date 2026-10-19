@@ -3,7 +3,7 @@
 // failed in the file. Signals never change a conflict number, a score or an index.
 import { readFileSync, writeFileSync } from 'node:fs';
 import type { DisasterSignal, SeismicSignal, SignalSource, SignalsFile } from '../../src/signals/types';
-import { aggregateFires, parseFirmsCsv, type ConflictArea } from './firms';
+import { fireCells, fireTotals, parseFirmsCsv, type ConflictArea } from './firms';
 import { parseGdacsRss } from './gdacs';
 import { parseUsgs } from './usgs';
 import { validateSignals } from './validate';
@@ -16,8 +16,8 @@ export const URLS = {
 
 const META: Record<keyof typeof URLS, Omit<SignalSource, 'ok' | 'count' | 'fetchedS' | 'error'>> = {
   usgs: { id: 'usgs', name: 'USGS earthquake feed (explosion-type events)', licence: 'Public domain (U.S. Government work)', attribution: 'U.S. Geological Survey', url: 'https://earthquake.usgs.gov/earthquakes/feed/' },
-  gdacs: { id: 'gdacs', name: 'GDACS disaster alerts (Orange and Red)', licence: 'CC BY 4.0 (European Union); credit to GDACS', attribution: 'Global Disaster Alert and Coordination System (GDACS)', url: 'https://www.gdacs.org/' },
-  firms: { id: 'firms', name: 'NASA FIRMS thermal anomalies (VIIRS 375 m, last 24 hours)', licence: 'NASA open data; acknowledgement requested', attribution: "NASA's Fire Information for Resource Management System (FIRMS), part of NASA's LANCE and ESDIS", url: 'https://firms.modaps.eosdis.nasa.gov/' },
+  gdacs: { id: 'gdacs', name: 'GDACS disaster alerts (Orange and Red)', licence: 'CC BY 4.0 (European Union); credit to GDACS', licenceUrl: 'https://creativecommons.org/licenses/by/4.0/', attribution: 'Global Disaster Alert and Coordination System (GDACS)', url: 'https://www.gdacs.org/' },
+  firms: { id: 'firms', name: 'NASA FIRMS thermal anomalies (VIIRS 375 m, last 24 hours)', licence: 'NASA open data; acknowledgement requested', attribution: "We acknowledge the use of data and/or imagery from NASA's Fire Information for Resource Management System (FIRMS) (https://earthdata.nasa.gov/firms), part of NASA's Land, Atmosphere Near real-time Capability for Earth observations (LANCE) (https://earthdata.nasa.gov/lance) and NASA's Earth Science Data and Information System (ESDIS).", url: 'https://firms.modaps.eosdis.nasa.gov/' },
 };
 const WEEK = 7 * 86400;
 const FIRE_MAX_AGE = 36 * 3600; // the "24 h" file can lag behind real time
@@ -32,12 +32,14 @@ async function get(fetchFn: typeof fetch, url: string, timeoutMs: number, maxByt
   return body;
 }
 
-export async function buildSignals(o: { fetchFn: typeof fetch; nowS: number; conflicts: ConflictArea[]; timeoutMs?: number; maxBytes?: number }): Promise<SignalsFile> {
+export async function buildSignals(o: { fetchFn: typeof fetch; nowS: number; conflicts: ConflictArea[]; timeoutMs?: number; maxBytes?: number; maxFireCells?: number }): Promise<SignalsFile> {
   const timeoutMs = o.timeoutMs ?? 30_000;
   const maxBytes = o.maxBytes ?? 15_000_000;
   let seismic: SeismicSignal[] = [];
   let disasters: DisasterSignal[] = [];
   let fires: SignalsFile['fires'] = [];
+  let totals: SignalsFile['fireTotals'] = [];
+  const future = o.nowS + 86400; // an item dated after this is a bad date upstream: dropped, it must not fail the run
   const sources: SignalSource[] = [];
   const run = async (id: keyof typeof URLS, work: (body: string) => number) => {
     const src: SignalSource = { ...META[id], ok: false, count: 0, fetchedS: o.nowS };
@@ -51,20 +53,22 @@ export async function buildSignals(o: { fetchFn: typeof fetch; nowS: number; con
   };
   await run('usgs', (body) => {
     // tiny explosion-type events (magnitude under 2) are local blasts, not signals
-    seismic = parseUsgs(JSON.parse(body) as unknown).filter((s) => s.time >= o.nowS - WEEK && (s.mag === null || s.mag >= 2)).sort((a, b) => b.time - a.time).slice(0, 200);
+    seismic = parseUsgs(JSON.parse(body) as unknown).filter((s) => s.time >= o.nowS - WEEK && s.time <= future && (s.mag === null || s.mag >= 2)).sort((a, b) => b.time - a.time).slice(0, 200);
     return seismic.length;
   });
   await run('gdacs', (body) => {
     if (!/<rss[\s>]/.test(body)) throw new Error('not an RSS feed');
-    disasters = parseGdacsRss(body).sort((a, b) => b.time - a.time).slice(0, 100);
+    disasters = parseGdacsRss(body).filter((d) => d.time <= future).sort((a, b) => b.time - a.time).slice(0, 100);
     return disasters.length;
   });
   await run('firms', (body) => {
     if (!body.startsWith('latitude,')) throw new Error('not a FIRMS CSV');
-    fires = aggregateFires(parseFirmsCsv(body).filter((d) => d.time >= o.nowS - FIRE_MAX_AGE), o.conflicts, 300);
+    const all = fireCells(parseFirmsCsv(body).filter((d) => d.time >= o.nowS - FIRE_MAX_AGE && d.time <= future), o.conflicts);
+    totals = fireTotals(all).slice(0, 60); // true totals per conflict, taken before the cell list is capped
+    fires = all.slice(0, o.maxFireCells ?? 800);
     return fires.length;
   });
-  return { generated: new Date(o.nowS * 1000).toISOString(), windows: { seismicDays: 7, disasterDays: 7, fireHours: 24 }, sources, seismic, disasters, fires };
+  return { generated: new Date(o.nowS * 1000).toISOString(), windows: { seismicDays: 7, disasterDays: 7, fireHours: 24 }, sources, seismic, disasters, fires, fireTotals: totals };
 }
 
 async function main() {
