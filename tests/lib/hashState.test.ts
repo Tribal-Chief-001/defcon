@@ -45,3 +45,26 @@ describe('hash state (deep links)', () => {
     expect(formatHash('IND', false, null)).toBe('#c=IND');
   });
 });
+
+describe('hash state: a moment (&t=<unix seconds>)', () => {
+  it('parses the playhead after a country, a conflict, the about page and on its own', () => {
+    expect(parseHash('#c=IND&t=1790000000')).toEqual({ country: 'IND', t: 1790000000 });
+    expect(parseHash('#war=russia-ukraine&t=1790000000')).toEqual({ country: null, war: 'russia-ukraine', t: 1790000000 });
+    expect(parseHash('#war&t=1790000000')).toEqual({ country: null, war: '', t: 1790000000 });
+    expect(parseHash('#t=1790000000')).toEqual({ country: null, t: 1790000000 });
+  });
+  it.each([['#c=IND&t='], ['#c=IND&t=abc'], ['#c=IND&t=-5'], ['#c=IND&t=12'], ['#c=IND&t=1790000000&x=1'], ['#c=IND&t=1790000000&t=1790000001'], ['#t=<x>'], ['#c=IND&t=99999999999999'], ['#c=IND&t=1.5'], ['#war=a&&t=1790000000']])('rejects %j (the whole link is ignored)', (h) => {
+    expect(parseHash(h)).toEqual({ country: null });
+  });
+  it('formats a moment after the link, or on its own, and drops a bad one', () => {
+    expect(formatHash('IND', false, null, 1790000000)).toBe('#c=IND&t=1790000000');
+    expect(formatHash(null, false, 'russia-ukraine', 1790000000.9)).toBe('#war=russia-ukraine&t=1790000000');
+    expect(formatHash(null, false, null, 1790000000)).toBe('#t=1790000000');
+    expect(formatHash('IND', false, null, Number.NaN)).toBe('#c=IND');
+    expect(formatHash('IND', false, null, -3)).toBe('#c=IND');
+    expect(formatHash(null, false, null, undefined)).toBe('');
+  });
+  it('round-trips', () => {
+    expect(parseHash(formatHash('FJI', false, null, 1790000123))).toEqual({ country: 'FJI', t: 1790000123 });
+  });
+});

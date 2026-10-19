@@ -8,7 +8,9 @@ import { Spark } from '../../viz/Spark';
 import { kindLayers, StreamChart } from '../../viz/StreamChart';
 import { useCountUp } from '../../viz/useCountUp';
 import { TimelineBlock, type TimelineRow } from '../TimelineBlock';
+import { conflictsCsv } from '../../exports/csv';
 import { EventList } from './EventList';
+import { ExportButton } from './ExportButton';
 import { IndexBoard } from './IndexBoard';
 import { SignalsBlock } from './SignalsBlock';
 import { NewsReports } from './NewsReports';
@@ -147,6 +149,9 @@ export function Overview({ f, tl, onSelect, onDive, onFocusPlace, onHoverPin, on
       </Section>
 
       <Section title={`All ${f.conflicts.length} conflicts`}>
+        <div className="mb-2">
+          <ExportButton label="conflicts" filename={`defcon-conflicts-${f.dataEnd}.csv`} build={() => conflictsCsv(f)} />
+        </div>
         <input type="search" aria-label="Filter conflicts" placeholder="Filter by name or country" value={q} onChange={(e) => setQ(e.target.value)} className="mb-2 w-full rounded-[12px] border border-[var(--border)] bg-transparent px-3 py-2 text-[14px] outline-none placeholder:text-[var(--text-faint)] focus:border-[var(--lime)]" />
         {matches.length === 0 ? (
           <p className="text-[14px] text-[var(--text-muted)]">No conflicts match.</p>

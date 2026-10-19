@@ -11,6 +11,7 @@ import type { ConflictsFile } from './conflicts/types';
 import { loadTimeline } from './timeline/load';
 import type { TimelineFile } from './timeline/types';
 import { formatHash, parseHash } from './lib/hashState';
+import { backFromMoment, shareUrl } from './lib/shareUrl';
 import { eventsBase } from './events/config';
 import { fetchDetail } from './events/detail';
 import { createLatest } from './events/latest';
@@ -40,6 +41,7 @@ import { lazy, Suspense } from 'react';
 import { ErrorBoundary } from './ui/ErrorBoundary';
 import { Unsupported } from './globe/Unsupported';
 import { SkipLink } from './ui/SkipLink';
+import { ShareButton } from './ui/ShareButton';
 import { SoundToggle } from './ui/SoundToggle';
 import { StatusRegion, announce } from './ui/status';
 
@@ -206,9 +208,14 @@ export function App() {
     const want = formatHash(dossierId, about, war);
     if (location.hash !== want) history.replaceState(null, '', want || location.pathname + location.search);
   }, [dossierId, about, war]);
+  const momentAtLoad = useRef(parseHash(location.hash).t); // read before the address is rewritten without it
   useEffect(() => {
+    let first = true;
     const apply = () => {
-      const { country, about: wantAbout, war: wantWar } = parseHash(location.hash);
+      const { country, about: wantAbout, war: wantWar, t } = parseHash(location.hash);
+      const moment = first ? momentAtLoad.current : t; // a shared moment puts the playhead there (the archive covers 365 days)
+      first = false;
+      if (moment !== undefined) useTime.getState().setBack(backFromMoment(moment, Date.now() / 1000));
       setAbout(wantAbout === true);
       setWar(wantWar ?? null);
       setPlaceFocus(null); // a hash navigation is a new selection: the place asked for before no longer applies
@@ -281,6 +288,7 @@ export function App() {
       <TopBar>
         <CommandPalette onPick={(id) => void startDive(id)} />
         <SoundToggle />
+        <ShareButton url={() => shareUrl({ origin: location.origin, pathname: location.pathname, id: dossierId, about, war, backS: useTime.getState().backS, nowS: Math.floor(Date.now() / 1000) })} />
         <button type="button" aria-pressed={warOpen} onClick={() => setWar((w) => (w === null ? '' : null))} className="rounded-full border border-[var(--border-strong)] bg-black/40 px-3 py-1.5 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--text-muted)] backdrop-blur-md hover:text-[var(--lime)]">
           War room
         </button>

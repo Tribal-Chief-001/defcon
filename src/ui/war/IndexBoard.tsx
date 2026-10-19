@@ -1,10 +1,12 @@
 import { useEffect, useMemo, useState } from 'react';
 import { loadIndex } from '../../dossier/load';
+import { indicesCsv } from '../../exports/csv';
 import { interval, pct } from '../../indices/format';
 import { loadIndices } from '../../indices/load';
 import type { CountryIndex, IndicesFile } from '../../indices/types';
 import { RangeBar } from '../../viz/RangeBar';
 import { Spark } from '../../viz/Spark';
+import { ExportButton } from './ExportButton';
 import { int, label, span } from './parts';
 
 const TOP = 15;
@@ -118,9 +120,12 @@ export function IndexBoard({ onDive, onMethod }: { onDive: (countryId: string) =
         {first} to {monthLabel(file.seriesEnd, 0)} · peak {int(peak)} in {monthLabel(file.seriesEnd, world.length - 1 - peakAt)} · 2026 months are provisional
       </p>
 
-      <button type="button" onClick={onMethod} className="mt-4 font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--lime)] underline decoration-[var(--border-strong)] underline-offset-4 hover:decoration-[var(--lime)]">
+      <div className="mt-4 flex flex-wrap items-center gap-4">
+        <ExportButton label="indices of every country" filename={`defcon-indices-${file.dataEnd}.csv`} build={() => indicesCsv(file, names)} />
+        <button type="button" onClick={onMethod} className="font-[var(--font-mono)] text-[11.5px] uppercase tracking-[0.15em] text-[var(--lime)] underline decoration-[var(--border-strong)] underline-offset-4 hover:decoration-[var(--lime)]">
         How computed
-      </button>
+        </button>
+      </div>
     </section>
   );
 }

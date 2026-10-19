@@ -6,9 +6,10 @@ import type { CountryIndex, IndicesFile } from '../../src/indices/types';
 import { IndexBoard } from '../../src/ui/war/IndexBoard';
 import { ecuador, indicesFixture, ukraine } from '../indices/fixture';
 
-const mocks = vi.hoisted(() => ({ loadIndices: vi.fn(), loadIndex: vi.fn() }));
+const mocks = vi.hoisted(() => ({ loadIndices: vi.fn(), loadIndex: vi.fn(), downloadText: vi.fn(() => true) }));
 vi.mock('../../src/indices/load', async (orig) => ({ ...(await orig<typeof import('../../src/indices/load')>()), loadIndices: mocks.loadIndices }));
 vi.mock('../../src/dossier/load', () => ({ loadIndex: mocks.loadIndex }));
+vi.mock('../../src/exports/download', () => ({ downloadText: mocks.downloadText }));
 
 afterEach(cleanup);
 
@@ -76,6 +77,15 @@ describe('IndexBoard', () => {
     expect(t).toMatch(/not the official US DEFCON level/i);
     expect(t).toMatch(/risk estimate/i);
     expect(t).not.toMatch(/\bwill\b/);
+  });
+
+  it('downloads the indices of every country as a CSV with the names', async () => {
+    await board();
+    fireEvent.click(screen.getByRole('button', { name: 'Download CSV: indices of every country' }));
+    const [name, text] = mocks.downloadText.mock.calls[0] as unknown as [string, string];
+    expect(name).toBe('defcon-indices-2026-08-31.csv');
+    expect(text.split('\n')[0]).toMatch(/^country_id,country,fatality_score/);
+    expect(text).toContain('Ukraine');
   });
 
   it('opens the method from the "How computed" button', async () => {
